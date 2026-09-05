@@ -1,0 +1,82 @@
+{
+  "name": "@eflink-tech/mindmap",
+  "description": "开箱即用的思维导图编辑器 React 组件（基于 Konva），可独立运行，也可作为组件嵌入任意 React 应用",
+  "version": "0.1.0",
+  "license": "Apache-2.0",
+  "type": "module",
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./styles.css": "./dist/styles.css"
+  },
+  "scripts": {
+    "dev": "tsc -p tsconfig.lib.json && vite build --watch",
+    "build": "vite build --emptyOutDir && tsc -p tsconfig.lib.json",
+    "typecheck": "tsc -b",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "peerDependencies": {
+    "react": ">=19.0.0",
+    "react-dom": ">=19.0.0"
+  },
+  "dependencies": {
+    "dexie": "^4.4.5",
+    "konva": "^10.3.2",
+    "lucide-react": "^1.37.0",
+    "react-konva": "^19.2.5",
+    "zustand": "^5.0.15"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.6",
+    "@types/node": "^24.13.3",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
+    "@vitejs/plugin-react": "^6.1.0",
+    "@vitest/coverage-v8": "^4.1.11",
+    "fake-indexeddb": "^6.2.5",
+    "jsdom": "^29.1.1",
+    "tailwindcss": "^4.3.3",
+    "typescript": "~6.0.2",
+    "vite": "^8.2.2",
+    "vitest": "^4.1.11"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/eflink-tech/eflink-mindmap.git",
+    "directory": "packages/mindmap"
+  },
+  "bugs": {
+    "url": "https://github.com/eflink-tech/eflink-mindmap/issues"
+  },
+  "homepage": "https://github.com/eflink-tech/eflink-mindmap#readme",
+  "keywords": [
+    "mindmap",
+    "mind-map",
+    "xmind",
+    "canvas",
+    "konva",
+    "editor",
+    "react-component"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  }
+}
