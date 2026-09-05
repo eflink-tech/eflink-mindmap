@@ -1,6 +1,6 @@
 // packages/mindmap/src/MindMapEditor.tsx
 // 组件库入口组件：挂载即用，自动打开上次文档或新建（沿用原 App 启动流程）
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Editor } from './components/Editor';
 import { loadDocument } from './core/persistence/db';
 import { useDocumentsStore } from './store/documentsStore';
@@ -35,8 +35,12 @@ async function openOrCreateEditor() {
 /** 开箱即用的思维导图编辑器：自带工具栏、画布、属性面板与状态栏，挂载后自动恢复上次编辑的文档 */
 export function MindMapEditor() {
   const [ready, setReady] = useState(false);
+  // StrictMode 下 effect 双执行，防止重复建档（自定义存储后端每次建档都会产生远端资源）
+  const bootRef = useRef(false);
 
   useEffect(() => {
+    if (bootRef.current) return;
+    bootRef.current = true;
     void openOrCreateEditor()
       .catch((err) => console.error('启动编辑器失败', err))
       .finally(() => setReady(true));
