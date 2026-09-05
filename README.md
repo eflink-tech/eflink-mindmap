@@ -4,6 +4,12 @@
 
 A mind map editor for the web. Run it standalone, or embed `<MindMapEditor />` into your React app.
 
+## 截图预览
+
+| 思维导图画布 | 布局与配色 | 大纲视图 |
+| --- | --- | --- |
+| ![思维导图画布](docs/screenshots/mindmap.png) | ![布局与配色](docs/screenshots/layout-gallery.png) | ![大纲视图](docs/screenshots/outline.png) |
+
 ## 功能特性
 
 - 画布引擎：Konva + react-konva，无限画布、缩放平移、小地图导航
