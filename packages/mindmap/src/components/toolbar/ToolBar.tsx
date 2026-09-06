@@ -7,6 +7,7 @@ import {
   Maximize,
   Network,
   Redo2,
+  Share2,
   SlidersHorizontal,
   Spline,
   SquareDashed,
@@ -18,8 +19,10 @@ import {
 import { getCanvasOptions } from '../../core/style/canvasOptions';
 import { useMindMapStore } from '../../store/mindMapStore';
 import { useUiStore } from '../../store/uiStore';
+import type { MindMapDocument } from '../../types/mindmap';
 import { BrandHeader } from './BrandHeader';
 import { InsertMenu } from './InsertMenu';
+import { ShareDialog } from './ShareDialog';
 
 interface ToolButtonProps {
   icon: LucideIcon;
@@ -61,6 +64,10 @@ export function ToolBar() {
   // 插入下拉菜单开关
   const [insertOpen, setInsertOpen] = useState(false);
   const insertWrapRef = useRef<HTMLDivElement>(null);
+  // 分享弹窗（doc 为点击"分享"时刻的文档快照，弹窗期间编辑不影响本次分享内容）
+  const [shareOpen, setShareOpen] = useState(false);
+  const [shareDoc, setShareDoc] = useState<MindMapDocument | null>(null);
+  const closeShare = useRef(() => setShareOpen(false)).current;
   const canUndo = useMindMapStore((s) => s.canUndo());
   const canRedo = useMindMapStore((s) => s.canRedo());
   const selectedId = useMindMapStore((s) => s.selectedId);
@@ -169,7 +176,20 @@ export function ToolBar() {
           active={panel === 'properties'}
           onClick={() => togglePanel('properties')}
         />
+        <ToolButton
+          icon={Share2}
+          label="分享"
+          title="生成分享链接（2 小时有效）"
+          onClick={() => {
+            const doc = useMindMapStore.getState().doc;
+            if (!doc) return;
+            setShareDoc(doc);
+            setShareOpen(true);
+          }}
+        />
       </div>
+
+      <ShareDialog open={shareOpen} doc={shareDoc} onClose={closeShare} />
     </div>
   );
 }

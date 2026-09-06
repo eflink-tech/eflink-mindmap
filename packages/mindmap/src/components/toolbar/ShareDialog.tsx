@@ -1,0 +1,193 @@
+// 分享弹窗：调用宿主注入的分享实现生成链接，展示并支持复制
+// 打开期间文档可能继续编辑，故分享内容以点击"分享"时刻的文档快照为准
+import { useEffect, useRef, useState, type JSX } from 'react';
+import { Check, Copy, Loader2, RefreshCw, Share2, TriangleAlert } from 'lucide-react';
+import { getMindMapShareHandler } from '../../core/share/shareBridge';
+import type { MindMapDocument } from '../../types/mindmap';
+
+type ShareState =
+  | { phase: 'loading' }
+  | { phase: 'done'; url: string }
+  | { phase: 'error'; message: string };
+
+interface ShareDialogProps {
+  open: boolean;
+  /** 点击"分享"时刻的文档快照（由调用方捕获，弹窗打开期间不随编辑变化） */
+  doc: MindMapDocument | null;
+  onClose: () => void;
+}
+
+/** 复制到剪贴板：优先 Clipboard API，失败降级 execCommand */
+async function copyText(text: string): Promise<boolean> {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    /* 继续尝试降级方案 */
+  }
+  const input = document.createElement('textarea');
+  input.value = text;
+  input.style.position = 'fixed';
+  input.style.opacity = '0';
+  document.body.appendChild(input);
+  input.select();
+  const ok = document.execCommand('copy');
+  document.body.removeChild(input);
+  return ok;
+}
+
+export function ShareDialog({ open, doc, onClose }: ShareDialogProps): JSX.Element | null {
+  const [state, setState] = useState<ShareState>({ phase: 'loading' });
+  const [copied, setCopied] = useState(false);
+  // 仅在 open/attempt 变化时重新发起分享（onClose 每次渲染都是新引用，经 ref 读取避免重跑）
+  const [attempt, setAttempt] = useState(0);
+  const docRef = useRef(doc);
+  docRef.current = doc;
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
+  const copiedTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+  useEffect(() => {
+    if (!open) return;
+    let cancelled = false;
+    setState({ phase: 'loading' });
+    setCopied(false);
+
+    const handler = getMindMapShareHandler();
+    const target = docRef.current;
+    if (!handler || !target) {
+      setState({ phase: 'error', message: '当前环境不支持分享' });
+      return;
+    }
+    void handler(target)
+      .then((url) => {
+        if (!cancelled) setState({ phase: 'done', url });
+      })
+      .catch((err: unknown) => {
+        if (!cancelled) {
+          setState({ phase: 'error', message: err instanceof Error ? err.message : '分享失败，请稍后重试' });
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [open, attempt]);
+
+  // Esc 关闭（捕获阶段拦截，避免触发画布快捷键）
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.stopPropagation();
+        onCloseRef.current();
+      }
+    };
+    document.addEventListener('keydown', onKey, true);
+    return () => document.removeEventListener('keydown', onKey, true);
+  }, [open]);
+
+  useEffect(() => () => clearTimeout(copiedTimerRef.current), []);
+
+  if (!open) return null;
+
+  const handleCopy = async () => {
+    if (state.phase !== 'done') return;
+    if (await copyText(state.url)) {
+      setCopied(true);
+      clearTimeout(copiedTimerRef.current);
+      copiedTimerRef.current = setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4"
+      role="presentation"
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget) onCloseRef.current();
+      }}
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="mindmap-share-dialog-title"
+        className="w-full max-w-md overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl"
+      >
+        <div className="flex items-center justify-between border-b border-slate-100 px-5 py-3.5">
+          <div className="flex items-center gap-2">
+            <Share2 size={16} className="text-slate-500" />
+            <h2 id="mindmap-share-dialog-title" className="text-base font-semibold text-slate-800">
+              分享导图
+            </h2>
+          </div>
+        </div>
+
+        <div className="px-5 py-4">
+          {state.phase === 'loading' && (
+            <div className="flex items-center justify-center gap-2 py-8 text-sm text-slate-500">
+              <Loader2 size={16} className="animate-spin" />
+              正在生成分享链接...
+            </div>
+          )}
+
+          {state.phase === 'error' && (
+            <div className="py-4 text-center">
+              <TriangleAlert size={24} className="mx-auto mb-2 text-amber-500" />
+              <p className="mb-4 text-sm text-slate-600">{state.message}</p>
+              <button
+                type="button"
+                onClick={() => setAttempt((n) => n + 1)}
+                className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50"
+              >
+                <RefreshCw size={14} />
+                重试
+              </button>
+            </div>
+          )}
+
+          {state.phase === 'done' && (
+            <>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  readOnly
+                  value={state.url}
+                  onFocus={(e) => e.currentTarget.select()}
+                  aria-label="分享链接"
+                  className="min-w-0 flex-1 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 focus:outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={() => void handleCopy()}
+                  className={`inline-flex shrink-0 items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+                    copied
+                      ? 'bg-emerald-50 text-emerald-600'
+                      : 'bg-blue-600 text-white hover:bg-blue-700'
+                  }`}
+                >
+                  {copied ? <Check size={14} /> : <Copy size={14} />}
+                  {copied ? '已复制' : '复制'}
+                </button>
+              </div>
+              <ul className="mt-4 space-y-1.5 rounded-lg bg-slate-50 px-3.5 py-3 text-xs leading-relaxed text-slate-500">
+                <li>· 任何人无需登录即可通过链接查看此导图快照（只读）。</li>
+                <li>· 链接 2 小时内有效；再次分享会刷新为最新内容并重置有效期，链接不变。</li>
+              </ul>
+            </>
+          )}
+        </div>
+
+        <div className="flex justify-end border-t border-slate-100 px-5 py-3">
+          <button
+            type="button"
+            onClick={onCloseRef.current}
+            className="rounded-md bg-blue-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-blue-700"
+          >
+            完成
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
