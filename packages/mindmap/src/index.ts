@@ -6,6 +6,7 @@ export { useMindMapStore } from './store/mindMapStore'
 export { useUiStore } from './store/uiStore'
 export { useDocumentsStore } from './store/documentsStore'
 export { setMindMapStorageBackend } from './core/persistence/db'
+export { setEditorBackHref } from './core/chrome'
 export type { MindMapStorageBackend } from './core/persistence/db'
 export {
   db,
