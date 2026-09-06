@@ -3,11 +3,12 @@
 import { useEffect, useRef, useState, type JSX } from 'react';
 import { Check, Copy, Loader2, RefreshCw, Share2, TriangleAlert } from 'lucide-react';
 import { getMindMapShareHandler } from '../../core/share/shareBridge';
+import type { MindMapShareResult } from '../../core/share/shareBridge';
 import type { MindMapDocument } from '../../types/mindmap';
 
 type ShareState =
   | { phase: 'loading' }
-  | { phase: 'done'; url: string }
+  | { phase: 'done' }
   | { phase: 'error'; message: string };
 
 interface ShareDialogProps {
@@ -39,6 +40,8 @@ async function copyText(text: string): Promise<boolean> {
 export function ShareDialog({ open, doc, onClose }: ShareDialogProps): JSX.Element | null {
   const [state, setState] = useState<ShareState>({ phase: 'loading' });
   const [copied, setCopied] = useState(false);
+  // 分享结果（链接 + 宿主业务文案）与复制态
+  const [result, setResult] = useState<MindMapShareResult | null>(null);
   // 仅在 open/attempt 变化时重新发起分享（onClose 每次渲染都是新引用，经 ref 读取避免重跑）
   const [attempt, setAttempt] = useState(0);
   const docRef = useRef(doc);
@@ -51,6 +54,7 @@ export function ShareDialog({ open, doc, onClose }: ShareDialogProps): JSX.Eleme
     if (!open) return;
     let cancelled = false;
     setState({ phase: 'loading' });
+    setResult(null);
     setCopied(false);
 
     const handler = getMindMapShareHandler();
@@ -60,8 +64,11 @@ export function ShareDialog({ open, doc, onClose }: ShareDialogProps): JSX.Eleme
       return;
     }
     void handler(target)
-      .then((url) => {
-        if (!cancelled) setState({ phase: 'done', url });
+      .then((res) => {
+        if (!cancelled) {
+          setResult(res);
+          setState({ phase: 'done' });
+        }
       })
       .catch((err: unknown) => {
         if (!cancelled) {
@@ -92,8 +99,8 @@ export function ShareDialog({ open, doc, onClose }: ShareDialogProps): JSX.Eleme
   if (!open) return null;
 
   const handleCopy = async () => {
-    if (state.phase !== 'done') return;
-    if (await copyText(state.url)) {
+    if (state.phase !== 'done' || !result) return;
+    if (await copyText(result.url)) {
       setCopied(true);
       clearTimeout(copiedTimerRef.current);
       copiedTimerRef.current = setTimeout(() => setCopied(false), 2000);
@@ -146,13 +153,13 @@ export function ShareDialog({ open, doc, onClose }: ShareDialogProps): JSX.Eleme
             </div>
           )}
 
-          {state.phase === 'done' && (
+          {state.phase === 'done' && result && (
             <>
               <div className="flex gap-2">
                 <input
                   type="text"
                   readOnly
-                  value={state.url}
+                  value={result.url}
                   onFocus={(e) => e.currentTarget.select()}
                   aria-label="分享链接"
                   className="min-w-0 flex-1 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 focus:outline-none"
@@ -170,10 +177,13 @@ export function ShareDialog({ open, doc, onClose }: ShareDialogProps): JSX.Eleme
                   {copied ? '已复制' : '复制'}
                 </button>
               </div>
-              <ul className="mt-4 space-y-1.5 rounded-lg bg-slate-50 px-3.5 py-3 text-xs leading-relaxed text-slate-500">
-                <li>· 任何人无需登录即可通过链接查看此导图快照（只读）。</li>
-                <li>· 链接 2 小时内有效；再次分享会刷新为最新内容并重置有效期，链接不变。</li>
-              </ul>
+              {result.tips && result.tips.length > 0 && (
+                <ul className="mt-4 space-y-1.5 rounded-lg bg-slate-50 px-3.5 py-3 text-xs leading-relaxed text-slate-500">
+                  {result.tips.map((tip) => (
+                    <li key={tip}>· {tip}</li>
+                  ))}
+                </ul>
+              )}
             </>
           )}
         </div>

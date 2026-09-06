@@ -17,6 +17,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { getCanvasOptions } from '../../core/style/canvasOptions';
+import { getMindMapShareHandler } from '../../core/share/shareBridge';
 import { useMindMapStore } from '../../store/mindMapStore';
 import { useUiStore } from '../../store/uiStore';
 import type { MindMapDocument } from '../../types/mindmap';
@@ -176,17 +177,20 @@ export function ToolBar() {
           active={panel === 'properties'}
           onClick={() => togglePanel('properties')}
         />
-        <ToolButton
-          icon={Share2}
-          label="分享"
-          title="生成分享链接（2 小时有效）"
-          onClick={() => {
-            const doc = useMindMapStore.getState().doc;
-            if (!doc) return;
-            setShareDoc(doc);
-            setShareOpen(true);
-          }}
-        />
+        {/* 分享入口仅在宿主注入分享实现后出现（纯组件独立运行时不显示） */}
+        {getMindMapShareHandler() !== null && (
+          <ToolButton
+            icon={Share2}
+            label="分享"
+            title="生成分享链接"
+            onClick={() => {
+              const doc = useMindMapStore.getState().doc;
+              if (!doc) return;
+              setShareDoc(doc);
+              setShareOpen(true);
+            }}
+          />
+        )}
       </div>
 
       <ShareDialog open={shareOpen} doc={shareDoc} onClose={closeShare} />

@@ -9,7 +9,7 @@ export { setMindMapStorageBackend } from './core/persistence/db'
 export { setEditorBackHref } from './core/chrome'
 export type { MindMapStorageBackend } from './core/persistence/db'
 export { setMindMapShareHandler } from './core/share/shareBridge'
-export type { MindMapShareHandler } from './core/share/shareBridge'
+export type { MindMapShareHandler, MindMapShareResult } from './core/share/shareBridge'
 export {
   db,
   saveDocument,
