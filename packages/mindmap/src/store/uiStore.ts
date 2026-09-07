@@ -3,7 +3,7 @@ import { create } from 'zustand';
 // 延迟调用（仅函数体内使用）：切换画布模式时联动退出节点编辑态
 import { useMindMapStore } from './mindMapStore';
 
-export type PanelKind = 'properties' | 'markers';
+export type PanelKind = 'properties' | 'markers' | 'ai';
 export type PropertiesTab = 'style' | 'canvas';
 /** 标记面板 Tab（贴纸菜单项跳转用） */
 export type MarkersTab = 'markers' | 'stickers';

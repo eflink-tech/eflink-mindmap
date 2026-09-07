@@ -9,6 +9,7 @@ import {
   Redo2,
   Share2,
   SlidersHorizontal,
+  Sparkles,
   Spline,
   SquareDashed,
   Tag,
@@ -165,6 +166,13 @@ export function ToolBar() {
         />
         <ToolButton icon={Maximize} label="适应屏幕" title="适应屏幕 (⌘0)" onClick={() => store().fitToScreen()} />
         <Divider />
+        <ToolButton
+          icon={Sparkles}
+          label="AI"
+          title="AI 助手（生成导图 / 展开分支）"
+          active={panel === 'ai'}
+          onClick={() => togglePanel('ai')}
+        />
         <ToolButton
           icon={Tag}
           label="标记"

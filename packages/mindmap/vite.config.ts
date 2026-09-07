@@ -18,7 +18,7 @@ export default defineConfig({
       // 仅外部化直接依赖：传递依赖（如 react-konva 的 react-reconciler）打包进产物，
       // 避免 pnpm 严格隔离下消费方无法解析
       external: (id) =>
-        /^(react|react-dom|react\/jsx-runtime|konva|react-konva|dexie|lucide-react|zustand)/.test(id),
+        /^(react|react-dom|react\/jsx-runtime|konva|react-konva|dexie|lucide-react|openai|zustand)/.test(id),
       output: {
         assetFileNames: (asset) =>
           asset.names?.[0]?.endsWith('.css') ? 'styles.css' : 'assets/[name][extname]',

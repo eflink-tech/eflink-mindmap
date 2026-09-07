@@ -8,6 +8,7 @@ import { Canvas } from './canvas/Canvas';
 import { BoundaryEditorOverlay } from './canvas/BoundaryEditorOverlay';
 import { NodeInsertOverlay } from './canvas/NodeInsertOverlay';
 import { OutlineView } from './outline/OutlineView';
+import { AIChatPanel } from './ai/AIChatPanel';
 import { MarkerPanel } from './panels/marker/MarkerPanel';
 import { PropertiesPanel } from './panels/PropertiesPanel';
 import { TextEditorOverlay } from './canvas/TextEditorOverlay';
@@ -231,6 +232,8 @@ export function Editor() {
         </div>
         {panel === 'properties' && <PropertiesPanel />}
         {panel === 'markers' && <MarkerPanel />}
+        {/* AI 助手面板（右侧独立列，参考 eflink-draw / eflink-pptx） */}
+        {panel === 'ai' && <AIChatPanel />}
       </div>
       <StatusBar />
     </div>
