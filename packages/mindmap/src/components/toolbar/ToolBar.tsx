@@ -8,6 +8,7 @@ import {
   Network,
   Redo2,
   Share2,
+  MessageCircle,
   SlidersHorizontal,
   Sparkles,
   Spline,
@@ -187,6 +188,7 @@ export function ToolBar() {
         />
         {/* 分享入口仅在宿主注入分享实现后出现（纯组件独立运行时不显示） */}
         {getMindMapShareHandler() !== null && (
+          <>
           <ToolButton
             icon={Share2}
             label="分享"
@@ -198,6 +200,13 @@ export function ToolBar() {
               setShareOpen(true);
             }}
           />
+          <ToolButton
+            icon={MessageCircle}
+            label="反馈"
+            title="问题反馈"
+            onClick={() => window.open('/contact', '_blank')}
+          />
+          </>
         )}
       </div>
 
