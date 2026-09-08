@@ -32,12 +32,18 @@ export function FlowAnimation() {
   // 动画时钟独立于路径重建：文档编辑导致路径变化时蓝点不跳回起点
   const clockRef = useRef<number | null>(null);
 
+  // 依赖取 doc 的稳定子切片：流动路径与视口无关，平移/缩放（doc 整体替换）时不得重建
+  // 路径与 rAF 动画，否则每次视口变化都会重算路径并拆建动画帧循环
+  const nodes = doc?.nodes;
+  const relations = doc?.relations;
+  const themeId = doc?.themeId;
   const flows = useMemo<FlowPolyline[]>(
     () =>
       doc && layoutResult && selectedId && flowEnabled
         ? buildFlowPaths(doc, layoutResult, selectedId, getTheme(doc))
         : [],
-    [doc, layoutResult, selectedId, flowEnabled],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [nodes, relations, themeId, layoutResult, selectedId, flowEnabled],
   );
 
   const dots = useMemo<DotSpec[]>(() => {

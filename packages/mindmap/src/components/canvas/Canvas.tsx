@@ -12,10 +12,10 @@ import { FlowAnimation } from './FlowAnimation';
 import { NodeRenderer } from './NodeRenderer';
 import { RelationRenderer } from './RelationRenderer';
 import { SummaryRenderer } from './SummaryRenderer';
-import { setStage } from './stageRef';
+import { getStage, setStage } from './stageRef';
 
-// 框选拖拽超过该距离（屏幕像素）才视为框选，否则视为点击空白
-const MARQUEE_THRESHOLD = 4;
+// 空白处拖拽超过该距离（屏幕像素）才视为拖拽（平移/框选），否则视为点击
+const DRAG_THRESHOLD = 4;
 
 // 框选矩形的屏幕坐标（绘制时换算为世界坐标）
 interface MarqueeRect {
@@ -27,12 +27,22 @@ interface MarqueeRect {
 
 export function Canvas() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const panRef = useRef<{ startX: number; startY: number; vx: number; vy: number } | null>(null);
-  // 框选状态：屏幕坐标起点 + Shift 增量模式 + 起始已选集合；active 表示已超过点击阈值
+  // 画布平移拖拽状态；clickDeselect 表示左键按下（点击空白），松开时若未拖动则取消选中；
+  // nx/ny 为拖拽中的实时视口位置（命令式写入 Stage，松开时才提交 store，见 onMove/onUp）
+  const panRef = useRef<{
+    startX: number;
+    startY: number;
+    vx: number;
+    vy: number;
+    nx: number;
+    ny: number;
+    moved: boolean;
+    clickDeselect: boolean;
+  } | null>(null);
+  // 框选状态（Shift+左键拖拽）：屏幕坐标起点 + 起始已选集合；active 表示已超过点击阈值
   const marqueeRef = useRef<{
     startX: number;
     startY: number;
-    additive: boolean;
     base: string[];
     active: boolean;
   } | null>(null);
@@ -215,13 +225,23 @@ export function Canvas() {
     const onMove = (ev: MouseEvent) => {
       const p = panRef.current;
       if (p) {
-        const store = useMindMapStore.getState();
-        if (!store.doc) return;
-        store.setViewport({
-          ...store.doc.viewport,
-          x: p.vx + (ev.clientX - p.startX),
-          y: p.vy + (ev.clientY - p.startY),
-        });
+        const dx = ev.clientX - p.startX;
+        const dy = ev.clientY - p.startY;
+        // 未超过阈值前不平移：区分「点击空白」与「拖拽画布」
+        if (!p.moved) {
+          if (Math.abs(dx) < DRAG_THRESHOLD && Math.abs(dy) < DRAG_THRESHOLD) return;
+          p.moved = true;
+        }
+        // 命令式更新 Stage 位置：拖拽期间零 React 重渲染。
+        // setViewport 会替换 doc 使全部节点组件重渲染，真实鼠标 500Hz+ 的 mousemove
+        // 在大文档下即卡顿来源；store 视口在松开时一次性提交（见 onUp）
+        p.nx = p.vx + dx;
+        p.ny = p.vy + dy;
+        const stage = getStage();
+        if (stage) {
+          stage.position({ x: p.nx, y: p.ny });
+          stage.batchDraw();
+        }
         return;
       }
       // 框选拖拽：更新选框并实时命中节点（对齐 XMind 划选多选）
@@ -234,7 +254,7 @@ export function Canvas() {
       const sy = ev.clientY - rect.top;
       const dx = sx - m.startX;
       const dy = sy - m.startY;
-      if (!m.active && Math.abs(dx) < MARQUEE_THRESHOLD && Math.abs(dy) < MARQUEE_THRESHOLD) return;
+      if (!m.active && Math.abs(dx) < DRAG_THRESHOLD && Math.abs(dy) < DRAG_THRESHOLD) return;
       m.active = true;
       const v = store.doc.viewport;
       const x0 = (Math.min(m.startX, sx) - v.x) / v.scale;
@@ -252,18 +272,31 @@ export function Canvas() {
             b.y - b.height / 2 <= y1,
         )
         .map(([id]) => id);
-      const sel = m.additive ? Array.from(new Set([...m.base, ...hit])) : hit;
+      const sel = Array.from(new Set([...m.base, ...hit]));
       if (sel.join('|') !== store.selectedIds.join('|')) store.selectMany(sel);
     };
     const onUp = () => {
+      const p = panRef.current;
       panRef.current = null;
+      // 左键点击空白（未发生拖拽）：取消选中（对齐 XMind 点击空白）
+      if (p?.clickDeselect && !p.moved) {
+        useMindMapStore.getState().select(null);
+      }
+      // 提交拖拽平移：一次性同步 store 视口（与 Stage 命令式位置一致，无跳变）
+      if (p?.moved) {
+        const store = useMindMapStore.getState();
+        const v = store.doc?.viewport;
+        if (v && (v.x !== p.nx || v.y !== p.ny)) {
+          store.setViewport({ ...v, x: p.nx, y: p.ny });
+        }
+      }
       if (marqueeRef.current) {
         marqueeRef.current = null;
         setMarquee(null);
       }
-      // 空格拖拽结束：光标恢复抓手（空格仍按住）
-      if (useUiStore.getState().spacePanning && containerRef.current) {
-        containerRef.current.style.cursor = 'grab';
+      // 拖拽结束：光标恢复（空格仍按住时为抓手）
+      if (p && containerRef.current) {
+        containerRef.current.style.cursor = useUiStore.getState().spacePanning ? 'grab' : '';
       }
     };
     window.addEventListener('mousemove', onMove);
@@ -302,13 +335,25 @@ export function Canvas() {
         scaleY={viewport.scale}
         onMouseDown={(e) => {
           if (e.target !== e.target.getStage()) return;
-          // 空格平移模式：任意键位拖拽画布（优先于框选/连线），Layer 已置为不接收事件
-          if (useUiStore.getState().spacePanning) {
+          const startPan = (clickDeselect: boolean) => {
             const v = useMindMapStore.getState().doc?.viewport;
             if (!v) return;
-            panRef.current = { startX: e.evt.clientX, startY: e.evt.clientY, vx: v.x, vy: v.y };
+            panRef.current = {
+              startX: e.evt.clientX,
+              startY: e.evt.clientY,
+              vx: v.x,
+              vy: v.y,
+              nx: v.x,
+              ny: v.y,
+              moved: false,
+              clickDeselect,
+            };
             if (containerRef.current) containerRef.current.style.cursor = 'grabbing';
             e.evt.preventDefault();
+          };
+          // 空格平移模式：任意键位拖拽画布（优先于框选/连线），Layer 已置为不接收事件
+          if (useUiStore.getState().spacePanning) {
+            startPan(false);
             return;
           }
           // 连线模式下点击空白画布：取消连线（对齐 XMind），不进入框选/平移
@@ -316,25 +361,21 @@ export function Canvas() {
             useUiStore.getState().endLinking();
             return;
           }
-          if (e.evt.button === 0) {
-            // 左键空白按下：起点记录为框选（对齐 XMind 划选）；几乎不移动视为点击空白取消选中。
-            // Shift 按下时保留已选集合作为增量基础
+          // Shift+左键空白拖拽：框选（增量叠加已选集合，对齐 XMind 划选多选）
+          if (e.evt.button === 0 && e.evt.shiftKey) {
             const store = useMindMapStore.getState();
-            const base = e.evt.shiftKey ? store.selectedIds.slice() : [];
-            if (!e.evt.shiftKey) store.select(null);
             const pos = e.target.getStage().getPointerPosition();
             marqueeRef.current = {
               startX: pos?.x ?? 0,
               startY: pos?.y ?? 0,
-              additive: e.evt.shiftKey,
-              base,
+              base: store.selectedIds.slice(),
               active: false,
             };
             return;
           }
-          // 右键/中键空白按下：平移画布（左键已用于框选，对齐 XMind）
-          const v = useMindMapStore.getState().doc!.viewport;
-          panRef.current = { startX: e.evt.clientX, startY: e.evt.clientY, vx: v.x, vy: v.y };
+          // 左键（无修饰键）/右键/中键空白按下：拖拽平移画布；
+          // 左键几乎不移动视为点击空白，松开时取消选中（见 onUp）
+          startPan(e.evt.button === 0);
         }}
         onContextMenu={(e) => e.evt.preventDefault()}
         onMouseMove={onStageMouseMove}

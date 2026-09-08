@@ -131,14 +131,14 @@ export function ToolBar() {
         <ToolButton
           icon={Braces}
           label="概要"
-          title="概要（选中同级节点后创建；可框选或 Shift+点击多选）"
+          title="概要（选中同级节点后创建；可 Shift+拖拽框选或 Shift+点击多选）"
           disabled={!selectedId}
           onClick={() => store().addSummarySelected()}
         />
         <ToolButton
           icon={SquareDashed}
           label="外框"
-          title="外框（选中同级节点后创建；可框选或 Shift+点击多选）"
+          title="外框（选中同级节点后创建；可 Shift+拖拽框选或 Shift+点击多选）"
           disabled={!selectedId}
           onClick={() => store().addBoundarySelected()}
         />
