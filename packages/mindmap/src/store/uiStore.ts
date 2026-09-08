@@ -27,6 +27,9 @@ interface UiStore {
   linkFrom: string | null;
   /** 顶部轻提示文案；null 表示不显示 */
   toast: string | null;
+  /** 空格按住状态：进入画布平移模式（光标抓手，任意位置可拖拽移动画布） */
+  spacePanning: boolean;
+  setSpacePanning: (v: boolean) => void;
   setView: (v: 'start' | 'editor') => void;
   togglePanel: (p: PanelKind) => void;
   closePanel: () => void;
@@ -55,6 +58,8 @@ export const useUiStore = create<UiStore>((set, get) => ({
   linking: false,
   linkFrom: null,
   toast: null,
+  spacePanning: false,
+  setSpacePanning: (v) => set({ spacePanning: v }),
   // 切回开始页时复位连线模式，避免连线态残留到下一场景
   setView: (view) =>
     set(view === 'start' ? { view, linking: false, linkFrom: null } : { view }),

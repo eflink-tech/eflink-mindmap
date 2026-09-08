@@ -68,7 +68,7 @@ export const SHORTCUT_GROUPS: ShortcutGroup[] = [
       { id: 'cut', label: '剪切', keys: ['Mod', 'X'] },
       { id: 'paste', label: '粘贴', keys: ['Mod', 'V'] },
       { id: 'remove', label: '删除', keys: ['Delete'] },
-      { id: 'edit', label: '编辑主题', keys: ['F2'], altKeys: [['Space']] },
+      { id: 'edit', label: '编辑主题', keys: ['F2'] },
     ],
   },
   {
@@ -88,6 +88,7 @@ export const SHORTCUT_GROUPS: ShortcutGroup[] = [
       { id: 'fitToScreen', label: '适应屏幕', keys: ['Mod', '0'] },
       { id: 'zoomIn', label: '放大', keys: ['Mod', '+'] },
       { id: 'zoomOut', label: '缩小', keys: ['Mod', '-'] },
+      { id: 'panCanvas', label: '按住拖动画布', keys: ['Space'] },
       { id: 'navigate', label: '节点导航', keys: ['Up'], altKeys: [['Down'], ['Left'], ['Right']] },
       { id: 'escape', label: '取消选中 / 退出连线', keys: ['Esc'] },
     ],

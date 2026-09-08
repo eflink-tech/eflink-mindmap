@@ -133,6 +133,12 @@ export function Editor() {
         return;
       }
       if (mod) return;
+      // 空格：按住进入画布平移模式（光标抓手，任意位置可拖拽）；编辑框内已在上方 return
+      if (e.key === ' ') {
+        e.preventDefault();
+        if (!e.repeat) useUiStore.getState().setSpacePanning(true);
+        return;
+      }
       // 方向键节点导航（↑↓ 同级、←→ 父子，随布局/分支侧向自适应）
       const navDir = NAV_DIRS[e.key];
       if (navDir) {
@@ -191,9 +197,8 @@ export function Editor() {
           s.removeSelected();
           break;
         case 'F2':
-        case ' ':
           e.preventDefault();
-          // 选中概要时 F2/空格 进入概要编辑；否则编辑选中节点
+          // 选中概要时 F2 进入概要编辑；否则编辑选中节点
           {
             const summaryId = useMindMapStore.getState().selectedSummaryId;
             if (summaryId) {
@@ -208,7 +213,25 @@ export function Editor() {
       }
     };
     window.addEventListener('keydown', onKey, { capture: true });
-    return () => window.removeEventListener('keydown', onKey, { capture: true });
+    return () => {
+      window.removeEventListener('keydown', onKey, { capture: true });
+      // 卸载时退出空格平移模式，避免状态残留
+      useUiStore.getState().setSpacePanning(false);
+    };
+  }, []);
+
+  // 空格松开 / 窗口失焦：退出平移模式（按住空格切窗时 keyup 会丢失）
+  useEffect(() => {
+    const onKeyUp = (e: KeyboardEvent) => {
+      if (e.key === ' ') useUiStore.getState().setSpacePanning(false);
+    };
+    const onBlur = () => useUiStore.getState().setSpacePanning(false);
+    window.addEventListener('keyup', onKeyUp);
+    window.addEventListener('blur', onBlur);
+    return () => {
+      window.removeEventListener('keyup', onKeyUp);
+      window.removeEventListener('blur', onBlur);
+    };
   }, []);
 
   return (

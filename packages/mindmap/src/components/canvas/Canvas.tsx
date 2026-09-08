@@ -100,12 +100,38 @@ export function Canvas() {
     setStage(node);
   }, []);
 
-  // stageSize 更新后，如果有待处理的自动居中，则执行 fitToScreen
+  // stageSize 更新后，如果有待处理的自动居中，则执行 fitToScreen。
+  // 本 effect 声明在下方尺寸测量 effect 之前：带文档挂载时（开始页新建/打开、路由返回）
+  // store 里的 stageSize 可能是上次会话遗留值（默认 1200×800），直接 fit 会把根节点
+  // 画偏（偏差 = (实际宽 − 遗留宽)/2）且之后无 resize 事件纠正。因此 fit 前先按容器
+  // 实时尺寸同步 stageSize；容器尚未布局（0×0）时保持 pending，等 RO 通知后再 fit。
   useEffect(() => {
-    if (autoFitPending) {
+    if (!autoFitPending) return;
+    const el = containerRef.current;
+    if (!el) {
       useMindMapStore.getState().fitToScreen();
+      return;
     }
+    const width = el.clientWidth;
+    const height = el.clientHeight;
+    if (width <= 0 || height <= 0) return;
+    const store = useMindMapStore.getState();
+    if (store.stageSize.width !== width || store.stageSize.height !== height) {
+      store.setStageSize({ width, height });
+    }
+    store.fitToScreen();
   }, [stageSize, autoFitPending]);
+
+  // 空格平移模式：光标切换为抓手
+  const spacePanning = useUiStore((s) => s.spacePanning);
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    el.style.cursor = spacePanning ? 'grab' : '';
+    return () => {
+      el.style.cursor = '';
+    };
+  }, [spacePanning]);
 
   useEffect(() => {
     const el = containerRef.current;
@@ -235,6 +261,10 @@ export function Canvas() {
         marqueeRef.current = null;
         setMarquee(null);
       }
+      // 空格拖拽结束：光标恢复抓手（空格仍按住）
+      if (useUiStore.getState().spacePanning && containerRef.current) {
+        containerRef.current.style.cursor = 'grab';
+      }
     };
     window.addEventListener('mousemove', onMove);
     window.addEventListener('mouseup', onUp);
@@ -272,6 +302,15 @@ export function Canvas() {
         scaleY={viewport.scale}
         onMouseDown={(e) => {
           if (e.target !== e.target.getStage()) return;
+          // 空格平移模式：任意键位拖拽画布（优先于框选/连线），Layer 已置为不接收事件
+          if (useUiStore.getState().spacePanning) {
+            const v = useMindMapStore.getState().doc?.viewport;
+            if (!v) return;
+            panRef.current = { startX: e.evt.clientX, startY: e.evt.clientY, vx: v.x, vy: v.y };
+            if (containerRef.current) containerRef.current.style.cursor = 'grabbing';
+            e.evt.preventDefault();
+            return;
+          }
           // 连线模式下点击空白画布：取消连线（对齐 XMind），不进入框选/平移
           if (useUiStore.getState().linking) {
             useUiStore.getState().endLinking();
@@ -301,7 +340,8 @@ export function Canvas() {
         onMouseMove={onStageMouseMove}
         onMouseLeave={onStageMouseLeave}
       >
-        <Layer>
+        <Layer listening={!spacePanning}>
+          {/* 空格平移时 Layer 不接收事件：节点上也可直接拖拽画布（对齐 Figma/XMind） */}
           {/* 外框在最底层：浅灰填充垫底，子树连线画在填充之上（对齐 XMind） */}
           <BoundaryRenderer />
           <ConnectorRenderer />
