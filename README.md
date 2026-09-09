@@ -107,6 +107,18 @@ git push          # 推送后机器人自动开 Version PR
 # 合并 Version PR → 自动发布 npm 并打 tag
 ```
 
+## 联系我们
+
+- **在线体验**：<https://eflink.tech>（易飞思维导图 · 免费在线思维导图）
+- **问题反馈与交流**：[eflink.tech/contact](https://eflink.tech/contact)
+- **邮箱**：[support@eflink.tech](mailto:support@eflink.tech)
+
+使用微信或企业微信扫码添加（二维码长期有效）：
+
+<p align="center">
+  <img src="./docs/wecom-contact-qr.png" width="220" alt="企业微信二维码" />
+</p>
+
 ## License
 
 [Apache-2.0](./LICENSE)
