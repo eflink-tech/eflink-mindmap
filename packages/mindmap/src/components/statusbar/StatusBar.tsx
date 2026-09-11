@@ -4,6 +4,7 @@ import { Check, ChevronDown, ListTree, Network } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useMindMapStore } from '../../store/mindMapStore';
 import { useUiStore } from '../../store/uiStore';
+import { SaveStatusIndicator } from './SaveStatusIndicator';
 
 // 与滚轮连续缩放不同，此处仅提供固定档位（与 store 内 zoomStep 步进共用一组值）
 const ZOOM_PRESETS = [0.5, 0.7, 0.8, 1, 1.2, 1.5, 2];
@@ -40,6 +41,13 @@ export function StatusBar() {
 
   return (
     <div className="flex h-8 shrink-0 items-center justify-end gap-1 border-t border-slate-200 bg-white px-3">
+      {/* 保存状态：mr-auto 占据左侧，与右侧控件组分开 */}
+      <span
+        className="mr-auto text-xs text-slate-400"
+        title="⌘S/Ctrl+S 保存到云端"
+      >
+        <SaveStatusIndicator />
+      </span>
       {/* 多选反馈：框选 / Shift+点击选中多个节点时显示数量 */}
       {multiCount > 1 && (
         <span className="mr-1 text-xs text-slate-500" data-testid="selection-count">

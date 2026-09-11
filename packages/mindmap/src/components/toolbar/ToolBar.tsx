@@ -19,6 +19,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { getCanvasOptions } from '../../core/style/canvasOptions';
+import { saveNow } from '../../core/persistence/saveNow';
 import { getMindMapShareHandler } from '../../core/share/shareBridge';
 import { useMindMapStore } from '../../store/mindMapStore';
 import { useUiStore } from '../../store/uiStore';
@@ -196,8 +197,11 @@ export function ToolBar() {
             onClick={() => {
               const doc = useMindMapStore.getState().doc;
               if (!doc) return;
-              setShareDoc(doc);
-              setShareOpen(true);
+              // 分享前强制保存一次云端（保存失败不阻塞分享，快照以当前文档为准）
+              void saveNow().then(() => {
+                setShareDoc(useMindMapStore.getState().doc);
+                setShareOpen(true);
+              });
             }}
           />
           <ToolButton

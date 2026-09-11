@@ -57,7 +57,7 @@ export const MENU_SHORTCUT_IDS = {
 export const SHORTCUT_GROUPS: ShortcutGroup[] = [
   {
     title: '文件',
-    items: [{ id: 'save', label: '保存到本地数据库', keys: ['Mod', 'S'] }],
+    items: [{ id: 'save', label: '保存', keys: ['Mod', 'S'] }],
   },
   {
     title: '编辑',

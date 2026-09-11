@@ -27,6 +27,8 @@ import { useDocumentsStore } from './documentsStore';
 
 interface MindMapStore {
   doc: MindMapDocument | null;
+  /** 是否有未保存到云端的改动：导图结构/节点变化置 true；仅云端保存成功后置 false（写本地草稿不清除） */
+  dirty: boolean;
   layoutResult: LayoutResult | null;
   selectedId: string | null;
   /** 多选集合（框选 / Shift+点击）；为空时无选中，单选时为 [selectedId]，selectedId 始终是最后点击的锚点 */
@@ -50,6 +52,8 @@ interface MindMapStore {
   autoFitPending: boolean;
 
   open: (doc: MindMapDocument) => void;
+  /** 云端保存成功后调用：清除 dirty；传入保存时的 doc 引用，若保存期间又有编辑则保持 dirty */
+  markSaved: (saved?: MindMapDocument) => void;
   copySelected: () => void;
   cutSelected: () => void;
   paste: () => void;
@@ -119,6 +123,7 @@ const ZOOM_STEPS = [0.5, 0.7, 0.8, 1, 1.2, 1.5, 2];
 
 export const useMindMapStore = create<MindMapStore>((set, get) => ({
   doc: null,
+  dirty: false,
   layoutResult: null,
   selectedId: null,
   selectedIds: [],
@@ -144,6 +149,8 @@ export const useMindMapStore = create<MindMapStore>((set, get) => ({
     set({
       doc: openedDoc,
       layoutResult,
+      // 新打开的文档视为与存储一致（打开前刚从云端读取或建档落库）
+      dirty: false,
       selectedId: openedDoc.rootId,
       selectedIds: [openedDoc.rootId],
       selectedRelationId: null,
@@ -185,6 +192,11 @@ export const useMindMapStore = create<MindMapStore>((set, get) => ({
 
   clearClipboard: () => set({ clipboard: null }),
 
+  markSaved: (saved) => {
+    // 保存期间文档又被编辑（引用变化）→ 保持 dirty，等待下一次保存
+    if (!saved || get().doc === saved) set({ dirty: false });
+  },
+
   act: (op) => {
     const { doc, history, batch } = get();
     if (!doc) return;
@@ -192,9 +204,9 @@ export const useMindMapStore = create<MindMapStore>((set, get) => ({
     if (next === doc) return;
     // batch 模式下不记录历史（用于编辑态实时更新）
     if (batch) {
-      set({ doc: next, layoutResult: relayout(next) });
+      set({ doc: next, layoutResult: relayout(next), dirty: true });
     } else {
-      set({ doc: next, layoutResult: relayout(next), history: record(history, doc) });
+      set({ doc: next, layoutResult: relayout(next), history: record(history, doc), dirty: true });
     }
     scheduleSave(next);
   },
@@ -251,7 +263,7 @@ export const useMindMapStore = create<MindMapStore>((set, get) => ({
       set({ batch: null });
       return;
     }
-    set({ batch: null, history: record(history, batch) });
+    set({ batch: null, history: record(history, batch), dirty: true });
     scheduleSave(doc);
   },
 
@@ -270,6 +282,7 @@ export const useMindMapStore = create<MindMapStore>((set, get) => ({
       doc: r.doc,
       history: r.state,
       layoutResult: relayout(r.doc),
+      dirty: true,
       selectedId: sel,
       selectedIds: ids.length ? ids : sel ? [sel] : [],
       selectedRelationId: relSel,
@@ -294,6 +307,7 @@ export const useMindMapStore = create<MindMapStore>((set, get) => ({
       doc: r.doc,
       history: r.state,
       layoutResult: relayout(r.doc),
+      dirty: true,
       selectedId: sel,
       selectedIds: ids.length ? ids : sel ? [sel] : [],
       selectedRelationId: relSel,

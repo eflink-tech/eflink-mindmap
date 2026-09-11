@@ -8,6 +8,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useMindMapStore } from '../../store/mindMapStore';
 import { useUiStore, type InsertEditorKind } from '../../store/uiStore';
+import { SaveStatusIndicator } from '../statusbar/SaveStatusIndicator';
 
 const TITLE_MAP: Record<InsertEditorKind, string> = { note: '笔记', labels: '标签', link: '链接', image: '图片' };
 
@@ -163,7 +164,7 @@ export function NodeInsertOverlay() {
           <span className="text-xs text-slate-400">
             {TITLE_MAP[kind]}
             {kind === 'note'
-              ? ' · 自动保存'
+              ? <SaveStatusIndicator prefix=" · " />
               : kind === 'labels'
                 ? labelEditIndex != null
                   ? ' · Enter 替换'

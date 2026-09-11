@@ -661,6 +661,41 @@ describe('renameTitle', () => {
   });
 });
 
+describe('dirty 状态（手动保存契约）', () => {
+  it('act/undo 置 dirty，markSaved 后清除', () => {
+    useMindMapStore.getState().open(createDocument());
+    expect(useMindMapStore.getState().dirty).toBe(false);
+    const s = useMindMapStore.getState();
+    s.act((doc) => ({ ...doc, title: '改名' }));
+    expect(useMindMapStore.getState().dirty).toBe(true);
+    // 保存期间无新编辑（doc 引用一致）→ 清除 dirty
+    useMindMapStore.getState().markSaved(useMindMapStore.getState().doc!);
+    expect(useMindMapStore.getState().dirty).toBe(false);
+  });
+
+  it('保存期间又有编辑（doc 引用变化）时 markSaved 保持 dirty', () => {
+    useMindMapStore.getState().open(createDocument());
+    const s = useMindMapStore.getState();
+    s.act((doc) => ({ ...doc, title: '第一次' }));
+    const staleDoc = useMindMapStore.getState().doc;
+    s.act((doc) => ({ ...doc, title: '第二次' }));
+    useMindMapStore.getState().markSaved(staleDoc!);
+    expect(useMindMapStore.getState().dirty).toBe(true);
+  });
+
+  it('打开文档重置 dirty，视口变化不影响 dirty', () => {
+    useMindMapStore.getState().open(createDocument());
+    // 视口变化只写草稿，不算导图结构/节点变化
+    useMindMapStore.getState().setViewport({ scale: 1, x: 0, y: 0 });
+    expect(useMindMapStore.getState().dirty).toBe(false);
+    const s = useMindMapStore.getState();
+    s.act((doc) => ({ ...doc, title: '改名' }));
+    expect(useMindMapStore.getState().dirty).toBe(true);
+    useMindMapStore.getState().open(createDocument());
+    expect(useMindMapStore.getState().dirty).toBe(false);
+  });
+});
+
 describe('连线态跨场景清理', () => {
   it('open 新文档会退出连线模式', () => {
     useUiStore.getState().startLinking();

@@ -1,4 +1,5 @@
 import Dexie from 'dexie';
+import { readDraft } from './autosave';
 import type { DocumentMeta, MindMapDocument } from '../../types/mindmap';
 
 /** Dexie package `exports` omit types; cast keeps IndexedDB API typed under bundler resolution. */
@@ -58,7 +59,17 @@ export async function saveDocument(doc: MindMapDocument): Promise<void> {
 }
 
 export async function loadDocument(id: string): Promise<MindMapDocument | undefined> {
-  if (backendOverride) return backendOverride.get(id);
+  if (backendOverride) {
+    try {
+      // 云端加载成功：直接返回云端内容，不读本地草稿
+      return await backendOverride.get(id);
+    } catch (error) {
+      // 云端加载失败（网络异常/后端错误）：回退本地草稿兜底；草稿也没有则继续抛错
+      const draft = readDraft(id);
+      if (draft) return draft;
+      throw error;
+    }
+  }
   return db.documents.get(id);
 }
 

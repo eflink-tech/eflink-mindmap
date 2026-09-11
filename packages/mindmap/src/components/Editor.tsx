@@ -1,7 +1,8 @@
 // src/components/Editor.tsx
 import { useEffect } from 'react';
 import type { NavDir } from '../core/editor/navigation';
-import { saveNowWithToast } from '../core/persistence/saveNow';
+import { draftKey } from '../core/persistence/autosave';
+import { saveNow, saveNowWithToast } from '../core/persistence/saveNow';
 import { useMindMapStore } from '../store/mindMapStore';
 import { useUiStore } from '../store/uiStore';
 import { Canvas } from './canvas/Canvas';
@@ -66,7 +67,7 @@ export function Editor() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const mod = isModKey(e);
-      // Ctrl/Cmd+S：拦截浏览器「另存为」，立即写入 IndexedDB 并提示（编辑框内也可用）
+      // ⌘S/Ctrl+S：拦截浏览器「另存为」，触发云端保存并提示「已保存」（编辑框内也可用）
       if (mod && e.key.toLowerCase() === 's') {
         blockBrowserPageZoom(e);
         void saveNowWithToast();
@@ -231,6 +232,25 @@ export function Editor() {
     return () => {
       window.removeEventListener('keyup', onKeyUp);
       window.removeEventListener('blur', onBlur);
+    };
+  }, []);
+
+  // 宿主桥接：外部可查询脏状态、触发云端保存、丢弃本地草稿（编辑器卸载时移除）
+  useEffect(() => {
+    ;(window as unknown as Record<string, unknown>).__eflinkEditorBridge = {
+      isDirty: () => useMindMapStore.getState().dirty,
+      save: () => saveNow(),
+      discard: () => {
+        try {
+          const docId = useMindMapStore.getState().doc?.id;
+          if (docId) localStorage.removeItem(draftKey(docId));
+        } catch {
+          /* 存储不可用时忽略 */
+        }
+      },
+    };
+    return () => {
+      delete (window as unknown as Record<string, unknown>).__eflinkEditorBridge;
     };
   }, []);
 
