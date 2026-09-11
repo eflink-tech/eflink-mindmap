@@ -14,7 +14,6 @@ import {
   ListTree,
   Maximize2,
   Network,
-  Pencil,
   Save,
   Scissors,
   SquarePen,
@@ -87,11 +86,9 @@ function MenuItem({
 export function AppMenu({
   open,
   onClose,
-  onRequestRename,
 }: {
   open: boolean;
   onClose: () => void;
-  onRequestRename: () => void;
 }): ReactElement {
   const fileRef = useRef<HTMLInputElement>(null);
   const [flyout, setFlyout] = useState<Flyout>(null);
@@ -186,14 +183,6 @@ export function AppMenu({
               label="保存"
               shortcut={menuShortcutLabel('save')}
               onClick={() => runAndClose(() => void saveNowWithToast())}
-            />
-            <MenuItem
-              icon={Pencil}
-              label="重命名"
-              onClick={() => {
-                onRequestRename();
-                onClose();
-              }}
             />
             <MenuItem
               icon={Upload}

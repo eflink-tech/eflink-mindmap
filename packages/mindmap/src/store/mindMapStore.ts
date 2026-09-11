@@ -16,7 +16,6 @@ import { normalizeLayoutId } from '../core/layout/presets';
 // navigateTo：方向键导航纯函数（别名避免与 action 同名混淆）
 import { isChildDirection, navigate as navigateTo, type NavDir } from '../core/editor/navigation';
 import { scheduleSave } from '../core/persistence/autosave';
-import { renameDocument } from '../core/persistence/db';
 import { getTheme, resolveThemeId } from '../core/style/themes';
 import { updateCanvasOptions } from '../core/style/canvasOptions';
 import type {
@@ -110,7 +109,7 @@ interface MindMapStore {
   setMarkerSelected: (m: Marker) => void;
   /** 切换标记：以锚点节点状态为准应用到全部选中节点（已应用则整组移除） */
   toggleMarkerSelected: (m: Marker) => void;
-  /** 重命名文档标题：同步内存与 IndexedDB，不进入撤销历史 */
+  /** 重命名文档标题：先走 documentsStore.renameDoc 持久化，成功后同步内存 doc.title；失败提示且不改本地。不进入撤销历史、不影响 dirty */
   renameTitle: (title: string) => Promise<void>;
 }
 
@@ -638,13 +637,20 @@ export const useMindMapStore = create<MindMapStore>((set, get) => ({
     );
   },
 
+  // 重命名文档标题：先经 documentsStore.renameDoc 持久化到云端，成功后再同步内存 doc.title；
+  // 失败弹 toast 且不改本地。空值/同名直接忽略；不产生历史、不置 dirty（改名不影响内容保存状态）
   renameTitle: async (title) => {
     const { doc } = get();
     if (!doc) return;
-    const next = title.trim() || doc.title;
-    if (next === doc.title) return;
+    const next = title.trim();
+    if (!next || next === doc.title) return;
+    try {
+      await useDocumentsStore.getState().renameDoc(doc.id, next);
+    } catch (err) {
+      console.error('重命名失败', err);
+      useUiStore.getState().showToast('重命名失败，请重试');
+      return;
+    }
     set({ doc: { ...doc, title: next, updatedAt: Date.now() } });
-    await renameDocument(doc.id, next);
-    await useDocumentsStore.getState().refresh();
   },
 }));

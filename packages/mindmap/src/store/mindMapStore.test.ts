@@ -21,6 +21,8 @@ vi.mock('./documentsStore', () => ({
   useDocumentsStore: {
     getState: () => ({
       refresh: mockRefresh,
+      // renameTitle 现统一走 documentsStore.renameDoc（内部再做 renameDocument + refresh）
+      renameDoc: mockRenameDocument,
     }),
   },
 }));
@@ -641,13 +643,12 @@ describe('renameTitle', () => {
     mockRefresh.mockClear();
   });
 
-  it('更新内存 doc.title 并调用 renameDocument', async () => {
+  it('先经 documentsStore.renameDoc 持久化，成功后更新内存 doc.title', async () => {
     const doc = createDocument('旧标题');
     useMindMapStore.getState().open(doc);
     await useMindMapStore.getState().renameTitle('新标题');
-    expect(useMindMapStore.getState().doc?.title).toBe('新标题');
     expect(mockRenameDocument).toHaveBeenCalledWith(doc.id, '新标题');
-    expect(mockRefresh).toHaveBeenCalled();
+    expect(useMindMapStore.getState().doc?.title).toBe('新标题');
     expect(useMindMapStore.getState().canUndo()).toBe(false);
   });
 
@@ -657,7 +658,21 @@ describe('renameTitle', () => {
     await useMindMapStore.getState().renameTitle('   ');
     expect(useMindMapStore.getState().doc?.title).toBe('保留我');
     expect(mockRenameDocument).not.toHaveBeenCalled();
-    expect(mockRefresh).not.toHaveBeenCalled();
+  });
+
+  it('改名不影响 dirty', async () => {
+    useMindMapStore.getState().open(createDocument());
+    await useMindMapStore.getState().renameTitle('只改标题');
+    expect(useMindMapStore.getState().dirty).toBe(false);
+  });
+
+  it('持久化失败时不改本地 title 并 toast 提示', async () => {
+    mockRenameDocument.mockRejectedValueOnce(new Error('网络错误'));
+    const doc = createDocument('原标题');
+    useMindMapStore.getState().open(doc);
+    await useMindMapStore.getState().renameTitle('新标题');
+    expect(useMindMapStore.getState().doc?.title).toBe('原标题');
+    expect(useUiStore.getState().toast).toContain('失败');
   });
 });
 
