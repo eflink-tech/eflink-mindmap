@@ -181,6 +181,11 @@ describe('LAYOUT_PRESETS', () => {
     expect(resolveLayoutMode('fishbone-vertical')).toBe('logic');
   });
 
+  it('6M 因果分析使用箭头连线', () => {
+    expect(getPreset('fishbone-effect')?.defaults.connectorEnd).toBe('arrow');
+    expect(getPreset('fishbone-6m')?.defaults.connectorEnd).toBeUndefined();
+  });
+
   it('大纲逻辑使用无边框，环形布局使用直连', () => {
     expect(getPreset('logic-outline')?.defaults.borderStyle).toBe('none');
     expect(getPreset('org-radial')?.defaults.connectorType).toBe('straight');

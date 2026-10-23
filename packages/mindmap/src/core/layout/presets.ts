@@ -272,7 +272,10 @@ export const LAYOUT_PRESETS: LayoutPreset[] = [
   preset('fishbone-vertical', 'fishbone', '纵向·头下', 'fishbone-bt', { shape: 'rectangle' }),
   preset('fishbone-vertical-up', 'fishbone', '纵向·头上', 'fishbone-tb', { shape: 'rectangle' }),
   preset('fishbone-6m', 'fishbone', '6M 对称型', 'fishbone-6m', { shape: 'rectangle' }),
-  preset('fishbone-effect', 'fishbone', '6M 因果分析', 'fishbone-6m-effect', { shape: 'rectangle' }),
+  preset('fishbone-effect', 'fishbone', '6M 因果分析', 'fishbone-6m-effect', {
+    shape: 'rectangle',
+    connectorEnd: 'arrow',
+  }),
   preset('fishbone-comb', 'fishbone', '梳状整理型', 'fishbone-comb', { shape: 'rectangle' }),
   // matrix
   preset('matrix-2x2', 'matrix', '2×2 四象限', 'matrix-2x2', {

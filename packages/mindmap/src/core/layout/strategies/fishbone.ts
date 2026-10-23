@@ -16,6 +16,8 @@ interface FishboneAxis {
   symmetric: boolean;
   /** 梳状：大骨垂直于鱼脊，无斜角 */
   comb: boolean;
+  /** 因果分析：连线反向（原因→结果），大骨与鱼脊带箭头 */
+  effect?: boolean;
 }
 
 const AXES: Record<FishboneStructureId, FishboneAxis> = {
@@ -29,8 +31,16 @@ const AXES: Record<FishboneStructureId, FishboneAxis> = {
   'fishbone-tb': { ux: 0, uy: 1, px: 1, py: 0, symmetric: false, comb: false },
   // 6M：鱼头在右，前三根大骨在上、后三根在下
   'fishbone-6m': { ux: -1, uy: 0, px: 0, py: 1, symmetric: true, comb: false },
-  // 6M 因果分析：结构与 6M 对称型一致，预设侧重原因/结果标注
-  'fishbone-6m-effect': { ux: -1, uy: 0, px: 0, py: 1, symmetric: true, comb: false },
+  // 6M 因果分析：骨构同 6M，连线反向并加箭头（原因指向结果）
+  'fishbone-6m-effect': {
+    ux: -1,
+    uy: 0,
+    px: 0,
+    py: 1,
+    symmetric: true,
+    comb: false,
+    effect: true,
+  },
   // 梳状整理型：鱼头在右，大骨垂直鱼脊
   'fishbone-comb': { ux: -1, uy: 0, px: 0, py: 1, symmetric: false, comb: true },
 };
@@ -221,6 +231,39 @@ function polyline(points: Array<{ x: number; y: number }>): string {
     .join(' ');
 }
 
+/** M/L 折线反向：原因→结果布局需要箭头落在鱼脊/父骨一侧 */
+function reversePolyline(d: string): string {
+  const nums = d.match(/-?\d+(?:\.\d+)?/g);
+  if (!nums || nums.length < 4 || nums.length % 2 !== 0) return d;
+  const points: string[] = [];
+  for (let i = 0; i < nums.length; i += 2) {
+    points.push(`${nums[i]} ${nums[i + 1]}`);
+  }
+  return points
+    .reverse()
+    .map((p, i) => `${i === 0 ? 'M' : 'L'} ${p}`)
+    .join(' ');
+}
+
+/** 在 at 点画一个指向 at 的开口箭头（放在路径开头，避免干扰终点解析） */
+function arrowTick(
+  at: { x: number; y: number },
+  from: { x: number; y: number },
+): string {
+  const dx = at.x - from.x;
+  const dy = at.y - from.y;
+  const len = Math.hypot(dx, dy) || 1;
+  const ux = dx / len;
+  const uy = dy / len;
+  const back = 8;
+  const half = 4;
+  const bx = at.x - ux * back;
+  const by = at.y - uy * back;
+  const nx = -uy * half;
+  const ny = ux * half;
+  return `M ${bx + nx} ${by + ny} L ${at.x} ${at.y} L ${bx - nx} ${by - ny}`;
+}
+
 /** 从盒外一点看向盒中心，取射线与盒边的交点 */
 function boxEntry(box: Box, fromX: number, fromY: number): { x: number; y: number } {
   const dx = fromX - box.x;
@@ -276,11 +319,12 @@ function placeTailSubtree(
       y: axis.uy * childAlong + axis.py * childPerp,
     };
     placeTailSubtree(ctx, axis, kid, childCenter, color, cache);
+    const d = elbowPath(box, ctx.positions[kid], dir);
     ctx.connectors.push({
       id: `${id}->${kid}`,
       from: id,
       to: kid,
-      d: elbowPath(box, ctx.positions[kid], dir),
+      d: axis.effect ? reversePolyline(d) : d,
       color,
       dir,
     });
@@ -323,7 +367,9 @@ function placeBranch(
     id: `${doc.rootId}->${id}`,
     from: doc.rootId,
     to: id,
-    d: polyline([rootSpineStart, base, entry]),
+    d: axis.effect
+      ? `${arrowTick(base, entry)} ${polyline([entry, base, rootSpineStart])}`
+      : polyline([rootSpineStart, base, entry]),
     color,
     dir: dirOf(axis),
   });
@@ -350,7 +396,9 @@ function placeBranch(
       id: `${id}->${at.id}`,
       from: id,
       to: at.id,
-      d: polyline([attach, childEntry]),
+      d: axis.effect
+        ? polyline([childEntry, attach])
+        : polyline([attach, childEntry]),
       color,
       dir: dirOf(axis),
     });

@@ -399,6 +399,8 @@ interface FishboneThumbConfig {
   ribs: Array<{ base: [number, number]; tip: [number, number] }>;
   /** 中骨（平行鱼脊、指向鱼尾）的单位方向 */
   middle: [number, number];
+  /** 因果分析：主干/大骨/二级原因全部带箭头 */
+  arrowed?: boolean;
 }
 
 const FISHBONE_THUMBS: Record<FishboneStructure, FishboneThumbConfig> = {
@@ -467,6 +469,7 @@ const FISHBONE_THUMBS: Record<FishboneStructure, FishboneThumbConfig> = {
       { base: [20, 24], tip: [10, 39] },
     ],
     middle: [-1, 0],
+    arrowed: true,
   },
   'fishbone-comb': {
     head: { x: 58, y: 19, w: 12, h: 10 },
@@ -483,10 +486,40 @@ const FISHBONE_THUMBS: Record<FishboneStructure, FishboneThumbConfig> = {
 const FB_LABEL_W = 11;
 const FB_LABEL_H = 6;
 
+/** 缩略图小箭头：顶点在 (tipX,tipY)，从 (fromX,fromY) 方向射入 */
+function thumbArrow(
+  tipX: number,
+  tipY: number,
+  fromX: number,
+  fromY: number,
+  size = 4,
+): string {
+  const dx = tipX - fromX;
+  const dy = tipY - fromY;
+  const len = Math.hypot(dx, dy) || 1;
+  const ux = dx / len;
+  const uy = dy / len;
+  const bx = tipX - ux * size;
+  const by = tipY - uy * size;
+  const nx = -uy * size * 0.6;
+  const ny = ux * size * 0.6;
+  return `${bx + nx},${by + ny} ${tipX},${tipY} ${bx - nx},${by - ny}`;
+}
+
 function FishboneSchematic({ structure }: { structure: FishboneStructure }) {
   const cfg = FISHBONE_THUMBS[structure];
+  const arrowed = cfg.arrowed === true;
   const [sx1, sy1, sx2, sy2] = cfg.spine;
   const [mx, my] = cfg.middle;
+  const headX = sx1 - sx2;
+  const headY = sy1 - sy2;
+  const headLen = Math.hypot(headX, headY) || 1;
+  const hux = headX / headLen;
+  const huy = headY / headLen;
+  const hbx = sx1 - hux * 7;
+  const hby = sy1 - huy * 7;
+  const hnx = -huy * 4.5;
+  const hny = hux * 4.5;
   return (
     <>
       <line
@@ -495,9 +528,15 @@ function FishboneSchematic({ structure }: { structure: FishboneStructure }) {
         x2={sx2}
         y2={sy2}
         stroke={LINE}
-        strokeWidth={1.4}
+        strokeWidth={arrowed ? 2.2 : 1.4}
         strokeLinecap="round"
       />
+      {arrowed && (
+        <polygon
+          points={`${sx1},${sy1} ${hbx + hnx},${hby + hny} ${hbx - hnx},${hby - hny}`}
+          fill={LINE}
+        />
+      )}
       {cfg.ribs.map((rib, i) => {
         const [bx, by] = rib.base;
         const [tx, ty] = rib.tip;
@@ -509,12 +548,46 @@ function FishboneSchematic({ structure }: { structure: FishboneStructure }) {
               x2={tx}
               y2={ty}
               stroke={LINE}
-              strokeWidth={1.1}
+              strokeWidth={arrowed ? 1.4 : 1.1}
               strokeLinecap="round"
             />
+            {arrowed && (
+              <polyline
+                points={thumbArrow(bx, by, tx, ty, 5)}
+                fill="none"
+                stroke={LINE}
+                strokeWidth={1}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            )}
             {[0.34, 0.68].map((t) => {
               const x = bx + (tx - bx) * t;
               const y = by + (ty - by) * t;
+              if (arrowed) {
+                const tail = Math.max(2, x - 16);
+                return (
+                  <g key={`m-${t}`}>
+                    <line
+                      x1={tail}
+                      y1={y}
+                      x2={x - 2}
+                      y2={y}
+                      stroke={LINE}
+                      strokeWidth={1}
+                      strokeLinecap="round"
+                    />
+                    <polyline
+                      points={thumbArrow(x, y, tail, y, 3.5)}
+                      fill="none"
+                      stroke={LINE}
+                      strokeWidth={1}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </g>
+                );
+              }
               return (
                 <line
                   key={`m-${t}`}

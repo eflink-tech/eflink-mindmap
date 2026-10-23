@@ -221,11 +221,22 @@ describe('layoutFishbone 6M 对称型与梳状', () => {
     expect(positions[c].x).toBe(positions[f].x);
   });
 
-  it('6M 因果分析：与 6M 对称结构一致，支持二级/三级原因', () => {
+  it('6M 因果分析：骨构同 6M，但连线反向并带箭头', () => {
     const doc = sixBranchDoc();
     const base = run(doc, 'fishbone-6m');
     const effect = run(doc, 'fishbone-6m-effect');
     expect(effect.positions).toEqual(base.positions);
+
+    const baseRoot = base.connectors.find((c) => c.from === doc.rootId)!;
+    const effectRoot = effect.connectors.find((c) => c.from === doc.rootId)!;
+    // 反向：终点落在鱼头（结果）一侧，而不是骨端标签
+    expect(effectRoot.d.match(/-?\d+(?:\.\d+)?/g)!.slice(-2).map(Number)).toEqual(
+      baseRoot.d.match(/-?\d+(?:\.\d+)?/g)!.slice(0, 2).map(Number),
+    );
+    // 大骨根部额外画一个箭头子路径
+    expect(effectRoot.d.match(/M /g)!.length).toBeGreaterThan(
+      baseRoot.d.match(/M /g)!.length,
+    );
 
     const withCauses = threeLevelDoc();
     const { positions, connectors } = run(withCauses, 'fishbone-6m-effect');
