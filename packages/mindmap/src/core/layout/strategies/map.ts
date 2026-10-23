@@ -1,6 +1,9 @@
+import type { LayoutStructureId } from '../../../types/mindmap';
 import { getCanvasOptions } from '../../style/canvasOptions';
+import { layoutRadial } from './radial';
 import {
   placeRootSide,
+  placeRootSideV,
   splitRootSides,
   visibleChildren,
   type LayoutCtx,
@@ -23,4 +26,42 @@ export function layoutMapRight(ctx: LayoutCtx): void {
   const { doc, theme } = ctx;
   const kids = visibleChildren(ctx, doc.rootId);
   placeRootSide(ctx, doc, theme, ctx.sizes[doc.rootId], kids, 1);
+}
+
+function layoutMapSide(ctx: LayoutCtx, dir: 1 | -1): void {
+  const { doc, theme } = ctx;
+  const kids = visibleChildren(ctx, doc.rootId);
+  placeRootSide(ctx, doc, theme, ctx.sizes[doc.rootId], kids, dir);
+}
+
+function layoutMapVertical(ctx: LayoutCtx, dir: 1 | -1): void {
+  const { doc, theme } = ctx;
+  const kids = visibleChildren(ctx, doc.rootId);
+  placeRootSideV(ctx, doc, theme, ctx.sizes[doc.rootId], kids, dir);
+}
+
+/** 思维导图：双向/左右单向/上下发散/放射 */
+export function layoutMap(
+  ctx: LayoutCtx,
+  structure: LayoutStructureId,
+): void {
+  switch (structure) {
+    case 'map-right':
+      layoutMapRight(ctx);
+      return;
+    case 'map-left':
+      layoutMapSide(ctx, -1);
+      return;
+    case 'map-down':
+      layoutMapVertical(ctx, 1);
+      return;
+    case 'map-up':
+      layoutMapVertical(ctx, -1);
+      return;
+    case 'map-radial':
+      layoutRadial(ctx);
+      return;
+    default:
+      layoutMapBalanced(ctx);
+  }
 }

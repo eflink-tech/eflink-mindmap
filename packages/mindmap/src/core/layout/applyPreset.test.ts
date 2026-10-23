@@ -15,9 +15,9 @@ describe('applyLayoutPreset', () => {
         [root]: { ...doc.nodes[root], style: { shape: 'rectangle' } },
       },
     };
-    const next = applyLayoutPreset(doc, 'map-balanced-bubble');
-    expect(next.layout).toBe('map-balanced-bubble');
-    expect(next.layoutDefaults?.shape).toBe('ellipse');
+    const next = applyLayoutPreset(doc, 'map-right-curve');
+    expect(next.layout).toBe('map-right-curve');
+    expect(next.layoutDefaults?.shape).toBe('rounded');
     expect(next.nodes[root].style?.shape).toBe('rectangle');
   });
 
@@ -30,10 +30,10 @@ describe('applyLayoutPreset', () => {
 
 describe('resolveNodeStyle + layoutDefaults', () => {
   it('无节点 shape 时使用 layoutDefaults.shape', () => {
-    const doc = applyLayoutPreset(createDocument(), 'map-balanced-bubble');
+    const doc = applyLayoutPreset(createDocument(), 'map-radial');
     const theme = getTheme(doc);
     const s = resolveNodeStyle(doc, theme, doc.rootId);
-    expect(s.shape).toBe('ellipse');
+    expect(s.shape).toBe('rounded');
   });
 
   it('新布局预设透出各自 defaults', () => {
@@ -41,9 +41,12 @@ describe('resolveNodeStyle + layoutDefaults', () => {
     expect(resolveNodeStyle(outline, getTheme(outline), outline.rootId).borderStyle).toBe('none');
     const radial = applyLayoutPreset(createDocument(), 'org-radial');
     expect(radial.layoutDefaults?.connectorType).toBe('straight');
-    const hex = applyLayoutPreset(createDocument(), 'brace-hex');
-    expect(resolveNodeStyle(hex, getTheme(hex), hex.rootId).shape).toBe('hexagon');
-    const pill = applyLayoutPreset(createDocument(), 'brace-pill');
-    expect(resolveNodeStyle(pill, getTheme(pill), pill.rootId).shape).toBe('pill');
+    const brace = applyLayoutPreset(createDocument(), 'brace-right');
+    expect(brace.layoutDefaults?.connectorType).toBe('brace');
+    const braceOutline = applyLayoutPreset(createDocument(), 'brace-outline');
+    expect(
+      resolveNodeStyle(braceOutline, getTheme(braceOutline), braceOutline.rootId)
+        .borderStyle,
+    ).toBe('none');
   });
 });

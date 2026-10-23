@@ -2,6 +2,7 @@ import type { LayoutStructureId } from '../../../types/mindmap';
 import { layoutFlow } from './flow';
 import { layoutRadial } from './radial';
 import type { LayoutCtx } from './shared';
+import { layoutWbs } from './wbs';
 
 /** 树形图：四向/双向层级 + 环形 */
 export function layoutTree(
@@ -23,6 +24,9 @@ export function layoutTree(
       return;
     case 'tree-radial':
       layoutRadial(ctx);
+      return;
+    case 'tree-wbs':
+      layoutWbs(ctx);
       return;
     default:
       layoutFlow(ctx, 'right');

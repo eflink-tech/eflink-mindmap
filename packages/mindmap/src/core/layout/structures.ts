@@ -1,9 +1,9 @@
 import type { LayoutStructureId, MindMapDocument } from '../../types/mindmap';
 import { getPreset } from './presets';
-import { layoutBraceRight } from './strategies/brace';
+import { layoutBrace } from './strategies/brace';
 import { layoutFishbone } from './strategies/fishbone';
 import { layoutLogic } from './strategies/logic';
-import { layoutMapBalanced, layoutMapRight } from './strategies/map';
+import { layoutMap } from './strategies/map';
 import { layoutMatrix } from './strategies/matrix';
 import { layoutOrg } from './strategies/org';
 import { layoutTimeline } from './strategies/timeline';
@@ -19,7 +19,12 @@ export function applyStructure(ctx: LayoutCtx): void {
   const structure = getStructure(ctx.doc);
   switch (structure) {
     case 'map-right':
-      layoutMapRight(ctx);
+    case 'map-left':
+    case 'map-down':
+    case 'map-up':
+    case 'map-radial':
+    case 'map-balanced':
+      layoutMap(ctx, structure);
       return;
     case 'logic-right':
     case 'logic-left':
@@ -35,6 +40,7 @@ export function applyStructure(ctx: LayoutCtx): void {
     case 'org-left':
     case 'org-balanced':
     case 'org-radial':
+    case 'org-classic':
       layoutOrg(ctx, structure);
       return;
     case 'tree-right':
@@ -43,10 +49,16 @@ export function applyStructure(ctx: LayoutCtx): void {
     case 'tree-up':
     case 'tree-balanced':
     case 'tree-radial':
+    case 'tree-wbs':
       layoutTree(ctx, structure);
       return;
     case 'brace-right':
-      layoutBraceRight(ctx);
+    case 'brace-left':
+    case 'brace-balanced':
+    case 'brace-down':
+    case 'brace-up':
+    case 'brace-outline':
+      layoutBrace(ctx, structure);
       return;
     case 'timeline-h':
       layoutTimeline(ctx, 'h-alt');
@@ -71,6 +83,7 @@ export function applyStructure(ctx: LayoutCtx): void {
     case 'fishbone-bt':
     case 'fishbone-tb':
     case 'fishbone-6m':
+    case 'fishbone-6m-effect':
     case 'fishbone-comb':
       layoutFishbone(ctx, structure);
       return;
@@ -82,8 +95,7 @@ export function applyStructure(ctx: LayoutCtx): void {
     case 'matrix-1x3':
       layoutMatrix(ctx, structure);
       return;
-    case 'map-balanced':
     default:
-      layoutMapBalanced(ctx);
+      layoutMap(ctx, 'map-balanced');
   }
 }

@@ -131,6 +131,7 @@ describe('layoutFishbone 经典原因型（fishbone-rl）', () => {
       'fishbone-bt',
       'fishbone-tb',
       'fishbone-6m',
+      'fishbone-6m-effect',
       'fishbone-comb',
     ];
     const doc = threeLevelDoc();
@@ -220,6 +221,20 @@ describe('layoutFishbone 6M 对称型与梳状', () => {
     expect(positions[c].x).toBe(positions[f].x);
   });
 
+  it('6M 因果分析：与 6M 对称结构一致，支持二级/三级原因', () => {
+    const doc = sixBranchDoc();
+    const base = run(doc, 'fishbone-6m');
+    const effect = run(doc, 'fishbone-6m-effect');
+    expect(effect.positions).toEqual(base.positions);
+
+    const withCauses = threeLevelDoc();
+    const { positions, connectors } = run(withCauses, 'fishbone-6m-effect');
+    const a = byText(withCauses, 'A');
+    const [a1] = withCauses.nodes[a].children;
+    expect(positions[a1].y).toBeGreaterThan(positions[a].y);
+    expect(connectors.filter((c) => c.from === a)).toHaveLength(2);
+  });
+
   it('梳状：大骨垂直鱼脊，标签落在鱼脊两侧', () => {
     const doc = threeLevelDoc();
     const { positions } = run(doc, 'fishbone-comb');
@@ -235,12 +250,21 @@ describe('layoutFishbone 6M 对称型与梳状', () => {
 });
 
 describe('fishbone 预设与分发', () => {
-  it('六个鱼骨预设均为 ready 且结构互不相同', () => {
+  it('七个鱼骨预设均为 ready 且结构互不相同', () => {
     const items = LAYOUT_PRESETS.filter((p) => p.category === 'fishbone');
-    expect(items.length).toBe(6);
+    expect(items.length).toBe(7);
     expect(items.every((p) => p.ready)).toBe(true);
+    expect(new Set(items.map((p) => p.structure)).size).toBe(7);
     expect(new Set(items.map((p) => p.structure))).toEqual(
-      new Set(['fishbone-rl', 'fishbone-lr', 'fishbone-bt', 'fishbone-tb', 'fishbone-6m', 'fishbone-comb']),
+      new Set([
+        'fishbone-rl',
+        'fishbone-lr',
+        'fishbone-bt',
+        'fishbone-tb',
+        'fishbone-6m',
+        'fishbone-6m-effect',
+        'fishbone-comb',
+      ]),
     );
   });
 

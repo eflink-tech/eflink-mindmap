@@ -29,6 +29,8 @@ const AXES: Record<FishboneStructureId, FishboneAxis> = {
   'fishbone-tb': { ux: 0, uy: 1, px: 1, py: 0, symmetric: false, comb: false },
   // 6M：鱼头在右，前三根大骨在上、后三根在下
   'fishbone-6m': { ux: -1, uy: 0, px: 0, py: 1, symmetric: true, comb: false },
+  // 6M 因果分析：结构与 6M 对称型一致，预设侧重原因/结果标注
+  'fishbone-6m-effect': { ux: -1, uy: 0, px: 0, py: 1, symmetric: true, comb: false },
   // 梳状整理型：鱼头在右，大骨垂直鱼脊
   'fishbone-comb': { ux: -1, uy: 0, px: 0, py: 1, symmetric: false, comb: true },
 };

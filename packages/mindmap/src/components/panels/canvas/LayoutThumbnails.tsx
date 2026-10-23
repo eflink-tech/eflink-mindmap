@@ -52,6 +52,12 @@ function connectorD(
     return `M${x1} ${y1} L${x2} ${y2}`;
   }
   if (type === 'brace') {
+    if (Math.abs(y2 - y1) > Math.abs(x2 - x1)) {
+      const gap = Math.abs(y2 - y1);
+      const arm = Math.min(8, gap * 0.35);
+      const spineY = y2 - Math.sign(y2 - y1 || 1) * arm;
+      return `M${x1} ${y1} V${spineY} H${x2} V${y2}`;
+    }
     return `M${x1} ${y1} H${x2}`;
   }
   const cx = (x1 + x2) / 2;
@@ -110,9 +116,35 @@ function boxesFor(structure: LayoutStructureId): { root: NodeBox; children: Node
           { x: 42, y: 36, w: 14, h: 8 },
         ],
       };
+    case 'map-left':
+      return {
+        root: { x: 54, y: 18, w: 14, h: 12 },
+        children: [
+          { x: 16, y: 4, w: 14, h: 8 },
+          { x: 8, y: 20, w: 14, h: 8 },
+          { x: 16, y: 36, w: 14, h: 8 },
+        ],
+      };
+    case 'map-down':
+      return {
+        root: { x: 29, y: 2, w: 14, h: 10 },
+        children: [
+          { x: 4, y: 30, w: 18, h: 10 },
+          { x: 27, y: 30, w: 18, h: 10 },
+          { x: 50, y: 30, w: 18, h: 10 },
+        ],
+      };
+    case 'map-up':
+      return {
+        root: { x: 29, y: 36, w: 14, h: 10 },
+        children: [
+          { x: 4, y: 8, w: 18, h: 10 },
+          { x: 27, y: 8, w: 18, h: 10 },
+          { x: 50, y: 8, w: 18, h: 10 },
+        ],
+      };
     case 'logic-right':
     case 'org-right':
-    case 'tree-right':
       return {
         root: { x: 4, y: 18, w: 14, h: 12 },
         children: [
@@ -177,6 +209,7 @@ function boxesFor(structure: LayoutStructureId): { root: NodeBox; children: Node
           { x: 24, y: 40, w: 16, h: 6 },
         ],
       };
+    case 'map-radial':
     case 'org-radial':
     case 'tree-radial':
       return {
@@ -199,7 +232,55 @@ function boxesFor(structure: LayoutStructureId): { root: NodeBox; children: Node
           { x: 44, y: 36, w: 24, h: 8 },
         ],
       };
+    case 'brace-left':
+      return {
+        root: { x: 52, y: 18, w: 16, h: 12 },
+        children: [
+          { x: 4, y: 4, w: 24, h: 8 },
+          { x: 4, y: 20, w: 24, h: 8 },
+          { x: 4, y: 36, w: 24, h: 8 },
+        ],
+      };
+    case 'brace-balanced':
+      return {
+        root: { x: 29, y: 18, w: 14, h: 12 },
+        children: [
+          { x: 4, y: 6, w: 16, h: 8 },
+          { x: 4, y: 34, w: 16, h: 8 },
+          { x: 52, y: 6, w: 16, h: 8 },
+          { x: 52, y: 34, w: 16, h: 8 },
+        ],
+      };
+    case 'brace-down':
+      return {
+        root: { x: 29, y: 2, w: 14, h: 10 },
+        children: [
+          { x: 4, y: 32, w: 18, h: 10 },
+          { x: 27, y: 32, w: 18, h: 10 },
+          { x: 50, y: 32, w: 18, h: 10 },
+        ],
+      };
+    case 'brace-up':
+      return {
+        root: { x: 29, y: 36, w: 14, h: 10 },
+        children: [
+          { x: 4, y: 6, w: 18, h: 10 },
+          { x: 27, y: 6, w: 18, h: 10 },
+          { x: 50, y: 6, w: 18, h: 10 },
+        ],
+      };
+    case 'brace-outline':
+      return {
+        root: { x: 4, y: 2, w: 20, h: 7 },
+        children: [
+          { x: 16, y: 13, w: 20, h: 6 },
+          { x: 24, y: 22, w: 18, h: 6 },
+          { x: 16, y: 31, w: 20, h: 6 },
+          { x: 24, y: 40, w: 16, h: 6 },
+        ],
+      };
     case 'org-down':
+    case 'org-classic':
       return {
         root: { x: 27, y: 4, w: 18, h: 10 },
         children: [
@@ -374,6 +455,19 @@ const FISHBONE_THUMBS: Record<FishboneStructure, FishboneThumbConfig> = {
     ],
     middle: [-1, 0],
   },
+  'fishbone-6m-effect': {
+    head: { x: 58, y: 19, w: 12, h: 10 },
+    spine: [58, 24, 8, 24],
+    ribs: [
+      { base: [48, 24], tip: [38, 9] },
+      { base: [48, 24], tip: [38, 39] },
+      { base: [34, 24], tip: [24, 9] },
+      { base: [34, 24], tip: [24, 39] },
+      { base: [20, 24], tip: [10, 9] },
+      { base: [20, 24], tip: [10, 39] },
+    ],
+    middle: [-1, 0],
+  },
   'fishbone-comb': {
     head: { x: 58, y: 19, w: 12, h: 10 },
     spine: [58, 24, 8, 24],
@@ -461,6 +555,94 @@ function FishboneSchematic({ structure }: { structure: FishboneStructure }) {
   );
 }
 
+const WBS_ROOT: NodeBox = { x: 29, y: 2, w: 14, h: 6 };
+const WBS_COLUMNS: Array<{ left: number; items: NodeBox[] }> = [
+  {
+    left: 6,
+    items: [
+      { x: 6, y: 14, w: 22, h: 5 },
+      { x: 12, y: 22, w: 18, h: 5 },
+      { x: 12, y: 30, w: 18, h: 5 },
+    ],
+  },
+  {
+    left: 44,
+    items: [
+      { x: 44, y: 14, w: 22, h: 5 },
+      { x: 50, y: 22, w: 18, h: 5 },
+      { x: 50, y: 30, w: 18, h: 5 },
+    ],
+  },
+];
+
+/** WBS 缩略图：根下按列分组，列内逐级缩进堆叠 */
+function WbsSchematic() {
+  const rootCx = WBS_ROOT.x + WBS_ROOT.w / 2;
+  const rootBottom = WBS_ROOT.y + WBS_ROOT.h;
+  const busY = rootBottom + 3;
+  return (
+    <>
+      {WBS_COLUMNS.map((col, ci) => {
+        const first = col.items[0];
+        const cx = first.x + first.w / 2;
+        const spineX = col.left + 4;
+        const ys = col.items.map((it) => it.y + it.h / 2);
+        return (
+          <g key={`wbs-col-${ci}`}>
+            <path
+              d={`M${rootCx} ${rootBottom} V${busY} H${cx} V${first.y}`}
+              fill="none"
+              stroke={LINE}
+              strokeWidth={1.1}
+              strokeLinecap="round"
+            />
+            <line
+              x1={spineX}
+              y1={first.y + first.h}
+              x2={spineX}
+              y2={Math.max(...ys)}
+              stroke={LINE}
+              strokeWidth={1.1}
+            />
+            {col.items.map((it, ii) => (
+              <line
+                key={`wbs-arm-${ii}`}
+                x1={spineX}
+                y1={it.y + it.h / 2}
+                x2={it.x}
+                y2={it.y + it.h / 2}
+                stroke={LINE}
+                strokeWidth={1}
+              />
+            ))}
+          </g>
+        );
+      })}
+      <g fill={FILL} stroke={STROKE} strokeWidth={1}>
+        <rect
+          x={WBS_ROOT.x}
+          y={WBS_ROOT.y}
+          width={WBS_ROOT.w}
+          height={WBS_ROOT.h}
+          rx={2}
+        />
+        {WBS_COLUMNS.flatMap((col, ci) =>
+          col.items.map((it, ii) => (
+            <rect
+              key={`wbs-${ci}-${ii}`}
+              x={it.x}
+              y={it.y}
+              width={it.w}
+              height={it.h}
+              rx={1.5}
+            />
+          )),
+        )}
+      </g>
+    </>
+  );
+}
+
 function extraDecor(root: NodeBox, defaults: LayoutDefaults): ReactNode {
   if (defaults.rootDecoration === 'heart') {
     const cx = root.x + root.w / 2;
@@ -495,25 +677,36 @@ type ThumbFlow =
 function thumbnailFlow(structure: LayoutStructureId): ThumbFlow {
   switch (structure) {
     case 'map-balanced':
+    case 'brace-balanced':
     case 'logic-balanced':
     case 'org-balanced':
     case 'tree-balanced':
       return 'balanced';
+    case 'map-left':
+    case 'brace-left':
     case 'logic-left':
     case 'org-left':
     case 'tree-left':
       return 'left';
+    case 'map-down':
+    case 'brace-down':
     case 'logic-down':
     case 'org-down':
+    case 'org-classic':
     case 'tree-down':
+    case 'tree-wbs':
       return 'down';
+    case 'map-up':
+    case 'brace-up':
     case 'logic-up':
     case 'org-up':
     case 'tree-up':
       return 'up';
+    case 'map-radial':
     case 'org-radial':
     case 'tree-radial':
       return 'radial';
+    case 'brace-outline':
     case 'logic-outline':
     case 'timeline-h':
     case 'timeline-h-top':
@@ -541,6 +734,59 @@ function isHTimeline(structure: LayoutStructureId): boolean {
   );
 }
 
+/** 横向括号的竖脊：每侧一条，落在子节点与父节点之间 */
+function braceSpines(
+  structure: LayoutStructureId,
+  root: NodeBox,
+  children: NodeBox[],
+): ReactElement[] {
+  if (
+    structure !== 'brace-right' &&
+    structure !== 'brace-left' &&
+    structure !== 'brace-balanced'
+  ) {
+    return [];
+  }
+  const rootCx = root.x + root.w / 2;
+  const groups: Array<{ side: 'left' | 'right'; boxes: NodeBox[] }> = [];
+  if (structure === 'brace-right') groups.push({ side: 'right', boxes: children });
+  else if (structure === 'brace-left') groups.push({ side: 'left', boxes: children });
+  else {
+    groups.push({
+      side: 'left',
+      boxes: children.filter((c) => c.x + c.w / 2 < rootCx),
+    });
+    groups.push({
+      side: 'right',
+      boxes: children.filter((c) => c.x + c.w / 2 > rootCx),
+    });
+  }
+  return groups
+    .filter((g) => g.boxes.length > 0)
+    .map((g) => {
+      const near =
+        g.side === 'right'
+          ? Math.min(...g.boxes.map((b) => b.x))
+          : Math.max(...g.boxes.map((b) => b.x + b.w));
+      const rootEdge = g.side === 'right' ? root.x + root.w : root.x;
+      const arm = Math.min(12, Math.max(4, Math.abs(near - rootEdge) * 0.35));
+      const x = g.side === 'right' ? near - arm : near + arm;
+      const ys = g.boxes.map((b) => b.y + b.h / 2);
+      return (
+        <line
+          key={`spine-${g.side}`}
+          x1={x}
+          y1={Math.min(...ys)}
+          x2={x}
+          y2={Math.max(...ys)}
+          stroke={LINE}
+          strokeWidth={1.6}
+          strokeLinecap="round"
+        />
+      );
+    });
+}
+
 function isVTimeline(structure: LayoutStructureId): boolean {
   return (
     structure === 'timeline-v' ||
@@ -558,6 +804,9 @@ function LayoutSchematic({
 }) {
   if (structure.startsWith('fishbone-')) {
     return <FishboneSchematic structure={structure as FishboneStructure} />;
+  }
+  if (structure === 'tree-wbs') {
+    return <WbsSchematic />;
   }
   const { root, children } = boxesFor(structure);
   const shape = defaults.shape;
@@ -589,27 +838,24 @@ function LayoutSchematic({
     let fromY = rootCy;
     let toX = c.x;
     let toY = cy;
-    let dir: ConnectorLineType | undefined = type;
+    const dir: ConnectorLineType | undefined = type;
     if (flow === 'left' || (flow === 'balanced' && c.x < root.x)) {
       fromX = root.x + root.w;
       toX = c.x + c.w;
       if (flow === 'left') fromX = root.x;
     }
     if (flow === 'down') {
-      dir = 'elbow';
       fromX = rootCx;
       fromY = root.y + root.h;
       toX = c.x + c.w / 2;
       toY = c.y;
     } else if (flow === 'up') {
-      dir = 'elbow';
       fromX = rootCx;
       fromY = root.y;
       toX = c.x + c.w / 2;
       toY = c.y + c.h;
     }
     if (flow === 'balanced') {
-      dir = 'elbow';
       if (c.x < root.x) {
         fromX = root.x;
         toX = c.x + c.w;
@@ -662,15 +908,7 @@ function LayoutSchematic({
             strokeWidth={1.1}
           />
         ))}
-      {structure === 'brace-right' && (
-        <path
-          d="M28 8 V40"
-          fill="none"
-          stroke={LINE}
-          strokeWidth={1.6}
-          strokeLinecap="round"
-        />
-      )}
+      {braceSpines(structure, root, children)}
       {!isHTimeline(structure) &&
         !isVTimeline(structure) &&
         children.map((c, i) => (

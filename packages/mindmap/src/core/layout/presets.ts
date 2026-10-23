@@ -41,6 +41,20 @@ const LEGACY_LAYOUT_MAP: Record<string, LayoutPresetId> = {
   mindmap: 'map-balanced-curve',
   logic: 'logic-right',
   tree: 'org-down',
+  // 旧思维导图/括号图换成结构项
+  'map-balanced-elbow': 'map-balanced-curve',
+  'map-balanced-bubble': 'map-balanced-curve',
+  'map-right-elbow': 'map-right-curve',
+  'map-right-bubble': 'map-right-curve',
+  'map-org-style': 'org-down',
+  'map-brace-entry': 'brace-right',
+  'map-radial-placeholder': 'map-radial',
+  'brace-solid': 'brace-right',
+  'brace-line': 'brace-right',
+  'brace-dashed': 'brace-right',
+  'brace-pill': 'brace-right',
+  'brace-hex': 'brace-right',
+  'brace-bubble': 'brace-right',
   // 旧逻辑图/组织图/树形图/时间轴/矩阵预设：同一结构的换肤项合并到主结构
   'logic-right-curve': 'logic-right',
   'logic-right-elbow': 'logic-right',
@@ -99,44 +113,29 @@ function preset(
 
 export const LAYOUT_PRESETS: LayoutPreset[] = [
   // mindmap
-  preset('map-balanced-curve', 'mindmap', '平衡曲线', 'map-balanced', {
+  preset('map-balanced-curve', 'mindmap', '双向平衡', 'map-balanced', {
     shape: 'rounded',
     connectorType: 'curve',
   }),
-  preset('map-balanced-elbow', 'mindmap', '平衡折线', 'map-balanced', {
-    shape: 'rounded',
-    connectorType: 'elbow',
-  }),
-  preset('map-balanced-bubble', 'mindmap', '平衡气泡', 'map-balanced', {
-    shape: 'ellipse',
-    connectorType: 'curve',
-  }),
-  preset('map-right-curve', 'mindmap', '右侧曲线', 'map-right', {
+  preset('map-right-curve', 'mindmap', '右侧单向', 'map-right', {
     shape: 'rounded',
     connectorType: 'curve',
   }),
-  preset('map-right-elbow', 'mindmap', '右侧折线', 'map-right', {
+  preset('map-left', 'mindmap', '左侧单向', 'map-left', {
     shape: 'rounded',
-    connectorType: 'elbow',
-  }),
-  preset('map-right-bubble', 'mindmap', '右侧气泡', 'map-right', {
-    shape: 'ellipse',
     connectorType: 'curve',
   }),
-  preset('map-org-style', 'mindmap', '组织风格', 'org-down', {
+  preset('map-down', 'mindmap', '向下发散', 'map-down', {
     shape: 'rounded',
-    connectorType: 'elbow',
-  }),
-  preset(
-    'map-brace-entry',
-    'mindmap',
-    '括号入口',
-    'brace-right',
-    { shape: 'rounded', connectorType: 'brace' },
-  ),
-  preset('map-radial-placeholder', 'mindmap', '径向占位', 'map-balanced', {
-    shape: 'ellipse',
     connectorType: 'curve',
+  }),
+  preset('map-up', 'mindmap', '向上发散', 'map-up', {
+    shape: 'rounded',
+    connectorType: 'curve',
+  }),
+  preset('map-radial', 'mindmap', '放射环状', 'map-radial', {
+    shape: 'rounded',
+    connectorType: 'straight',
   }),
   // logic
   preset('logic-right', 'logic', '向右逻辑', 'logic-right', {
@@ -165,48 +164,31 @@ export const LAYOUT_PRESETS: LayoutPreset[] = [
     connectorType: 'straight',
   }),
   // brace
-  preset(
-    'brace-solid',
-    'brace',
-    '实线括号',
-    'brace-right',
-    { shape: 'rounded', connectorType: 'brace' },
-  ),
-  preset(
-    'brace-line',
-    'brace',
-    '线条括号',
-    'brace-right',
-    { borderStyle: 'none', connectorType: 'brace' },
-  ),
-  preset(
-    'brace-dashed',
-    'brace',
-    '虚线括号',
-    'brace-right',
-    { borderStyle: 'dashed', connectorType: 'brace' },
-  ),
-  preset(
-    'brace-pill',
-    'brace',
-    '胶囊括号',
-    'brace-right',
-    { shape: 'pill', connectorType: 'brace' },
-  ),
-  preset(
-    'brace-hex',
-    'brace',
-    '六边形括号',
-    'brace-right',
-    { shape: 'hexagon', connectorType: 'brace' },
-  ),
-  preset(
-    'brace-bubble',
-    'brace',
-    '气泡括号',
-    'brace-right',
-    { shape: 'ellipse', connectorType: 'brace' },
-  ),
+  preset('brace-right', 'brace', '向右括号', 'brace-right', {
+    shape: 'rounded',
+    connectorType: 'brace',
+  }),
+  preset('brace-left', 'brace', '向左括号', 'brace-left', {
+    shape: 'rounded',
+    connectorType: 'brace',
+  }),
+  preset('brace-balanced', 'brace', '双向括号', 'brace-balanced', {
+    shape: 'rounded',
+    connectorType: 'brace',
+  }),
+  preset('brace-down', 'brace', '向下括号', 'brace-down', {
+    shape: 'rounded',
+    connectorType: 'brace',
+  }),
+  preset('brace-up', 'brace', '向上括号', 'brace-up', {
+    shape: 'rounded',
+    connectorType: 'brace',
+  }),
+  preset('brace-outline', 'brace', '缩进括号', 'brace-outline', {
+    shape: 'rounded',
+    borderStyle: 'none',
+    connectorType: 'straight',
+  }),
   // org
   preset('org-down', 'org', '向下组织', 'org-down', {
     shape: 'rounded',
@@ -231,6 +213,10 @@ export const LAYOUT_PRESETS: LayoutPreset[] = [
   preset('org-radial', 'org', '环形组织', 'org-radial', {
     shape: 'rounded',
     connectorType: 'straight',
+  }),
+  preset('org-classic', 'org', '圆角组织架构', 'org-classic', {
+    shape: 'rectangle',
+    connectorType: 'elbow',
   }),
   // tree
   preset('tree-right', 'tree', '向右树形', 'tree-right', {
@@ -257,6 +243,10 @@ export const LAYOUT_PRESETS: LayoutPreset[] = [
     shape: 'rounded',
     connectorType: 'curve',
   }),
+  preset('tree-wbs', 'tree', 'WBS 分解', 'tree-wbs', {
+    shape: 'rounded',
+    connectorType: 'elbow',
+  }),
   // timeline
   preset('timeline-h', 'timeline', '横向·上下交替', 'timeline-h', {
     shape: 'rounded',
@@ -282,6 +272,7 @@ export const LAYOUT_PRESETS: LayoutPreset[] = [
   preset('fishbone-vertical', 'fishbone', '纵向·头下', 'fishbone-bt', { shape: 'rectangle' }),
   preset('fishbone-vertical-up', 'fishbone', '纵向·头上', 'fishbone-tb', { shape: 'rectangle' }),
   preset('fishbone-6m', 'fishbone', '6M 对称型', 'fishbone-6m', { shape: 'rectangle' }),
+  preset('fishbone-effect', 'fishbone', '6M 因果分析', 'fishbone-6m-effect', { shape: 'rectangle' }),
   preset('fishbone-comb', 'fishbone', '梳状整理型', 'fishbone-comb', { shape: 'rectangle' }),
   // matrix
   preset('matrix-2x2', 'matrix', '2×2 四象限', 'matrix-2x2', {
@@ -329,6 +320,10 @@ export function resolveLayoutMode(layout: string): ResolvedLayoutMode {
   const structure = getPreset(layout)?.structure ?? 'map-balanced';
   switch (structure) {
     case 'map-balanced':
+    case 'map-left':
+    case 'map-down':
+    case 'map-up':
+    case 'map-radial':
       return 'map-balanced';
     case 'map-right':
       return 'map-right';
@@ -338,6 +333,7 @@ export function resolveLayoutMode(layout: string): ResolvedLayoutMode {
     case 'org-left':
     case 'org-balanced':
     case 'org-radial':
+    case 'org-classic':
       return 'org-down';
     default:
       return 'logic';

@@ -1,4 +1,4 @@
-// 本地真机验收：注入样例文档，逐类切换 6 套布局预设并截图。
+// 本地真机验收：注入样例文档，逐类切换布局预设并截图。
 // 用法：node scripts/verify-layouts.mjs [category...]
 // 输出：/tmp/mm-verify/<category>/<preset>.png + gallery.png
 import { mkdir, rm } from 'node:fs/promises';
@@ -14,10 +14,13 @@ const OUT = '/tmp/mm-verify';
 const BASE = 'http://localhost:5199';
 
 const GROUPS = {
+  mindmap: ['map-balanced-curve', 'map-right-curve', 'map-left', 'map-down', 'map-up', 'map-radial'],
+  brace: ['brace-right', 'brace-left', 'brace-balanced', 'brace-down', 'brace-up', 'brace-outline'],
   logic: ['logic-right', 'logic-left', 'logic-down', 'logic-up', 'logic-balanced', 'logic-outline'],
-  org: ['org-down', 'org-up', 'org-right', 'org-left', 'org-balanced', 'org-radial'],
-  tree: ['tree-right', 'tree-left', 'tree-down', 'tree-up', 'tree-balanced', 'tree-radial'],
+  org: ['org-down', 'org-up', 'org-right', 'org-left', 'org-balanced', 'org-radial', 'org-classic'],
+  tree: ['tree-right', 'tree-left', 'tree-down', 'tree-up', 'tree-balanced', 'tree-radial', 'tree-wbs'],
   timeline: ['timeline-h', 'timeline-h-top', 'timeline-h-bottom', 'timeline-v', 'timeline-v-left', 'timeline-v-right'],
+  fishbone: ['fishbone-classic', 'fishbone-reverse', 'fishbone-vertical', 'fishbone-vertical-up', 'fishbone-6m', 'fishbone-effect', 'fishbone-comb'],
   matrix: ['matrix-2x2', 'matrix-2x3', 'matrix-3x2', 'matrix-3x3', 'matrix-1x2', 'matrix-1x3'],
 };
 
