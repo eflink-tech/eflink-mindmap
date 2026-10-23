@@ -21,15 +21,15 @@ describe('LayoutGallery', () => {
     const onSelect = vi.fn();
     const user = userEvent.setup();
     render(<LayoutGallery selectedId="map-balanced-curve" onSelect={onSelect} />);
-    await user.click(screen.getByTestId('layout-preset-logic-right-curve'));
-    expect(onSelect).toHaveBeenCalledWith('logic-right-curve');
+    await user.click(screen.getByTestId('layout-preset-logic-right'));
+    expect(onSelect).toHaveBeenCalledWith('logic-right');
   });
 
   it('折叠分组后隐藏该组缩略图', async () => {
     const user = userEvent.setup();
     render(<LayoutGallery selectedId="map-balanced-curve" onSelect={() => {}} />);
     await user.click(screen.getByTestId('layout-category-logic'));
-    expect(screen.queryByTestId('layout-preset-logic-right-curve')).toBeNull();
+    expect(screen.queryByTestId('layout-preset-logic-right')).toBeNull();
     expect(screen.getByTestId('layout-preset-map-balanced-curve')).toBeTruthy();
   });
 });

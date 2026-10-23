@@ -36,13 +36,11 @@ describe('resolveNodeStyle + layoutDefaults', () => {
     expect(s.shape).toBe('ellipse');
   });
 
-  it('透出 layoutDefaults.handDrawn 与 rootDecoration', () => {
-    const heart = applyLayoutPreset(createDocument(), 'logic-heart-root');
-    expect(resolveNodeStyle(heart, getTheme(heart), heart.rootId).rootDecoration).toBe('heart');
-    const quote = applyLayoutPreset(createDocument(), 'logic-quote');
-    expect(resolveNodeStyle(quote, getTheme(quote), quote.rootId).rootDecoration).toBe('quote');
-    const hand = applyLayoutPreset(createDocument(), 'logic-hand-1');
-    expect(resolveNodeStyle(hand, getTheme(hand), hand.rootId).handDrawn).toBe(true);
+  it('新布局预设透出各自 defaults', () => {
+    const outline = applyLayoutPreset(createDocument(), 'logic-outline');
+    expect(resolveNodeStyle(outline, getTheme(outline), outline.rootId).borderStyle).toBe('none');
+    const radial = applyLayoutPreset(createDocument(), 'org-radial');
+    expect(radial.layoutDefaults?.connectorType).toBe('straight');
     const hex = applyLayoutPreset(createDocument(), 'brace-hex');
     expect(resolveNodeStyle(hex, getTheme(hex), hex.rootId).shape).toBe('hexagon');
     const pill = applyLayoutPreset(createDocument(), 'brace-pill');

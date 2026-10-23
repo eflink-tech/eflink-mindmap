@@ -319,7 +319,7 @@ describe('preservesLayoutConnectorD / resolveRenderedConnectorD', () => {
     expect(rebuilt).toBe(elbowPath(from, to, 'right'));
   });
 
-  it('timeline-h 深度≥3 向上子节点 elbow/deep 仍向上', () => {
+  it('timeline-h 保留悬挂干线 d：深度≥3 仍向上且绕开兄弟节点', () => {
     let doc = createDocument();
     doc = addChild(doc, doc.rootId, 'A');
     const a = Object.values(doc.nodes).find((n) => n.text === 'A')!.id;
@@ -335,18 +335,19 @@ describe('preservesLayoutConnectorD / resolveRenderedConnectorD', () => {
     const conn = connectors.find((c) => c.from === a1 && c.to === a1a)!;
     expect(toBox.y).toBeLessThan(fromBox.y);
     expect(conn.dir).toBe('up');
+    expect(preservesLayoutConnectorD(doc)).toBe(true);
     const style = resolveConnectorAppearance(doc, a1, a1a, theme);
     expect(style.deep).toBe(true);
     expect(style.type).toBe('elbow');
     const rebuilt = resolveRenderedConnectorD(doc, conn.d, fromBox, toBox, conn.dir, style);
+    expect(rebuilt).toBe(conn.d);
+    expect(rebuilt).not.toBe(roundedElbowPath(fromBox, toBox, 'up'));
     const nums = rebuilt.match(/-?\d+(?:\.\d+)?/g)!.map(Number);
     expect(nums[0]).toBeCloseTo(fromBox.x);
     expect(nums[1]).toBeCloseTo(fromBox.y - fromBox.height / 2);
-    expect(nums[nums.length - 2]).toBeCloseTo(toBox.x);
-    expect(nums[nums.length - 1]).toBeCloseTo(toBox.y + toBox.height / 2);
+    expect(nums[nums.length - 2]).toBeCloseTo(toBox.x + toBox.width / 2);
+    expect(nums[nums.length - 1]).toBeCloseTo(toBox.y);
     expect(nums[nums.length - 1]).toBeLessThan(nums[1]);
-    expect(rebuilt).toBe(roundedElbowPath(fromBox, toBox, 'up'));
-    expect(rebuilt).not.toBe(roundedElbowPath(fromBox, toBox, 'right'));
   });
 
   it('brace-right 非 fishbone：connectorType=brace 时重建与布局 bracePath 一致', () => {
@@ -420,7 +421,10 @@ describe('resolveRenderedConnectorD + handDrawn', () => {
   const to = { x: 100, y: 40, width: 40, height: 20 };
 
   it('layoutDefaults.handDrawn 时外观标记 handDrawn，渲染路径比平滑路径更碎', () => {
-    const doc = applyLayoutPreset(createDocument(), 'logic-hand-1');
+    const doc = {
+      ...createDocument(),
+      layoutDefaults: { ...createDocument().layoutDefaults, handDrawn: true },
+    };
     const theme = getTheme(doc);
     const style = resolveConnectorAppearance(doc, doc.rootId, 'x', theme);
     expect(style.handDrawn).toBe(true);

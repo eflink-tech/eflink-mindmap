@@ -58,6 +58,37 @@ function connectorD(
   return `M${x1} ${y1} C${cx} ${y1} ${cx} ${y2} ${x2} ${y2}`;
 }
 
+/** 矩阵缩略图：根标题置顶 + rows×cols 单元格 */
+function gridBoxes(
+  rows: number,
+  cols: number,
+  header: 'top' | 'left' = 'top',
+): { root: NodeBox; children: NodeBox[] } {
+  const left = header === 'left' ? 20 : 4;
+  const right = 68;
+  const top = header === 'left' ? 5 : 12;
+  const bottom = header === 'left' ? 49 : 46;
+  const gap = 2;
+  const cellW = (right - left - gap * (cols - 1)) / cols;
+  const cellH = (bottom - top - gap * (rows - 1)) / rows;
+  const children: NodeBox[] = [];
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      children.push({
+        x: left + c * (cellW + gap),
+        y: top + r * (cellH + gap),
+        w: cellW,
+        h: cellH,
+      });
+    }
+  }
+  const root: NodeBox =
+    header === 'left'
+      ? { x: 2, y: 22, w: 14, h: 8 }
+      : { x: 28, y: 2, w: 16, h: 7 };
+  return { root, children };
+}
+
 function boxesFor(structure: LayoutStructureId): { root: NodeBox; children: NodeBox[] } {
   switch (structure) {
     case 'map-balanced':
@@ -80,6 +111,8 @@ function boxesFor(structure: LayoutStructureId): { root: NodeBox; children: Node
         ],
       };
     case 'logic-right':
+    case 'org-right':
+    case 'tree-right':
       return {
         root: { x: 4, y: 18, w: 14, h: 12 },
         children: [
@@ -87,6 +120,74 @@ function boxesFor(structure: LayoutStructureId): { root: NodeBox; children: Node
           { x: 40, y: 16, w: 22, h: 8 },
           { x: 40, y: 28, w: 26, h: 8 },
           { x: 40, y: 40, w: 18, h: 8 },
+        ],
+      };
+    case 'logic-left':
+    case 'org-left':
+    case 'tree-left':
+      return {
+        root: { x: 54, y: 18, w: 14, h: 12 },
+        children: [
+          { x: 6, y: 4, w: 26, h: 8 },
+          { x: 10, y: 16, w: 22, h: 8 },
+          { x: 6, y: 28, w: 26, h: 8 },
+          { x: 14, y: 40, w: 18, h: 8 },
+        ],
+      };
+    case 'logic-down':
+    case 'tree-down':
+      return {
+        root: { x: 29, y: 2, w: 14, h: 10 },
+        children: [
+          { x: 4, y: 30, w: 18, h: 10 },
+          { x: 27, y: 30, w: 18, h: 10 },
+          { x: 50, y: 30, w: 18, h: 10 },
+        ],
+      };
+    case 'logic-up':
+    case 'org-up':
+    case 'tree-up':
+      return {
+        root: { x: 29, y: 36, w: 14, h: 10 },
+        children: [
+          { x: 4, y: 8, w: 18, h: 10 },
+          { x: 27, y: 8, w: 18, h: 10 },
+          { x: 50, y: 8, w: 18, h: 10 },
+        ],
+      };
+    case 'logic-balanced':
+    case 'org-balanced':
+    case 'tree-balanced':
+      return {
+        root: { x: 30, y: 19, w: 12, h: 10 },
+        children: [
+          { x: 4, y: 5, w: 14, h: 8 },
+          { x: 4, y: 27, w: 14, h: 8 },
+          { x: 54, y: 5, w: 14, h: 8 },
+          { x: 54, y: 27, w: 14, h: 8 },
+        ],
+      };
+    case 'logic-outline':
+      return {
+        root: { x: 4, y: 2, w: 20, h: 7 },
+        children: [
+          { x: 16, y: 13, w: 20, h: 6 },
+          { x: 24, y: 22, w: 18, h: 6 },
+          { x: 16, y: 31, w: 20, h: 6 },
+          { x: 24, y: 40, w: 16, h: 6 },
+        ],
+      };
+    case 'org-radial':
+    case 'tree-radial':
+      return {
+        root: { x: 29, y: 19, w: 14, h: 10 },
+        children: [
+          { x: 29, y: 2, w: 14, h: 7 },
+          { x: 54, y: 10, w: 14, h: 7 },
+          { x: 54, y: 31, w: 14, h: 7 },
+          { x: 29, y: 39, w: 14, h: 7 },
+          { x: 4, y: 31, w: 14, h: 7 },
+          { x: 4, y: 10, w: 14, h: 7 },
         ],
       };
     case 'brace-right':
@@ -119,20 +220,56 @@ function boxesFor(structure: LayoutStructureId): { root: NodeBox; children: Node
       };
     case 'timeline-h':
       return {
-        root: { x: 4, y: 18, w: 12, h: 12 },
+        root: { x: 2, y: 24, w: 12, h: 12 },
         children: [
-          { x: 24, y: 4, w: 12, h: 8 },
-          { x: 40, y: 36, w: 12, h: 8 },
-          { x: 56, y: 4, w: 12, h: 8 },
+          { x: 20, y: 4, w: 14, h: 8 },
+          { x: 38, y: 36, w: 14, h: 8 },
+          { x: 54, y: 4, w: 14, h: 8 },
+        ],
+      };
+    case 'timeline-h-top':
+      return {
+        root: { x: 2, y: 24, w: 12, h: 12 },
+        children: [
+          { x: 20, y: 4, w: 14, h: 8 },
+          { x: 38, y: 8, w: 14, h: 8 },
+          { x: 54, y: 4, w: 14, h: 8 },
+        ],
+      };
+    case 'timeline-h-bottom':
+      return {
+        root: { x: 2, y: 24, w: 12, h: 12 },
+        children: [
+          { x: 20, y: 36, w: 14, h: 8 },
+          { x: 38, y: 34, w: 14, h: 8 },
+          { x: 54, y: 36, w: 14, h: 8 },
         ],
       };
     case 'timeline-v':
       return {
         root: { x: 30, y: 2, w: 12, h: 10 },
         children: [
-          { x: 4, y: 16, w: 16, h: 8 },
-          { x: 52, y: 24, w: 16, h: 8 },
-          { x: 4, y: 36, w: 16, h: 8 },
+          { x: 4, y: 14, w: 22, h: 8 },
+          { x: 46, y: 24, w: 22, h: 8 },
+          { x: 4, y: 34, w: 22, h: 8 },
+        ],
+      };
+    case 'timeline-v-left':
+      return {
+        root: { x: 30, y: 2, w: 12, h: 10 },
+        children: [
+          { x: 4, y: 14, w: 22, h: 8 },
+          { x: 4, y: 24, w: 22, h: 8 },
+          { x: 4, y: 34, w: 22, h: 8 },
+        ],
+      };
+    case 'timeline-v-right':
+      return {
+        root: { x: 30, y: 2, w: 12, h: 10 },
+        children: [
+          { x: 46, y: 14, w: 22, h: 8 },
+          { x: 46, y: 24, w: 22, h: 8 },
+          { x: 46, y: 34, w: 22, h: 8 },
         ],
       };
     case 'matrix-2x2':
@@ -145,6 +282,26 @@ function boxesFor(structure: LayoutStructureId): { root: NodeBox; children: Node
           { x: 42, y: 28, w: 22, h: 16 },
         ],
       };
+    case 'matrix-2x3':
+      return gridBoxes(2, 3);
+    case 'matrix-3x2':
+      return gridBoxes(3, 2);
+    case 'matrix-3x3':
+      return {
+        root: { x: 30, y: 22, w: 12, h: 8 },
+        children: [
+          { x: 4, y: 4, w: 22, h: 14 },
+          { x: 4, y: 19, w: 22, h: 14 },
+          { x: 4, y: 34, w: 22, h: 14 },
+          { x: 46, y: 4, w: 22, h: 14 },
+          { x: 46, y: 19, w: 22, h: 14 },
+          { x: 46, y: 34, w: 22, h: 14 },
+        ],
+      };
+    case 'matrix-1x2':
+      return gridBoxes(3, 2, 'left');
+    case 'matrix-1x3':
+      return gridBoxes(2, 3, 'left');
     default:
       return {
         root: { x: 30, y: 18, w: 12, h: 12 },
@@ -326,6 +483,72 @@ function extraDecor(root: NodeBox, defaults: LayoutDefaults): ReactNode {
   return null;
 }
 
+type ThumbFlow =
+  | 'right'
+  | 'left'
+  | 'down'
+  | 'up'
+  | 'balanced'
+  | 'radial'
+  | 'none';
+
+function thumbnailFlow(structure: LayoutStructureId): ThumbFlow {
+  switch (structure) {
+    case 'map-balanced':
+    case 'logic-balanced':
+    case 'org-balanced':
+    case 'tree-balanced':
+      return 'balanced';
+    case 'logic-left':
+    case 'org-left':
+    case 'tree-left':
+      return 'left';
+    case 'logic-down':
+    case 'org-down':
+    case 'tree-down':
+      return 'down';
+    case 'logic-up':
+    case 'org-up':
+    case 'tree-up':
+      return 'up';
+    case 'org-radial':
+    case 'tree-radial':
+      return 'radial';
+    case 'logic-outline':
+    case 'timeline-h':
+    case 'timeline-h-top':
+    case 'timeline-h-bottom':
+    case 'timeline-v':
+    case 'timeline-v-left':
+    case 'timeline-v-right':
+    case 'matrix-2x2':
+    case 'matrix-2x3':
+    case 'matrix-3x2':
+    case 'matrix-3x3':
+    case 'matrix-1x2':
+    case 'matrix-1x3':
+      return 'none';
+    default:
+      return 'right';
+  }
+}
+
+function isHTimeline(structure: LayoutStructureId): boolean {
+  return (
+    structure === 'timeline-h' ||
+    structure === 'timeline-h-top' ||
+    structure === 'timeline-h-bottom'
+  );
+}
+
+function isVTimeline(structure: LayoutStructureId): boolean {
+  return (
+    structure === 'timeline-v' ||
+    structure === 'timeline-v-left' ||
+    structure === 'timeline-v-right'
+  );
+}
+
 function LayoutSchematic({
   structure,
   defaults,
@@ -345,15 +568,100 @@ function LayoutSchematic({
 
   const rootCx = root.x + root.w / 2;
   const rootCy = root.y + root.h / 2;
+  const flow = thumbnailFlow(structure);
+
+  const connector = (c: NodeBox): ReactElement | null => {
+    const cy = c.y + c.h / 2;
+    if (flow === 'radial') {
+      return (
+        <line
+          x1={rootCx}
+          y1={rootCy}
+          x2={c.x + c.w / 2}
+          y2={cy}
+          stroke={LINE}
+          strokeWidth={1.1}
+        />
+      );
+    }
+    if (flow === 'none') return null;
+    let fromX = root.x + root.w;
+    let fromY = rootCy;
+    let toX = c.x;
+    let toY = cy;
+    let dir: ConnectorLineType | undefined = type;
+    if (flow === 'left' || (flow === 'balanced' && c.x < root.x)) {
+      fromX = root.x + root.w;
+      toX = c.x + c.w;
+      if (flow === 'left') fromX = root.x;
+    }
+    if (flow === 'down') {
+      dir = 'elbow';
+      fromX = rootCx;
+      fromY = root.y + root.h;
+      toX = c.x + c.w / 2;
+      toY = c.y;
+    } else if (flow === 'up') {
+      dir = 'elbow';
+      fromX = rootCx;
+      fromY = root.y;
+      toX = c.x + c.w / 2;
+      toY = c.y + c.h;
+    }
+    if (flow === 'balanced') {
+      dir = 'elbow';
+      if (c.x < root.x) {
+        fromX = root.x;
+        toX = c.x + c.w;
+      } else {
+        fromX = root.x + root.w;
+        toX = c.x;
+      }
+    }
+    return (
+      <path
+        d={connectorD(fromX, fromY, toX, toY, dir)}
+        fill="none"
+        stroke={LINE}
+        strokeWidth={1.15}
+        strokeDasharray={lineDash}
+        strokeLinecap="round"
+      />
+    );
+  };
 
   return (
     <>
-      {structure === 'timeline-h' && (
-        <line x1={4} y1={24} x2={68} y2={24} stroke={LINE} strokeWidth={1.2} />
+      {isHTimeline(structure) && (
+        <line x1={2} y1={30} x2={70} y2={30} stroke={LINE} strokeWidth={1.2} />
       )}
-      {structure === 'timeline-v' && (
-        <line x1={36} y1={4} x2={36} y2={44} stroke={LINE} strokeWidth={1.2} />
+      {isVTimeline(structure) && (
+        <line x1={36} y1={12} x2={36} y2={46} stroke={LINE} strokeWidth={1.2} />
       )}
+      {isHTimeline(structure) &&
+        children.map((c, i) => (
+          <line
+            key={`th-${i}`}
+            x1={c.x + c.w / 2}
+            y1={30}
+            x2={c.x + c.w / 2}
+            y2={c.y + c.h / 2 < 30 ? c.y + c.h : c.y}
+            stroke={LINE}
+            strokeWidth={1.1}
+          />
+        ))}
+      {isVTimeline(structure) &&
+        children.map((c, i) => (
+          <line
+            key={`tv-${i}`}
+            x1={36}
+            y1={c.y + c.h / 2}
+            x2={c.x + c.w / 2 < 36 ? c.x + c.w : c.x}
+            y2={c.y + c.h / 2}
+            stroke={LINE}
+            strokeWidth={1.1}
+          />
+        ))}
       {structure === 'brace-right' && (
         <path
           d="M28 8 V40"
@@ -363,36 +671,11 @@ function LayoutSchematic({
           strokeLinecap="round"
         />
       )}
-      {children.map((c, i) => {
-        const cy = c.y + c.h / 2;
-        const fromX =
-          structure === 'org-down' || structure === 'timeline-v' || structure === 'matrix-2x2'
-            ? rootCx
-            : structure === 'map-balanced' && c.x < root.x
-              ? root.x
-              : root.x + root.w;
-        const fromY =
-          structure === 'org-down' ? root.y + root.h : rootCy;
-        const toX =
-          structure === 'org-down'
-            ? c.x + c.w / 2
-            : structure === 'map-balanced' && c.x < root.x
-              ? c.x + c.w
-              : c.x;
-        const toY = structure === 'org-down' ? c.y : cy;
-        if (structure === 'matrix-2x2') return null;
-        return (
-          <path
-            key={`c-${i}`}
-            d={connectorD(fromX, fromY, toX, toY, type)}
-            fill="none"
-            stroke={LINE}
-            strokeWidth={1.15}
-            strokeDasharray={lineDash}
-            strokeLinecap="round"
-          />
-        );
-      })}
+      {!isHTimeline(structure) &&
+        !isVTimeline(structure) &&
+        children.map((c, i) => (
+          <g key={`c-${i}`}>{connector(c)}</g>
+        ))}
       <g fill={fill} stroke={STROKE} strokeWidth={1} strokeDasharray={strokeDasharray}>
         {nodePath(root, shape)}
         {children.map((c, i) => (

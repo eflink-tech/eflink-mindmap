@@ -9,13 +9,32 @@ import {
 
 type Grow = { axis: 'v' | 'h'; dir: 1 | -1 };
 
-function hangConnector(from: Box, to: Box, grow: Grow): { d: string; dir: Dir } {
+/**
+ * 悬挂连线：从父节点沿生长轴引出，先到悬挂区外侧的公共干线，再横向/纵向接到每个子节点。
+ * 直接父→子连线会穿过同侧更靠近父节点的兄弟节点，干线绕行可避免压字。
+ */
+function hangConnector(
+  from: Box,
+  to: Box,
+  grow: Grow,
+  trunk: number,
+): { d: string; dir: Dir } {
   if (grow.axis === 'v') {
     const dir: Dir = grow.dir === 1 ? 'down' : 'up';
-    return { d: connectorD(from, to, dir), dir };
+    const y1 = from.y + (grow.dir * from.height) / 2;
+    const x2 = to.x + (trunk >= to.x ? 1 : -1) * (to.width / 2);
+    return {
+      d: `M ${from.x} ${y1} L ${trunk} ${y1} L ${trunk} ${to.y} L ${x2} ${to.y}`,
+      dir,
+    };
   }
   const dir: Dir = grow.dir === 1 ? 'right' : 'left';
-  return { d: connectorD(from, to, dir), dir };
+  const x1 = from.x + (grow.dir * from.width) / 2;
+  const y2 = to.y + (trunk >= to.y ? 1 : -1) * (to.height / 2);
+  return {
+    d: `M ${x1} ${from.y} L ${x1} ${trunk} L ${to.x} ${trunk} L ${to.x} ${y2}`,
+    dir,
+  };
 }
 
 /** 沿生长轴：自身 + gap + 子树之和 */
@@ -59,6 +78,14 @@ function splitEvenOdd(ids: string[]): { even: string[]; odd: string[] } {
   return { even, odd };
 }
 
+/** 公共干线位置：悬挂区最外侧再留半个间距，确保干线不压到任何节点 */
+function trunkOf(ctx: LayoutCtx, id: string, grow: Grow): number {
+  const thickness = hangThickness(ctx, id, grow.axis);
+  return grow.axis === 'v'
+    ? ctx.positions[id].x + thickness / 2 + ctx.hGap / 2
+    : ctx.positions[id].y + thickness / 2 + ctx.vGap / 2;
+}
+
 function placeStack(
   ctx: LayoutCtx,
   id: string,
@@ -87,11 +114,12 @@ function placeStack(
   const kids = visibleChildren(ctx, id);
   const gap = grow.axis === 'v' ? ctx.vGap : ctx.hGap;
   const own = grow.axis === 'v' ? size.height : size.width;
+  const trunk = trunkOf(ctx, id, grow);
   let next = (grow.axis === 'v' ? box.y : box.x) + grow.dir * (own / 2 + gap);
   kids.forEach((k) => {
     const childColor = color;
     placeStack(ctx, k, next, perpCenter, grow, childColor);
-    const conn = hangConnector(box, ctx.positions[k], grow);
+    const conn = hangConnector(box, ctx.positions[k], grow, trunk);
     ctx.connectors.push({
       id: `${id}->${k}`,
       from: id,
@@ -117,10 +145,11 @@ function placeHangList(
   const parentOwn = grow.axis === 'v' ? parentBox.height : parentBox.width;
   const parentCenter = grow.axis === 'v' ? parentBox.y : parentBox.x;
   const perpCenter = grow.axis === 'v' ? parentBox.x : parentBox.y;
+  const trunk = trunkOf(ctx, parentId, grow);
   let edge = parentCenter + grow.dir * (parentOwn / 2 + gap);
   list.forEach((k) => {
     placeStack(ctx, k, edge, perpCenter, grow, color);
-    const conn = hangConnector(parentBox, ctx.positions[k], grow);
+    const conn = hangConnector(parentBox, ctx.positions[k], grow, trunk);
     ctx.connectors.push({
       id: `${parentId}->${k}`,
       from: parentId,
@@ -139,7 +168,7 @@ function placeLevel1(
   axis: 'v' | 'h',
   axisDir: 1,
   hangEven: Grow,
-  hangOdd: Grow,
+  hangOdd: Grow | null,
   rootConnDir: Dir,
 ): void {
   const { doc, theme } = ctx;
@@ -168,37 +197,71 @@ function placeLevel1(
       dir: rootConnDir,
     });
     const gk = visibleChildren(ctx, k);
-    const { even, odd } = splitEvenOdd(gk);
-    placeHangList(ctx, k, box, even, hangEven, color);
-    placeHangList(ctx, k, box, odd, hangOdd, color);
+    if (hangOdd) {
+      const { even, odd } = splitEvenOdd(gk);
+      placeHangList(ctx, k, box, even, hangEven, color);
+      placeHangList(ctx, k, box, odd, hangOdd, color);
+    } else {
+      placeHangList(ctx, k, box, gk, hangEven, color);
+    }
     edge += axisDir * (slot + gap);
   });
 }
 
+export type TimelineVariant =
+  | 'h-alt'
+  | 'h-top'
+  | 'h-bottom'
+  | 'v-alt'
+  | 'v-left'
+  | 'v-right';
+
+/** 时间轴：一级事件沿主轴排列，二级事件按变体在单侧或两侧悬挂 */
+export function layoutTimeline(ctx: LayoutCtx, variant: TimelineVariant): void {
+  const kids = visibleChildren(ctx, ctx.doc.rootId);
+  switch (variant) {
+    case 'h-top':
+      placeLevel1(ctx, kids, 'h', 1, { axis: 'v', dir: -1 }, null, 'right');
+      return;
+    case 'h-bottom':
+      placeLevel1(ctx, kids, 'h', 1, { axis: 'v', dir: 1 }, null, 'right');
+      return;
+    case 'v-left':
+      placeLevel1(ctx, kids, 'v', 1, { axis: 'h', dir: -1 }, null, 'down');
+      return;
+    case 'v-right':
+      placeLevel1(ctx, kids, 'v', 1, { axis: 'h', dir: 1 }, null, 'down');
+      return;
+    case 'v-alt':
+      placeLevel1(
+        ctx,
+        kids,
+        'v',
+        1,
+        { axis: 'h', dir: -1 },
+        { axis: 'h', dir: 1 },
+        'down',
+      );
+      return;
+    default:
+      placeLevel1(
+        ctx,
+        kids,
+        'h',
+        1,
+        { axis: 'v', dir: -1 },
+        { axis: 'v', dir: 1 },
+        'right',
+      );
+  }
+}
+
 /** timeline-h：一级沿 +x；子女偶上奇下 */
 export function layoutTimelineH(ctx: LayoutCtx): void {
-  const kids = visibleChildren(ctx, ctx.doc.rootId);
-  placeLevel1(
-    ctx,
-    kids,
-    'h',
-    1,
-    { axis: 'v', dir: -1 },
-    { axis: 'v', dir: 1 },
-    'right',
-  );
+  layoutTimeline(ctx, 'h-alt');
 }
 
 /** timeline-v：一级沿 +y；子女偶左奇右 */
 export function layoutTimelineV(ctx: LayoutCtx): void {
-  const kids = visibleChildren(ctx, ctx.doc.rootId);
-  placeLevel1(
-    ctx,
-    kids,
-    'v',
-    1,
-    { axis: 'h', dir: -1 },
-    { axis: 'h', dir: 1 },
-    'down',
-  );
+  layoutTimeline(ctx, 'v-alt');
 }

@@ -106,18 +106,19 @@ export function placeH(
   });
 }
 
-/** 垂直方向放置节点（用于 org-down 布局） */
+/** 垂直方向放置节点（org-down / org-up 等） */
 export function placeV(
   ctx: LayoutCtx,
   id: string,
   centerX: number,
   edgeY: number,
+  dir: 1 | -1,
   color: string,
 ): void {
   const size = ctx.sizes[id];
   const box: Box = {
     x: centerX,
-    y: edgeY + size.height / 2,
+    y: edgeY + (dir * size.height) / 2,
     width: size.width,
     height: size.height,
   };
@@ -137,18 +138,54 @@ export function placeV(
       ctx,
       k,
       x + spans[i] / 2,
-      edgeY + size.height + ctx.vGap,
+      box.y + (dir * (size.height / 2 + ctx.vGap)),
+      dir,
       childColor,
     );
     ctx.connectors.push({
       id: `${id}->${k}`,
       from: id,
       to: k,
-      d: connectorD(box, ctx.positions[k], 'down'),
+      d: connectorD(box, ctx.positions[k], dir === 1 ? 'down' : 'up'),
       color: childColor,
-      dir: 'down',
+      dir: dir === 1 ? 'down' : 'up',
     });
     x += spans[i] + ctx.vGap;
+  });
+}
+
+/** 将一组一级分支沿垂直方向悬挂在根的上/下方 */
+export function placeRootSideV(
+  ctx: LayoutCtx,
+  doc: MindMapDocument,
+  theme: ThemeConfig,
+  rootSize: NodeSize,
+  list: string[],
+  dir: 1 | -1,
+): void {
+  const spans = list.map((k) => subtreeSpan(ctx, k, 'h'));
+  const total =
+    spans.reduce((a, b) => a + b, 0) + ctx.hGap * Math.max(0, list.length - 1);
+  let x = -total / 2;
+  list.forEach((k, i) => {
+    const edge =
+      dir === 1
+        ? rootSize.height / 2 + ctx.vGap
+        : -(rootSize.height / 2 + ctx.vGap);
+    placeV(ctx, k, x + spans[i] / 2, edge, dir, branchColorOf(doc, theme, k));
+    ctx.connectors.push({
+      id: `${doc.rootId}->${k}`,
+      from: doc.rootId,
+      to: k,
+      d: connectorD(
+        ctx.positions[doc.rootId],
+        ctx.positions[k],
+        dir === 1 ? 'down' : 'up',
+      ),
+      color: branchColorOf(doc, theme, k),
+      dir: dir === 1 ? 'down' : 'up',
+    });
+    x += spans[i] + ctx.hGap;
   });
 }
 

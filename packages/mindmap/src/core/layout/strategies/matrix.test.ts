@@ -112,22 +112,31 @@ describe('layoutMatrix2x2', () => {
 });
 
 describe('matrix 预设与分发', () => {
-  it('matrix-* 预设均为 ready', () => {
+  it('matrix-* 六套预设均为 ready 且结构互不重复', () => {
     const items = LAYOUT_PRESETS.filter((p) => p.category === 'matrix');
-    expect(items.length).toBe(3);
+    expect(items.length).toBe(6);
     expect(items.every((p) => p.ready)).toBe(true);
-    expect(items.every((p) => p.structure === 'matrix-2x2')).toBe(true);
-    const applied = applyLayoutPreset(createDocument(), 'matrix-2x2-1');
-    expect(applied.layout).toBe('matrix-2x2-1');
+    expect(new Set(items.map((p) => p.structure))).toEqual(
+      new Set([
+        'matrix-2x2',
+        'matrix-2x3',
+        'matrix-3x2',
+        'matrix-3x3',
+        'matrix-1x2',
+        'matrix-1x3',
+      ]),
+    );
+    const applied = applyLayoutPreset(createDocument(), 'matrix-3x3');
+    expect(applied.layout).toBe('matrix-3x3');
   });
 
-  it('matrix-2x2-1 四个一级分属四象限（非 map-balanced 回退）', () => {
+  it('matrix-2x2 四个一级分属四象限（非 map-balanced 回退）', () => {
     let doc = createDocument();
     doc = addChild(doc, doc.rootId, 'A');
     doc = addChild(doc, doc.rootId, 'B');
     doc = addChild(doc, doc.rootId, 'C');
     doc = addChild(doc, doc.rootId, 'D');
-    doc = { ...doc, layout: 'matrix-2x2-1' };
+    doc = { ...doc, layout: 'matrix-2x2' };
     const { positions } = layoutDocument(doc, theme, widthOf);
     const [a, b, c, d] = doc.nodes[doc.rootId].children;
     const root = positions[doc.rootId];
@@ -139,5 +148,62 @@ describe('matrix 预设与分发', () => {
     expect(positions[c].y).toBeGreaterThan(root.y);
     expect(positions[d].x).toBeGreaterThan(root.x);
     expect(positions[d].y).toBeGreaterThan(root.y);
+  });
+
+  it('2x3 栅格按行优先排布：前三个一行，后三个下一行，根标题在上方', () => {
+    let doc = createDocument();
+    for (const text of ['A', 'B', 'C', 'D', 'E', 'F']) {
+      doc = addChild(doc, doc.rootId, text);
+    }
+    doc = { ...doc, layout: 'matrix-2x3' };
+    const { positions } = layoutDocument(doc, theme, widthOf);
+    const ids = doc.nodes[doc.rootId].children;
+    const root = positions[doc.rootId];
+    expect(ids.map((id) => positions[id].y)).toEqual([
+      positions[ids[0]].y,
+      positions[ids[0]].y,
+      positions[ids[0]].y,
+      positions[ids[3]].y,
+      positions[ids[3]].y,
+      positions[ids[3]].y,
+    ]);
+    expect(positions[ids[0]].y).toBeGreaterThan(root.y);
+    expect(positions[ids[0]].x).toBeLessThan(positions[ids[1]].x);
+    expect(positions[ids[1]].x).toBeLessThan(positions[ids[2]].x);
+    expect(positions[ids[3]].y).toBeGreaterThan(positions[ids[0]].y);
+  });
+
+  it('1x3 三栏对比：根在左侧，三个一级同一行，y 相同且 x 递增', () => {
+    let doc = createDocument();
+    for (const text of ['A', 'B', 'C']) {
+      doc = addChild(doc, doc.rootId, text);
+    }
+    doc = { ...doc, layout: 'matrix-1x3' };
+    const { positions } = layoutDocument(doc, theme, widthOf);
+    const ids = doc.nodes[doc.rootId].children;
+    expect(positions[ids[0]].y).toBeCloseTo(positions[ids[1]].y, 5);
+    expect(positions[ids[1]].y).toBeCloseTo(positions[ids[2]].y, 5);
+    expect(positions[ids[0]].x).toBeLessThan(positions[ids[1]].x);
+    expect(positions[ids[1]].x).toBeLessThan(positions[ids[2]].x);
+    expect(positions[ids[0]].x).toBeGreaterThan(positions[doc.rootId].x);
+  });
+
+  it('3x3 中心九宫格：根居中，六个一级分列左右各三行', () => {
+    let doc = createDocument();
+    for (const text of ['A', 'B', 'C', 'D', 'E', 'F']) {
+      doc = addChild(doc, doc.rootId, text);
+    }
+    doc = { ...doc, layout: 'matrix-3x3' };
+    const { positions } = layoutDocument(doc, theme, widthOf);
+    const root = positions[doc.rootId];
+    const ids = doc.nodes[doc.rootId].children;
+    const left = ids.slice(0, 3);
+    const right = ids.slice(3);
+    for (const id of left) expect(positions[id].x).toBeLessThan(root.x);
+    for (const id of right) expect(positions[id].x).toBeGreaterThan(root.x);
+    for (let i = 1; i < 3; i++) {
+      expect(positions[left[i]].y).toBeGreaterThan(positions[left[i - 1]].y);
+      expect(positions[right[i]].y).toBeGreaterThan(positions[right[i - 1]].y);
+    }
   });
 });

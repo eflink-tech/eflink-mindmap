@@ -30,6 +30,10 @@ function threeLevelDoc(): MindMapDocument {
   return doc;
 }
 
+function allNodeIds(doc: MindMapDocument): string[] {
+  return Object.keys(doc.nodes);
+}
+
 function run(doc: MindMapDocument, layout: 'h' | 'v') {
   const sizes = measureAllNodes(doc, theme, widthOf);
   const ctx = makeCtx(doc, sizes, theme, H_GAP, V_GAP);
@@ -143,18 +147,62 @@ describe('layoutTimelineV', () => {
 });
 
 describe('timeline 预设与分发', () => {
-  it('timeline-* 预设均为 ready', () => {
+  it('timeline-* 六套预设 ready 且结构互不重复', () => {
     const items = LAYOUT_PRESETS.filter((p) => p.category === 'timeline');
     expect(items.length).toBe(6);
     expect(items.every((p) => p.ready)).toBe(true);
-    expect(items.filter((p) => p.structure === 'timeline-h')).toHaveLength(4);
-    expect(items.filter((p) => p.structure === 'timeline-v')).toHaveLength(2);
-    const applied = applyLayoutPreset(createDocument(), 'timeline-h-rect');
-    expect(applied.layout).toBe('timeline-h-rect');
+    expect(new Set(items.map((p) => p.structure))).toEqual(
+      new Set([
+        'timeline-h',
+        'timeline-h-top',
+        'timeline-h-bottom',
+        'timeline-v',
+        'timeline-v-left',
+        'timeline-v-right',
+      ]),
+    );
+    const applied = applyLayoutPreset(createDocument(), 'timeline-h');
+    expect(applied.layout).toBe('timeline-h');
   });
 
-  it('timeline-h-rect 一级沿 +x（非 logic 竖排回退）', () => {
-    const doc = { ...threeLevelDoc(), layout: 'timeline-h-rect' };
+  it('横向单侧：所有二级事件都在主轴同侧', () => {
+    const top = { ...threeLevelDoc(), layout: 'timeline-h-top' };
+    const topPos = layoutDocument(top, theme, widthOf).positions;
+    const topRoot = topPos[top.rootId];
+    for (const id of allNodeIds(top)) {
+      if (id === top.rootId || top.nodes[id].parentId === top.rootId) continue;
+      expect(topPos[id].y).toBeLessThan(topRoot.y);
+    }
+
+    const bottom = { ...threeLevelDoc(), layout: 'timeline-h-bottom' };
+    const bottomPos = layoutDocument(bottom, theme, widthOf).positions;
+    const bottomRoot = bottomPos[bottom.rootId];
+    for (const id of allNodeIds(bottom)) {
+      if (id === bottom.rootId || bottom.nodes[id].parentId === bottom.rootId) continue;
+      expect(bottomPos[id].y).toBeGreaterThan(bottomRoot.y);
+    }
+  });
+
+  it('纵向单侧：所有二级事件都在主轴同一侧', () => {
+    const left = { ...threeLevelDoc(), layout: 'timeline-v-left' };
+    const leftPos = layoutDocument(left, theme, widthOf).positions;
+    const leftRoot = leftPos[left.rootId];
+    for (const id of allNodeIds(left)) {
+      if (id === left.rootId || left.nodes[id].parentId === left.rootId) continue;
+      expect(leftPos[id].x).toBeLessThan(leftRoot.x);
+    }
+
+    const right = { ...threeLevelDoc(), layout: 'timeline-v-right' };
+    const rightPos = layoutDocument(right, theme, widthOf).positions;
+    const rightRoot = rightPos[right.rootId];
+    for (const id of allNodeIds(right)) {
+      if (id === right.rootId || right.nodes[id].parentId === right.rootId) continue;
+      expect(rightPos[id].x).toBeGreaterThan(rightRoot.x);
+    }
+  });
+
+  it('timeline-h 一级沿 +x（非 logic 竖排回退）', () => {
+    const doc = { ...threeLevelDoc(), layout: 'timeline-h' };
     const { positions } = layoutDocument(doc, theme, widthOf);
     const [a, b] = doc.nodes[doc.rootId].children;
     expect(positions[a].x).toBeGreaterThan(positions[doc.rootId].x);
@@ -162,8 +210,8 @@ describe('timeline 预设与分发', () => {
     expect(positions[a].y).toBeCloseTo(positions[doc.rootId].y, 5);
   });
 
-  it('timeline-v-alt 一级沿 +y（非 logic 右排回退）', () => {
-    const doc = { ...threeLevelDoc(), layout: 'timeline-v-alt' };
+  it('timeline-v 一级沿 +y（非 logic 右排回退）', () => {
+    const doc = { ...threeLevelDoc(), layout: 'timeline-v' };
     const { positions } = layoutDocument(doc, theme, widthOf);
     const [a, b] = doc.nodes[doc.rootId].children;
     expect(positions[a].y).toBeGreaterThan(positions[doc.rootId].y);

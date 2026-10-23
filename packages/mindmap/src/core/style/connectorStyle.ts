@@ -15,6 +15,16 @@ function isFishboneStructure(structure: LayoutStructureId): boolean {
   return structure.startsWith('fishbone-');
 }
 
+/** 环形布局的连线按极坐标直连，需保留布局层 d */
+function isRadialStructure(structure: LayoutStructureId): boolean {
+  return structure === 'org-radial' || structure === 'tree-radial';
+}
+
+/** 时间轴的悬挂干线绕过兄弟节点，按布局层折线渲染 */
+function isTimelineStructure(structure: LayoutStructureId): boolean {
+  return structure.startsWith('timeline-');
+}
+
 export interface ResolvedConnectorStyle {
   type: ConnectorLineType;
   width: number;
@@ -317,7 +327,12 @@ export function handDrawnPath(d: string, amplitude = HAND_DRAWN_AMPLITUDE): stri
 
 /** 布局已预计算连线 d、渲染/动画层不得按主题线型重建的结构 */
 export function preservesLayoutConnectorD(doc: MindMapDocument): boolean {
-  return isFishboneStructure(getStructure(doc));
+  const structure = getStructure(doc);
+  return (
+    isFishboneStructure(structure) ||
+    isRadialStructure(structure) ||
+    isTimelineStructure(structure)
+  );
 }
 
 /**
