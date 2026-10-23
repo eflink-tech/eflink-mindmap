@@ -1,7 +1,7 @@
 import type { LayoutStructureId, MindMapDocument } from '../../types/mindmap';
 import { getPreset } from './presets';
 import { layoutBraceRight } from './strategies/brace';
-import { layoutFishboneRight } from './strategies/fishbone';
+import { layoutFishbone } from './strategies/fishbone';
 import { layoutLogicRight } from './strategies/logic';
 import { layoutMapBalanced, layoutMapRight } from './strategies/map';
 import { layoutMatrix2x2 } from './strategies/matrix';
@@ -39,8 +39,13 @@ export function applyStructure(ctx: LayoutCtx): void {
     case 'timeline-v':
       layoutTimelineV(ctx);
       return;
-    case 'fishbone-right':
-      layoutFishboneRight(ctx);
+    case 'fishbone-rl':
+    case 'fishbone-lr':
+    case 'fishbone-bt':
+    case 'fishbone-tb':
+    case 'fishbone-6m':
+    case 'fishbone-comb':
+      layoutFishbone(ctx, structure);
       return;
     case 'matrix-2x2':
       layoutMatrix2x2(ctx);

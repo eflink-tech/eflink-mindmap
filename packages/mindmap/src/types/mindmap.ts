@@ -12,7 +12,12 @@ export type LayoutStructureId =
   | 'tree-right'
   | 'timeline-h'
   | 'timeline-v'
-  | 'fishbone-right'
+  | 'fishbone-rl'
+  | 'fishbone-lr'
+  | 'fishbone-bt'
+  | 'fishbone-tb'
+  | 'fishbone-6m'
+  | 'fishbone-comb'
   | 'matrix-2x2';
 
 /** 文档 layout 字段：预设 id（兼容历史 mindmap/logic/tree 需经 normalizeLayoutId） */

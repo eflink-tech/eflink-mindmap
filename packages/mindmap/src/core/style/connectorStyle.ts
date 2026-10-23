@@ -2,14 +2,18 @@ import type {
   Box,
   ConnectorEnd,
   ConnectorLineType,
+  LayoutStructureId,
   MindMapDocument,
   ThemeConfig,
 } from '../../types/mindmap';
-import { getPreset } from '../layout/presets';
 import { getStructure } from '../layout/structures';
 import { getCanvasOptions } from './canvasOptions';
 
 export type ConnectorDir = 'right' | 'left' | 'down' | 'up';
+
+function isFishboneStructure(structure: LayoutStructureId): boolean {
+  return structure.startsWith('fishbone-');
+}
 
 export interface ResolvedConnectorStyle {
   type: ConnectorLineType;
@@ -79,7 +83,7 @@ export function resolveConnectorAppearance(
       explicit.connectorWidth !== undefined ||
       explicit.connectorColor !== undefined ||
       explicit.connectorEnd !== undefined);
-  const fishbone = getPreset(doc.layout)?.structure === 'fishbone-right';
+  const fishbone = isFishboneStructure(getStructure(doc));
   const handDrawn = !!doc.layoutDefaults?.handDrawn;
   if (
     !hasExplicit &&
@@ -133,27 +137,6 @@ export function straightPath(from: Box, to: Box, dir: ConnectorDir): string {
   const a = edgePoint(from, dir, 'from');
   const b = edgePoint(to, dir, 'to');
   return `M ${a.x} ${a.y} L ${b.x} ${b.y}`;
-}
-
-/** 盒缘斜线（鱼骨子级沿骨连线） */
-export function diagonalPath(from: Box, to: Box, dir: ConnectorDir): string {
-  return straightPath(from, to, dir);
-}
-
-/**
- * 鱼骨主刺：沿水平脊走到斜骨起点，再斜向子节点。
- * 斜段按 45° 取 attachX = max(fromRight, toLeft - |dy|)。
- */
-export function fishboneRibPath(from: Box, to: Box): string {
-  const x1 = from.x + from.width / 2;
-  const y1 = from.y;
-  const x2 = to.x - to.width / 2;
-  const y2 = to.y;
-  const attachX = Math.max(x1, x2 - Math.abs(y2 - y1));
-  if (attachX === x2 || Math.abs(y2 - y1) < 1e-6) {
-    return `M ${x1} ${y1} L ${x2} ${y2}`;
-  }
-  return `M ${x1} ${y1} L ${attachX} ${y1} L ${x2} ${y2}`;
 }
 
 /** 括号臂长：竖脊靠近子节点，短于 elbow 中点 */
@@ -334,7 +317,7 @@ export function handDrawnPath(d: string, amplitude = HAND_DRAWN_AMPLITUDE): stri
 
 /** 布局已预计算连线 d、渲染/动画层不得按主题线型重建的结构 */
 export function preservesLayoutConnectorD(doc: MindMapDocument): boolean {
-  return getStructure(doc) === 'fishbone-right';
+  return isFishboneStructure(getStructure(doc));
 }
 
 /**

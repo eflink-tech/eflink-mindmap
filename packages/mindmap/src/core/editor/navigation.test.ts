@@ -244,16 +244,34 @@ describe('navigate (preset ids)', () => {
     expect(navigate(doc, a, 'right')).toBe(byText(doc, 'B'));
   });
 
-  it('fishbone-1：→ 进子级、← 回父级', () => {
-    const doc = { ...sampleDoc(), layout: 'fishbone-1' };
+  it('fishbone-classic（鱼头在右）：← 进子级、→ 回父级', () => {
+    const doc = { ...sampleDoc(), layout: 'fishbone-classic' };
+    const a = byText(doc, 'A');
+    expect(navigate(doc, a, 'left')).toBe(byText(doc, 'A1'));
+    expect(navigate(doc, byText(doc, 'A1'), 'right')).toBe(a);
+    expect(isChildDirection(doc, a, 'left')).toBe(true);
+    expect(isChildDirection(doc, a, 'down')).toBe(false);
+    expect(navigate(doc, doc.rootId, 'left')).toBe(a);
+    expect(navigate(doc, doc.rootId, 'right')).toBeNull();
+    expect(branchSide(doc, byText(doc, 'B1'))).toBe('left');
+  });
+
+  it('fishbone-lr（鱼头在左）：→ 进子级、← 回父级', () => {
+    const doc = { ...sampleDoc(), layout: 'fishbone-reverse' };
     const a = byText(doc, 'A');
     expect(navigate(doc, a, 'right')).toBe(byText(doc, 'A1'));
     expect(navigate(doc, byText(doc, 'A1'), 'left')).toBe(a);
-    expect(isChildDirection(doc, a, 'right')).toBe(true);
-    expect(isChildDirection(doc, a, 'down')).toBe(false);
     expect(navigate(doc, doc.rootId, 'right')).toBe(a);
-    expect(navigate(doc, doc.rootId, 'down')).toBeNull();
-    expect(branchSide(doc, byText(doc, 'B1'))).toBe('right');
+  });
+
+  it('fishbone-bt（鱼头在下）：↑ 进子级、↓ 回父级', () => {
+    const doc = { ...sampleDoc(), layout: 'fishbone-vertical' };
+    const a = byText(doc, 'A');
+    expect(navigate(doc, a, 'up')).toBe(byText(doc, 'A1'));
+    expect(navigate(doc, byText(doc, 'A1'), 'down')).toBe(a);
+    expect(isChildDirection(doc, a, 'up')).toBe(true);
+    expect(isChildDirection(doc, a, 'right')).toBe(false);
+    expect(navigate(doc, doc.rootId, 'up')).toBe(a);
   });
 
   it('matrix-2x2-1：→ 进子级、← 回父级（含左象限，子树 logic-right）', () => {
@@ -279,6 +297,12 @@ describe('navigate (preset ids)', () => {
       const a = byText(doc, 'A');
       if (axis === 'down') {
         expect(isChildDirection(doc, a, 'down'), p.id).toBe(true);
+        expect(isChildDirection(doc, a, 'right'), p.id).toBe(false);
+      } else if (axis === 'up') {
+        expect(isChildDirection(doc, a, 'up'), p.id).toBe(true);
+        expect(isChildDirection(doc, a, 'down'), p.id).toBe(false);
+      } else if (axis === 'left') {
+        expect(isChildDirection(doc, a, 'left'), p.id).toBe(true);
         expect(isChildDirection(doc, a, 'right'), p.id).toBe(false);
       } else {
         expect(isChildDirection(doc, a, 'right'), p.id).toBe(true);

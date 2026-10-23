@@ -6,8 +6,8 @@ import { getStructure } from '../layout/structures';
 
 export type NavDir = 'up' | 'down' | 'left' | 'right';
 
-/** 主生长方向：balanced 左右分侧；right 整树向右进子级；down 整树向下进子级 */
-export type GrowthAxis = 'balanced' | 'right' | 'down';
+/** 主生长方向：balanced 左右分侧；right/left/up/down 整树沿该方向进子级 */
+export type GrowthAxis = 'balanced' | 'right' | 'left' | 'down' | 'up';
 
 const STRUCTURE_GROWTH: Record<LayoutStructureId, GrowthAxis> = {
   'map-balanced': 'balanced',
@@ -18,7 +18,12 @@ const STRUCTURE_GROWTH: Record<LayoutStructureId, GrowthAxis> = {
   'tree-right': 'right',
   'timeline-h': 'right',
   'timeline-v': 'down',
-  'fishbone-right': 'right',
+  'fishbone-rl': 'left',
+  'fishbone-lr': 'right',
+  'fishbone-bt': 'up',
+  'fishbone-tb': 'down',
+  'fishbone-6m': 'left',
+  'fishbone-comb': 'left',
   'matrix-2x2': 'right',
 };
 
@@ -30,6 +35,10 @@ function isAllRightStructure(structure: LayoutStructureId): boolean {
   return growthAxis(structure) === 'right';
 }
 
+function isAllLeftStructure(structure: LayoutStructureId): boolean {
+  return growthAxis(structure) === 'left';
+}
+
 function usesBalancedSides(structure: LayoutStructureId): boolean {
   return growthAxis(structure) === 'balanced';
 }
@@ -38,10 +47,19 @@ function growsDown(structure: LayoutStructureId): boolean {
   return growthAxis(structure) === 'down';
 }
 
+function growsUp(structure: LayoutStructureId): boolean {
+  return growthAxis(structure) === 'up';
+}
+
+function growsLeft(structure: LayoutStructureId): boolean {
+  return growthAxis(structure) === 'left';
+}
+
 /** 节点所在一级分支的生长侧：一级分支看 metadata.side（缺省右），深层继承；logic / map-right 全在右侧 */
 export function branchSide(doc: MindMapDocument, id: string): 'left' | 'right' {
   const structure = getStructure(doc);
   if (isAllRightStructure(structure)) return 'right';
+  if (isAllLeftStructure(structure)) return 'left';
   if (usesBalancedSides(structure) && !getCanvasOptions(doc).balanced) return 'right';
   let cur = doc.nodes[id];
   while (cur && cur.parentId !== null && cur.parentId !== doc.rootId) {
@@ -119,10 +137,21 @@ export function navigate(doc: MindMapDocument, fromId: string, dir: NavDir): str
   const from = doc.nodes[fromId];
   if (!from) return null;
 
-  if (growsDown(getStructure(doc))) {
+  const structure = getStructure(doc);
+  if (growsDown(structure)) {
     if (dir === 'up') return from.parentId;
     if (dir === 'down') return firstChild(doc, fromId);
     return sibling(doc, fromId, dir === 'right' ? 'down' : 'up');
+  }
+  if (growsUp(structure)) {
+    if (dir === 'down') return from.parentId;
+    if (dir === 'up') return firstChild(doc, fromId);
+    return sibling(doc, fromId, dir === 'right' ? 'down' : 'up');
+  }
+  if (growsLeft(structure)) {
+    if (dir === 'right') return from.parentId;
+    if (dir === 'left') return firstChild(doc, fromId);
+    return sibling(doc, fromId, dir);
   }
 
   // 根节点：左右分别进入右侧 / 左侧的一级分支（branchSide 已按布局归一化侧向），上下无同级
@@ -141,7 +170,10 @@ export function navigate(doc: MindMapDocument, fromId: string, dir: NavDir): str
 /** 该方向键是否指向「子级」方向（折叠节点上应先展开再进入，供 store 使用） */
 export function isChildDirection(doc: MindMapDocument, id: string, dir: NavDir): boolean {
   if (!doc.nodes[id]) return false;
-  if (growsDown(getStructure(doc))) return dir === 'down';
+  const structure = getStructure(doc);
+  if (growsDown(structure)) return dir === 'down';
+  if (growsUp(structure)) return dir === 'up';
+  if (growsLeft(structure)) return dir === 'left';
   if (id === doc.rootId) return dir === 'left' || dir === 'right';
   return dir === (branchSide(doc, id) === 'left' ? 'left' : 'right');
 }

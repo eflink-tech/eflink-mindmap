@@ -58,6 +58,19 @@ describe('LAYOUT_PRESETS', () => {
     expect(resolveLayoutMode('brace-solid')).toBe('logic');
   });
 
+  it('六套鱼骨结构齐全且旧预设迁移', () => {
+    const fish = LAYOUT_PRESETS.filter((p) => p.category === 'fishbone');
+    expect(fish.length).toBe(6);
+    expect(new Set(fish.map((p) => p.structure))).toEqual(
+      new Set(['fishbone-rl', 'fishbone-lr', 'fishbone-bt', 'fishbone-tb', 'fishbone-6m', 'fishbone-comb']),
+    );
+    expect(normalizeLayoutId('fishbone-1')).toBe('fishbone-classic');
+    expect(normalizeLayoutId('fishbone-2')).toBe('fishbone-6m');
+    expect(normalizeLayoutId('fishbone-3')).toBe('fishbone-comb');
+    expect(resolveLayoutMode('fishbone-classic')).toBe('logic');
+    expect(resolveLayoutMode('fishbone-vertical')).toBe('logic');
+  });
+
   it('外观增强预设 ready（heart / quote / handDrawn / hexagon / pill）', () => {
     const ids = [
       'logic-heart-root',
@@ -70,7 +83,7 @@ describe('LAYOUT_PRESETS', () => {
       'org-down-hex',
       'tree-right-6',
       'timeline-v-capsule',
-      'fishbone-3',
+      'fishbone-comb',
     ];
     for (const id of ids) {
       expect(getPreset(id)?.ready, id).toBe(true);

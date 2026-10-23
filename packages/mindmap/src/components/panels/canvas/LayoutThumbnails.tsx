@@ -135,15 +135,6 @@ function boxesFor(structure: LayoutStructureId): { root: NodeBox; children: Node
           { x: 4, y: 36, w: 16, h: 8 },
         ],
       };
-    case 'fishbone-right':
-      return {
-        root: { x: 4, y: 18, w: 12, h: 12 },
-        children: [
-          { x: 28, y: 4, w: 14, h: 8 },
-          { x: 44, y: 36, w: 14, h: 8 },
-          { x: 56, y: 4, w: 14, h: 8 },
-        ],
-      };
     case 'matrix-2x2':
       return {
         root: { x: 30, y: 20, w: 12, h: 8 },
@@ -160,6 +151,157 @@ function boxesFor(structure: LayoutStructureId): { root: NodeBox; children: Node
         children: [],
       };
   }
+}
+
+type FishboneStructure = Extract<LayoutStructureId, `fishbone-${string}`>;
+
+interface FishboneThumbConfig {
+  head: NodeBox;
+  spine: [number, number, number, number];
+  ribs: Array<{ base: [number, number]; tip: [number, number] }>;
+  /** 中骨（平行鱼脊、指向鱼尾）的单位方向 */
+  middle: [number, number];
+}
+
+const FISHBONE_THUMBS: Record<FishboneStructure, FishboneThumbConfig> = {
+  'fishbone-rl': {
+    head: { x: 58, y: 19, w: 12, h: 10 },
+    spine: [58, 24, 8, 24],
+    ribs: [
+      { base: [48, 24], tip: [36, 9] },
+      { base: [36, 24], tip: [24, 39] },
+      { base: [24, 24], tip: [12, 9] },
+    ],
+    middle: [-1, 0],
+  },
+  'fishbone-lr': {
+    head: { x: 2, y: 19, w: 12, h: 10 },
+    spine: [14, 24, 64, 24],
+    ribs: [
+      { base: [24, 24], tip: [36, 9] },
+      { base: [36, 24], tip: [48, 39] },
+      { base: [48, 24], tip: [60, 9] },
+    ],
+    middle: [1, 0],
+  },
+  'fishbone-bt': {
+    head: { x: 30, y: 38, w: 12, h: 8 },
+    spine: [36, 38, 36, 5],
+    ribs: [
+      { base: [36, 31], tip: [22, 20] },
+      { base: [36, 21], tip: [50, 12] },
+      { base: [36, 11], tip: [24, 4] },
+    ],
+    middle: [0, -1],
+  },
+  'fishbone-tb': {
+    head: { x: 30, y: 2, w: 12, h: 8 },
+    spine: [36, 10, 36, 44],
+    ribs: [
+      { base: [36, 17], tip: [22, 28] },
+      { base: [36, 27], tip: [50, 34] },
+      { base: [36, 37], tip: [24, 42] },
+    ],
+    middle: [0, 1],
+  },
+  'fishbone-6m': {
+    head: { x: 58, y: 19, w: 12, h: 10 },
+    spine: [58, 24, 8, 24],
+    ribs: [
+      { base: [48, 24], tip: [38, 9] },
+      { base: [48, 24], tip: [38, 39] },
+      { base: [34, 24], tip: [24, 9] },
+      { base: [34, 24], tip: [24, 39] },
+      { base: [20, 24], tip: [10, 9] },
+      { base: [20, 24], tip: [10, 39] },
+    ],
+    middle: [-1, 0],
+  },
+  'fishbone-comb': {
+    head: { x: 58, y: 19, w: 12, h: 10 },
+    spine: [58, 24, 8, 24],
+    ribs: [
+      { base: [50, 24], tip: [50, 9] },
+      { base: [38, 24], tip: [38, 39] },
+      { base: [26, 24], tip: [26, 9] },
+    ],
+    middle: [-1, 0],
+  },
+};
+
+const FB_LABEL_W = 11;
+const FB_LABEL_H = 6;
+
+function FishboneSchematic({ structure }: { structure: FishboneStructure }) {
+  const cfg = FISHBONE_THUMBS[structure];
+  const [sx1, sy1, sx2, sy2] = cfg.spine;
+  const [mx, my] = cfg.middle;
+  return (
+    <>
+      <line
+        x1={sx1}
+        y1={sy1}
+        x2={sx2}
+        y2={sy2}
+        stroke={LINE}
+        strokeWidth={1.4}
+        strokeLinecap="round"
+      />
+      {cfg.ribs.map((rib, i) => {
+        const [bx, by] = rib.base;
+        const [tx, ty] = rib.tip;
+        return (
+          <g key={`fb-${i}`}>
+            <line
+              x1={bx}
+              y1={by}
+              x2={tx}
+              y2={ty}
+              stroke={LINE}
+              strokeWidth={1.1}
+              strokeLinecap="round"
+            />
+            {[0.34, 0.68].map((t) => {
+              const x = bx + (tx - bx) * t;
+              const y = by + (ty - by) * t;
+              return (
+                <line
+                  key={`m-${t}`}
+                  x1={x}
+                  y1={y}
+                  x2={x + mx * 9}
+                  y2={y + my * 9}
+                  stroke={LINE}
+                  strokeWidth={1}
+                  strokeLinecap="round"
+                />
+              );
+            })}
+            <rect
+              x={tx - FB_LABEL_W / 2}
+              y={ty - FB_LABEL_H / 2}
+              width={FB_LABEL_W}
+              height={FB_LABEL_H}
+              rx={1}
+              fill={FILL}
+              stroke={STROKE}
+              strokeWidth={1}
+            />
+          </g>
+        );
+      })}
+      <rect
+        x={cfg.head.x}
+        y={cfg.head.y}
+        width={cfg.head.w}
+        height={cfg.head.h}
+        rx={1.5}
+        fill={FILL}
+        stroke={STROKE}
+        strokeWidth={1}
+      />
+    </>
+  );
 }
 
 function extraDecor(root: NodeBox, defaults: LayoutDefaults): ReactNode {
@@ -191,6 +333,9 @@ function LayoutSchematic({
   structure: LayoutStructureId;
   defaults: LayoutDefaults;
 }) {
+  if (structure.startsWith('fishbone-')) {
+    return <FishboneSchematic structure={structure as FishboneStructure} />;
+  }
   const { root, children } = boxesFor(structure);
   const shape = defaults.shape;
   const type = defaults.connectorType;
@@ -208,9 +353,6 @@ function LayoutSchematic({
       )}
       {structure === 'timeline-v' && (
         <line x1={36} y1={4} x2={36} y2={44} stroke={LINE} strokeWidth={1.2} />
-      )}
-      {structure === 'fishbone-right' && (
-        <line x1={16} y1={24} x2={68} y2={24} stroke={LINE} strokeWidth={1.4} />
       )}
       {structure === 'brace-right' && (
         <path

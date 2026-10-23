@@ -13,8 +13,6 @@ import {
   resolveConnectorStyle,
   roundedElbowPath,
   straightPath,
-  diagonalPath,
-  fishboneRibPath,
   connectorPathD,
   curvePath,
   inferConnectorDir,
@@ -137,34 +135,6 @@ describe('elbowPath / straightPath', () => {
     expect(d).toBe('M 20 0 L 80 40');
   });
 
-  it('diagonalPath 为盒缘斜线', () => {
-    const d = diagonalPath(
-      { x: 0, y: 0, width: 40, height: 20 },
-      { x: 100, y: 40, width: 40, height: 20 },
-      'right',
-    );
-    expect(d).toBe('M 20 0 L 80 40');
-    expect(d.includes('C ')).toBe(false);
-  });
-
-  it('fishboneRibPath 先沿脊再斜向子节点', () => {
-    const d = fishboneRibPath(
-      { x: 0, y: 0, width: 40, height: 20 },
-      { x: 120, y: -50, width: 40, height: 20 },
-    );
-    expect(d.includes('L ')).toBe(true);
-    expect(d.includes('C ')).toBe(false);
-    const nums = d.match(/-?\d+(?:\.\d+)?/g)!.map(Number);
-    expect(nums[0]).toBe(20);
-    expect(nums[1]).toBe(0);
-    expect(nums[nums.length - 2]).toBe(100);
-    expect(nums[nums.length - 1]).toBe(-50);
-    // 脊上转折点 y 与起点相同，x 介于起终点之间
-    expect(nums[3]).toBe(0);
-    expect(nums[2]).toBeGreaterThanOrEqual(20);
-    expect(nums[2]).toBeLessThan(100);
-  });
-
   it('connectorPathD 按 type 分发', () => {
     const from = { x: 0, y: 0, width: 40, height: 20 };
     const to = { x: 100, y: 40, width: 40, height: 20 };
@@ -238,7 +208,7 @@ describe('resolveConnectorAppearance / roundedElbowPath', () => {
 
   it('fishbone 不套用深层细灰折线（保持斜骨）', () => {
     const { doc, b, c } = chainDoc();
-    const bone = applyLayoutPreset(doc, 'fishbone-1');
+    const bone = applyLayoutPreset(doc, 'fishbone-classic');
     const s = resolveConnectorAppearance(bone, b, c, getTheme(bone));
     expect(s.deep).toBe(false);
     expect(s.type).not.toBe('elbow');
@@ -328,10 +298,10 @@ describe('resolveConnectorAppearance / roundedElbowPath', () => {
 describe('preservesLayoutConnectorD / resolveRenderedConnectorD', () => {
   const from = { x: 0, y: 0, width: 40, height: 20 };
   const to = { x: 120, y: -50, width: 40, height: 20 };
-  const layoutD = fishboneRibPath(from, to);
+  const layoutD = 'M 20 0 L 60 0 L 80 -50';
 
-  it('fishbone-right 保留布局预计算 d，非 curve 主题也不重建', () => {
-    const doc = applyLayoutPreset(createDocument(), 'fishbone-1');
+  it('fishbone 保留布局预计算 d，非 curve 主题也不重建', () => {
+    const doc = applyLayoutPreset(createDocument(), 'fishbone-classic');
     expect(preservesLayoutConnectorD(doc)).toBe(true);
     const theme = getTheme(doc);
     const style = { ...resolveConnectorAppearance(doc, doc.rootId, 'x', theme), type: 'elbow' as const };

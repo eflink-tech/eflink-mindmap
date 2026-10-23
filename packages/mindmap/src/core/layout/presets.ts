@@ -41,6 +41,10 @@ const LEGACY_LAYOUT_MAP: Record<string, LayoutPresetId> = {
   mindmap: 'map-balanced-curve',
   logic: 'logic-right-curve',
   tree: 'org-down-rounded',
+  'fishbone-1': 'fishbone-classic',
+  'fishbone-2': 'fishbone-6m',
+  'fishbone-3': 'fishbone-comb',
+  'fishbone-right': 'fishbone-classic',
 };
 
 function preset(
@@ -212,9 +216,12 @@ export const LAYOUT_PRESETS: LayoutPreset[] = [
   preset('timeline-h-arrow', 'timeline', '横向箭头', 'timeline-h', { connectorEnd: 'arrow' }),
   preset('timeline-v-capsule', 'timeline', '纵向胶囊', 'timeline-v', { shape: 'pill' }),
   // fishbone
-  preset('fishbone-1', 'fishbone', '鱼骨 1', 'fishbone-right', { shape: 'rectangle' }),
-  preset('fishbone-2', 'fishbone', '鱼骨 2', 'fishbone-right', { shape: 'rectangle' }),
-  preset('fishbone-3', 'fishbone', '鱼骨 3', 'fishbone-right', { shape: 'hexagon' }),
+  preset('fishbone-classic', 'fishbone', '经典原因型', 'fishbone-rl', { shape: 'rectangle' }),
+  preset('fishbone-reverse', 'fishbone', '反向对策型', 'fishbone-lr', { shape: 'rectangle' }),
+  preset('fishbone-vertical', 'fishbone', '纵向·头下', 'fishbone-bt', { shape: 'rectangle' }),
+  preset('fishbone-vertical-up', 'fishbone', '纵向·头上', 'fishbone-tb', { shape: 'rectangle' }),
+  preset('fishbone-6m', 'fishbone', '6M 对称型', 'fishbone-6m', { shape: 'rectangle' }),
+  preset('fishbone-comb', 'fishbone', '梳状整理型', 'fishbone-comb', { shape: 'rectangle' }),
   // matrix
   preset('matrix-2x2-1', 'matrix', '矩阵 1', 'matrix-2x2', { shape: 'rounded' }),
   preset('matrix-2x2-2', 'matrix', '矩阵 2', 'matrix-2x2', { shape: 'rectangle' }),
@@ -248,7 +255,12 @@ export function resolveLayoutMode(layout: string): ResolvedLayoutMode {
     case 'brace-right':
     case 'timeline-h':
     case 'timeline-v':
-    case 'fishbone-right':
+    case 'fishbone-rl':
+    case 'fishbone-lr':
+    case 'fishbone-bt':
+    case 'fishbone-tb':
+    case 'fishbone-6m':
+    case 'fishbone-comb':
     case 'matrix-2x2':
       return 'logic';
     case 'org-down':
