@@ -1,5 +1,6 @@
 // 通用二次确认弹窗（替代 window.confirm）
 import { useEffect, useRef, type JSX } from 'react';
+import { useI18n } from '@eflink-tech/office-kit';
 
 export interface ConfirmDialogProps {
   open: boolean;
@@ -17,12 +18,16 @@ export function ConfirmDialog({
   open,
   title,
   message,
-  confirmLabel = '确定',
-  cancelLabel = '取消',
+  confirmLabel,
+  cancelLabel,
   variant = 'default',
   onConfirm,
   onCancel,
 }: ConfirmDialogProps): JSX.Element | null {
+  const { t } = useI18n();
+  // 默认按钮文案走公共字典；调用方显式传入时优先
+  const finalConfirmLabel = confirmLabel ?? t('action.confirm');
+  const finalCancelLabel = cancelLabel ?? t('action.cancel');
   const confirmRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
@@ -74,7 +79,7 @@ export function ConfirmDialog({
             onClick={onCancel}
             className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
           >
-            {cancelLabel}
+            {finalCancelLabel}
           </button>
           <button
             ref={confirmRef}
@@ -82,7 +87,7 @@ export function ConfirmDialog({
             onClick={onConfirm}
             className={`rounded-lg px-4 py-2 text-sm font-medium ${confirmClass}`}
           >
-            {confirmLabel}
+            {finalConfirmLabel}
           </button>
         </div>
       </div>

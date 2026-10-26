@@ -1,4 +1,7 @@
 // AI 提示词与结果解析：约定输出导图树形 JSON，由 actionExecutor 落为节点
+// 提示词文本保持中文（发给模型的 prompt 不翻译）；抛错文案经 mindT 多语化（会话内展示）
+import { titleVariants } from '../i18n/assetTitles';
+import { mindT } from '../i18n/runtime';
 import type { AITree, AITreeNode } from './types';
 
 const MAX_NODES = 200;
@@ -46,7 +49,7 @@ export function parseJSONFromText(text: string): unknown {
     if (start >= 0 && end > start) {
       return JSON.parse(cleaned.slice(start, end + 1));
     }
-    throw new Error('AI 返回的内容不是有效的 JSON');
+    throw new Error(mindT('mind.ai.err.invalidResponse'));
   }
 }
 
@@ -63,10 +66,10 @@ export function parseAITree(text: string, expandMode = false): AITree {
       const children = sanitizeNodes(node.children, 1);
       if (children.length) return { root: undefined, children };
     }
-    throw new Error('导图 JSON 结构不正确');
+    throw new Error(mindT('mind.ai.err.badStructure'));
   }
   const children = sanitizeNodes(data.children, 1);
-  if (!children.length) throw new Error('AI 未生成有效的导图内容');
+  if (!children.length) throw new Error(mindT('mind.ai.err.emptyContent'));
   return {
     root: !expandMode && typeof data.root === 'string' && data.root.trim() ? data.root.trim() : undefined,
     children,
@@ -90,7 +93,12 @@ function sanitizeNodes(nodes: unknown, depth: number): AITreeNode[] {
   return out;
 }
 
-/** 根节点是否仍是默认占位文本（可安全重命名） */
+/** 根节点是否仍是默认占位文本（可安全重命名）。
+ * 文档可能由任一语言界面创建（如英文 UI 落地 'Central topic'），
+ * 因此接受 titleVariants 中全部四种语言写法。 */
+const ROOT_PLACEHOLDER_VARIANTS: string[] = titleVariants(ROOT_PLACEHOLDER);
+
 export function isPlaceholderRoot(rootText: string): boolean {
-  return !rootText.trim() || rootText.trim() === ROOT_PLACEHOLDER;
+  const text = rootText.trim();
+  return !text || ROOT_PLACEHOLDER_VARIANTS.includes(text);
 }

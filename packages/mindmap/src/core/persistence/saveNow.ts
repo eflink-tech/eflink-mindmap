@@ -1,5 +1,6 @@
 // 手动保存（⌘S/Ctrl+S、菜单「保存」、分享前强制保存共用入口）：
 // 与本地草稿（autosave）解耦，避免 uiStore ↔ mindMapStore ↔ autosave 循环依赖
+import { mindT } from '../../i18n/runtime';
 import { useMindMapStore } from '../../store/mindMapStore';
 import { useUiStore } from '../../store/uiStore';
 import { clearDraft } from './autosave';
@@ -15,7 +16,7 @@ export async function saveNow(): Promise<boolean> {
   const doc = store.doc;
   const showToast = useUiStore.getState().showToast;
   if (!doc) {
-    showToast('当前没有可保存的文档');
+    showToast(mindT('mind.save.noDocument'), { error: true });
     return false;
   }
   try {
@@ -26,12 +27,12 @@ export async function saveNow(): Promise<boolean> {
     return true;
   } catch (error) {
     console.error('手动保存失败:', error);
-    showToast('保存失败，请稍后重试');
+    showToast(mindT('mind.save.failed'), { error: true });
     return false;
   }
 }
 
-/** ⌘S / 菜单「保存」入口：云端保存 + 顶部提示「已保存」 */
+/** ⌘S / 菜单「保存」入口：云端保存 + 顶部提示「已保存」（shell.saved） */
 export async function saveNowWithToast(): Promise<void> {
-  if (await saveNow()) useUiStore.getState().showToast('已保存');
+  if (await saveNow()) useUiStore.getState().showToast(mindT('shell.saved'));
 }

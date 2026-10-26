@@ -3,6 +3,7 @@
 // 右侧为画布缩放比例下拉与「大纲 / 思维导图」视图切换
 import { Check, ChevronDown, ListTree, Network, Pencil } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import { useI18n } from '@eflink-tech/office-kit';
 import { useMindMapStore } from '../../store/mindMapStore';
 import { useUiStore } from '../../store/uiStore';
 import { SaveStatusIndicator } from './SaveStatusIndicator';
@@ -11,6 +12,7 @@ import { SaveStatusIndicator } from './SaveStatusIndicator';
 const ZOOM_PRESETS = [0.5, 0.7, 0.8, 1, 1.2, 1.5, 2];
 
 export function StatusBar() {
+  const { t } = useI18n();
   const scale = useMindMapStore((s) => s.doc?.viewport.scale ?? 1);
   const multiCount = useMindMapStore((s) => s.selectedIds.length);
   const canvasMode = useUiStore((s) => s.canvasMode);
@@ -93,14 +95,14 @@ export function StatusBar() {
               setRenaming(false);
             }
           }}
-          aria-label="文档名"
+          aria-label={t('mind.status.docName')}
           className="h-6 w-40 rounded border border-blue-400 px-1.5 text-xs text-slate-800 outline-none"
         />
       ) : (
         <button
           type="button"
           disabled={!hasDoc}
-          title="点击重命名文档"
+          title={t('mind.status.rename')}
           onClick={beginRename}
           className="flex h-6 min-w-0 max-w-[200px] items-center gap-1 rounded px-1 text-xs text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 disabled:cursor-default disabled:hover:bg-transparent"
         >
@@ -111,22 +113,22 @@ export function StatusBar() {
       {/* 保存状态：mr-auto 占据左侧，与右侧控件组分开 */}
       <span
         className="mr-auto text-xs text-slate-400"
-        title="⌘S/Ctrl+S 保存到云端"
+        title={t('mind.status.saveTip')}
       >
         <SaveStatusIndicator />
       </span>
       {/* 多选反馈：框选 / Shift+点击选中多个节点时显示数量 */}
       {multiCount > 1 && (
         <span className="mr-1 text-xs text-slate-500" data-testid="selection-count">
-          已选 {multiCount} 个节点
+          {t('mind.status.selected', { count: multiCount })}
         </span>
       )}
       {/* 缩放比例：点击弹出档位菜单，向上展开 */}
       <div className="relative" ref={menuRef}>
         <button
           type="button"
-          title="缩放比例"
-          aria-label={`缩放比例 ${Math.round(scale * 100)}%`}
+          title={t('mind.status.zoom')}
+          aria-label={t('mind.p.zoomPercent', { percent: Math.round(scale * 100) })}
           aria-expanded={menuOpen}
           onClick={() => setMenuOpen((o) => !o)}
           className={zoomButton}
@@ -160,14 +162,14 @@ export function StatusBar() {
             <button
               type="button"
               className={menuItem}
-              title="适应屏幕 (Cmd/Ctrl+0)"
+              title={t('mind.p.fitShortcut')}
               onClick={() => {
                 useMindMapStore.getState().fitToScreen();
                 setMenuOpen(false);
               }}
             >
               <Check size={12} className="opacity-0" />
-              适应屏幕
+              {t('mind.view.fitToScreen')}
             </button>
           </div>
         )}
@@ -176,13 +178,13 @@ export function StatusBar() {
       {/* 视图切换：与 XMind 一致，按钮显示的是可切换到的目标视图 */}
       <button
         type="button"
-        title={canvasMode === 'mindmap' ? '切换到大纲视图' : '切换到思维导图视图'}
+        title={canvasMode === 'mindmap' ? t('mind.status.outlineTip') : t('mind.status.mindmapTip')}
         aria-pressed={canvasMode === 'outline'}
         onClick={() => setCanvasMode(canvasMode === 'mindmap' ? 'outline' : 'mindmap')}
         className={zoomButton}
       >
         {canvasMode === 'mindmap' ? <ListTree size={13} /> : <Network size={13} />}
-        {canvasMode === 'mindmap' ? '大纲' : '思维导图'}
+        {canvasMode === 'mindmap' ? t('mind.status.outline') : t('mind.status.mindmap')}
       </button>
     </div>
   );

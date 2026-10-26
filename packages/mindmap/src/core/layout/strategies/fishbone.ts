@@ -1,9 +1,25 @@
+import type { OfficeLocale } from '@eflink-tech/office-kit';
+import { translateTitle } from '../../../i18n/assetTitles';
 import type { Box, LayoutStructureId, NodeSize } from '../../../types/mindmap';
 import { branchColorOf } from '../../style/apply';
 import { elbowPath, type ConnectorDir } from '../../style/connectorStyle';
 import { visibleChildren, type LayoutCtx } from './shared';
 
 type FishboneStructureId = Extract<LayoutStructureId, `fishbone-${string}`>;
+
+/**
+ * 6M 因果分析的六大类别（人/机/料/法/测/环）。
+ * 中文原文是目录与查表键；这些名字最终是节点文本，必须在「创建时」按当前语言落地，
+ * 之后随文档一起保存/导出（与用户手敲的节点文本同等对待），渲染端不再翻译。
+ */
+export const FISHBONE_6M_CATEGORIES = ['人员', '设备', '材料', '方法', '测量', '环境'] as const;
+
+export type Fishbone6MCategory = (typeof FISHBONE_6M_CATEGORIES)[number];
+
+/** 写入文档时调用：返回当前语言下的 6M 类别节点文本（zh-CN 保持中文原文） */
+export function localized6MLabels(locale?: OfficeLocale): string[] {
+  return FISHBONE_6M_CATEGORIES.map((label) => translateTitle(label, locale));
+}
 
 interface FishboneAxis {
   /** 鱼脊（由鱼头指向鱼尾）的单位向量 */

@@ -1,5 +1,8 @@
 // 标记注册表：标记分组的唯一数据源，面板（SVG）与画布（Konva）渲染共用。
 // 图标路径统一在 24×24 坐标系内描述，渲染端按目标尺寸等比缩放。
+import type { OfficeLocale } from '@eflink-tech/office-kit';
+import { translateTitle } from '../../i18n/assetTitles';
+import { getMindLocale } from '../../i18n/runtime';
 import type { Marker, MarkerColor } from '../../types/mindmap';
 
 /** 七色通用色板（标签/优先级/旗帜/星星/人像共用，对齐 XMind） */
@@ -250,29 +253,32 @@ export const MARKER_GROUPS: MarkerGroupDef[] = [
   { id: 'symbol', title: '符号', items: SYMBOL_PRESETS.map((value) => ({ type: 'emoji', value }) as Marker) },
 ];
 
-/** 标记的中文提示文案（tooltip 用） */
-export function markerLabel(marker: Marker): string {
+/** 标记的提示文案（tooltip 用）；zh-CN 输出与历史逐字节一致，其余语言按目录换词 */
+export function markerLabel(marker: Marker, locale: OfficeLocale = getMindLocale()): string {
+  const name = (zh: string) => translateTitle(zh, locale);
+  // 中文用紧凑「标签·红」，其它语言用带空格的「Label · Red」
+  const dot = locale === 'zh-CN' ? '·' : ' · ';
   switch (marker.type) {
     case 'label':
-      return `标签·${colorLabel(marker.color)}`;
+      return `${name('标签')}${dot}${name(colorLabel(marker.color))}`;
     case 'priority':
-      return `优先级 ${marker.level}`;
+      return `${name('优先级')} ${marker.level}`;
     case 'task': {
       const names = { start: '开始', p25: '25%', p50: '50%', p75: '75%', p100: '100%', done: '完成' } as const;
-      return `任务·${names[marker.state]}`;
+      return `${name('任务')}${dot}${name(names[marker.state])}`;
     }
     case 'flag':
-      return `旗帜·${colorLabel(marker.color)}`;
+      return `${name('旗帜')}${dot}${name(colorLabel(marker.color))}`;
     case 'star':
-      return `星星·${colorLabel(marker.color)}`;
+      return `${name('星星')}${dot}${name(colorLabel(marker.color))}`;
     case 'people':
-      return `人像·${colorLabel(marker.color)}`;
+      return `${name('人像')}${dot}${name(colorLabel(marker.color))}`;
     case 'emoji':
-      return `符号 ${marker.value}`;
+      return `${name('符号')} ${marker.value}`;
     case 'sticker':
       return marker.value;
     case 'progress':
-      return `进度 ${marker.percent}%`;
+      return `${name('进度')} ${marker.percent}%`;
   }
 }
 

@@ -1,7 +1,9 @@
 // 快捷键总览弹窗：按分组列出全部快捷键
 import { useEffect, type JSX } from 'react';
 import { X } from 'lucide-react';
+import { useI18n } from '@eflink-tech/office-kit';
 import { formatShortcut, SHORTCUT_GROUPS, isMacPlatform } from '../../core/shortcuts/catalog';
+import { translateTitle } from '../../i18n/assetTitles';
 
 export function ShortcutsDialog({
   open,
@@ -10,6 +12,7 @@ export function ShortcutsDialog({
   open: boolean;
   onClose: () => void;
 }): JSX.Element | null {
+  const { t, locale } = useI18n();
   const mac = isMacPlatform();
 
   useEffect(() => {
@@ -42,11 +45,11 @@ export function ShortcutsDialog({
       >
         <div className="flex items-center justify-between border-b border-slate-100 px-5 py-3.5">
           <h2 id="shortcuts-dialog-title" className="text-base font-semibold text-slate-800">
-            快捷键
+            {t('action.shortcuts')}
           </h2>
           <button
             type="button"
-            aria-label="关闭"
+            aria-label={t('action.close')}
             onClick={onClose}
             className="flex h-8 w-8 items-center justify-center rounded-md text-slate-500 hover:bg-slate-100 hover:text-slate-800"
           >
@@ -55,13 +58,13 @@ export function ShortcutsDialog({
         </div>
         <div className="overflow-y-auto px-5 py-4">
           <p className="mb-4 text-xs text-slate-400">
-            {mac ? 'Mac 以 ⌘ 表示 Command' : 'Windows / Linux 以 Ctrl 表示控制键'}
+            {t(mac ? 'mind.c.shortcuts.macNote' : 'mind.c.shortcuts.winNote')}
           </p>
           <div className="space-y-5">
             {SHORTCUT_GROUPS.map((group) => (
               <section key={group.title}>
                 <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
-                  {group.title}
+                  {translateTitle(group.title, locale)}
                 </h3>
                 <ul className="divide-y divide-slate-100 rounded-lg border border-slate-100">
                   {group.items.map((item) => {
@@ -73,7 +76,7 @@ export function ShortcutsDialog({
                         key={item.id}
                         className="flex items-center justify-between gap-4 px-3 py-2.5 text-sm"
                       >
-                        <span className="text-slate-700">{item.label}</span>
+                        <span className="text-slate-700">{translateTitle(item.label, locale)}</span>
                         <kbd className="shrink-0 rounded bg-slate-50 px-2 py-0.5 font-sans text-[12px] tabular-nums text-slate-500">
                           {keysText}
                         </kbd>

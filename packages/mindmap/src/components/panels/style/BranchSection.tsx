@@ -1,20 +1,21 @@
 // 分支线样式（节点级 connector*）；渲染见 ConnectorRenderer + resolveConnectorStyle
+import { useI18n } from '@eflink-tech/office-kit';
 import { resolveNodeStyle } from '../../../core/style/apply';
 import { resolveConnectorStyle } from '../../../core/style/connectorStyle';
 import { getTheme } from '../../../core/style/themes';
 import { useMindMapStore } from '../../../store/mindMapStore';
 import type { ConnectorEnd, ConnectorLineType } from '../../../types/mindmap';
 
-const LINE_TYPES: { value: ConnectorLineType; label: string }[] = [
-  { value: 'curve', label: '曲线' },
-  { value: 'straight', label: '直线' },
-  { value: 'elbow', label: '折线' },
+const LINE_TYPES: { value: ConnectorLineType; labelKey: string }[] = [
+  { value: 'curve', labelKey: 'mind.p.curve' },
+  { value: 'straight', labelKey: 'mind.p.straight' },
+  { value: 'elbow', labelKey: 'mind.p.elbow' },
 ];
 
-const ENDS: { value: ConnectorEnd; label: string }[] = [
-  { value: 'none', label: '无' },
-  { value: 'arrow', label: '箭头' },
-  { value: 'dot', label: '圆点' },
+const ENDS: { value: ConnectorEnd; labelKey: string }[] = [
+  { value: 'none', labelKey: 'mind.p.none' },
+  { value: 'arrow', labelKey: 'mind.p.arrow' },
+  { value: 'dot', labelKey: 'mind.p.dot' },
 ];
 
 const WIDTHS = [1, 1.5, 2, 2.5, 3];
@@ -24,6 +25,7 @@ interface BranchSectionProps {
 }
 
 export function BranchSection({ nodeId }: BranchSectionProps) {
+  const { t } = useI18n();
   const doc = useMindMapStore((s) => s.doc);
   const setNodeStyle = useMindMapStore((s) => s.setNodeStyle);
 
@@ -39,10 +41,10 @@ export function BranchSection({ nodeId }: BranchSectionProps) {
 
   return (
     <section className="mt-4 border-t border-slate-100 pt-4">
-      <h3 className="mb-2 text-xs font-medium text-slate-500">分支线</h3>
+      <h3 className="mb-2 text-xs font-medium text-slate-500">{t('mind.p.branchLine')}</h3>
 
       <label className="mb-1 block text-xs text-slate-500" htmlFor="style-connector-type">
-        线型
+        {t('mind.p.lineType')}
       </label>
       <select
         id="style-connector-type"
@@ -50,15 +52,15 @@ export function BranchSection({ nodeId }: BranchSectionProps) {
         onChange={(e) => setNodeStyle({ connectorType: e.target.value as ConnectorLineType })}
         className="mb-3 w-full rounded border border-slate-300 px-2 py-1 text-sm"
       >
-        {LINE_TYPES.map((t) => (
-          <option key={t.value} value={t.value}>
-            {t.label}
+        {LINE_TYPES.map((lt) => (
+          <option key={lt.value} value={lt.value}>
+            {t(lt.labelKey)}
           </option>
         ))}
       </select>
 
       <label className="mb-1 block text-xs text-slate-500" htmlFor="style-connector-width">
-        线宽
+        {t('mind.p.lineWidth')}
       </label>
       <select
         id="style-connector-width"
@@ -74,7 +76,7 @@ export function BranchSection({ nodeId }: BranchSectionProps) {
       </select>
 
       <label className="mb-1 block text-xs text-slate-500" htmlFor="style-connector-color">
-        颜色
+        {t('mind.p.color')}
       </label>
       <input
         id="style-connector-color"
@@ -85,22 +87,22 @@ export function BranchSection({ nodeId }: BranchSectionProps) {
       />
 
       <span id="style-connector-end" className="mb-1 block text-xs text-slate-500">
-        终点
+        {t('mind.p.endPoint')}
       </span>
       <div className="flex gap-2" role="group" aria-labelledby="style-connector-end">
-        {ENDS.map((e) => (
+        {ENDS.map((e2) => (
           <button
-            key={e.value}
+            key={e2.value}
             type="button"
-            onClick={() => setNodeStyle({ connectorEnd: e.value })}
-            aria-pressed={connectorEnd === e.value}
+            onClick={() => setNodeStyle({ connectorEnd: e2.value })}
+            aria-pressed={connectorEnd === e2.value}
             className={`flex-1 rounded border px-2 py-1 text-sm ${
-              connectorEnd === e.value
+              connectorEnd === e2.value
                 ? 'border-blue-500 bg-blue-50 text-blue-600'
                 : 'border-slate-200'
             }`}
           >
-            {e.label}
+            {t(e2.labelKey)}
           </button>
         ))}
       </div>

@@ -25,8 +25,8 @@ interface UiStore {
   // 联系线创建模式：是否处于连线中、已选定的起点节点 id
   linking: boolean;
   linkFrom: string | null;
-  /** 顶部轻提示文案；null 表示不显示 */
-  toast: string | null;
+  /** 顶部轻提示；null 表示不显示。error 由调用方显式给出，文案已多语，不能再靠中文关键词猜 */
+  toast: { text: string; error: boolean } | null;
   /** 空格按住状态：进入画布平移模式（光标抓手，任意位置可拖拽移动画布） */
   spacePanning: boolean;
   setSpacePanning: (v: boolean) => void;
@@ -41,7 +41,7 @@ interface UiStore {
   startLinking: () => void;
   pickLinkFrom: (id: string) => void;
   endLinking: () => void;
-  showToast: (message: string, durationMs?: number) => void;
+  showToast: (message: string, opts?: { durationMs?: number; error?: boolean }) => void;
   clearToast: () => void;
 }
 
@@ -80,13 +80,13 @@ export const useUiStore = create<UiStore>((set, get) => ({
   startLinking: () => set({ linking: true, linkFrom: useMindMapStore.getState().selectedId ?? null }),
   pickLinkFrom: (id) => set({ linkFrom: id }),
   endLinking: () => set({ linking: false, linkFrom: null }),
-  showToast: (message, durationMs = 2500) => {
+  showToast: (message, opts) => {
     if (toastTimer) clearTimeout(toastTimer);
-    set({ toast: message });
+    set({ toast: { text: message, error: opts?.error === true } });
     toastTimer = setTimeout(() => {
       set({ toast: null });
       toastTimer = undefined;
-    }, durationMs);
+    }, opts?.durationMs ?? 2500);
   },
   clearToast: () => {
     if (toastTimer) clearTimeout(toastTimer);

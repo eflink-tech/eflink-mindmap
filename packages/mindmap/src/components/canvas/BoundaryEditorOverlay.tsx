@@ -2,12 +2,14 @@
 // 外框备注编辑浮层：选中外框后点击左上角加号（或双击备注标签）进入。
 // Enter/失焦提交（空串移除标签），Esc 取消；交互对齐概要编辑浮层。
 import { useCallback, useEffect, useRef } from 'react';
+import { useI18n } from '@eflink-tech/office-kit';
 import { useMindMapStore } from '../../store/mindMapStore';
 import { BOUNDARY_CHIP, boundaryRects } from '../../core/layout/overlays';
 
 export const BOUNDARY_EDITOR_MIN_WIDTH = 140;
 
 export function BoundaryEditorOverlay() {
+  const { t } = useI18n();
   const editingBoundaryId = useMindMapStore((s) => s.editingBoundaryId);
   const doc = useMindMapStore((s) => s.doc);
   const positions = useMindMapStore((s) => s.layoutResult?.positions);
@@ -67,6 +69,7 @@ export function BoundaryEditorOverlay() {
       ref={ref}
       contentEditable
       suppressContentEditableWarning
+      aria-label={t('mind.p.editBoundary')}
       className="absolute z-10 rounded-md border-2 border-blue-500 bg-white px-2 outline-none"
       style={{
         left,

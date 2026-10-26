@@ -60,6 +60,9 @@ importers:
 
   packages/mindmap:
     dependencies:
+      '@eflink-tech/office-kit':
+        specifier: workspace:*
+        version: link:../office-kit
       dexie:
         specifier: ^4.4.5
         version: 4.4.5
@@ -127,6 +130,25 @@ importers:
       vitest:
         specifier: ^4.1.11
         version: 4.1.11(@types/node@24.13.3)(@vitest/coverage-v8@4.1.11)(jsdom@29.1.1)(vite@8.2.2(@types/node@24.13.3)(jiti@2.7.0))
+
+  packages/office-kit:
+    dependencies:
+      react:
+        specifier: '>=18.0.0'
+        version: 19.2.8
+      react-dom:
+        specifier: '>=18.0.0'
+        version: 19.2.8(react@19.2.8)
+    devDependencies:
+      '@types/react':
+        specifier: ^19.2.18
+        version: 19.2.18
+      '@types/react-dom':
+        specifier: ^19.2.4
+        version: 19.2.7(@types/react@19.2.18)
+      typescript:
+        specifier: ~6.0.2
+        version: 6.0.3
 
 packages:
 

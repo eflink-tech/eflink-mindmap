@@ -1,5 +1,6 @@
 // 节点外观：填充/边框色、线型线宽、字号、字重、形状、定宽与清除自定义样式
 import { Eraser } from 'lucide-react';
+import { useI18n } from '@eflink-tech/office-kit';
 import { resolveNodeStyle } from '../../../core/style/apply';
 import { getTheme } from '../../../core/style/themes';
 import { useMindMapStore } from '../../../store/mindMapStore';
@@ -7,21 +8,21 @@ import type { BorderStyle, FontWeight, NodeShape } from '../../../types/mindmap'
 
 const FONT_SIZES = [12, 14, 16, 18, 20, 24];
 
-const SHAPES: { value: NodeShape; label: string }[] = [
-  { value: 'rounded', label: '圆角矩形' },
-  { value: 'ellipse', label: '椭圆' },
-  { value: 'rectangle', label: '矩形' },
+const SHAPES: { value: NodeShape; labelKey: string }[] = [
+  { value: 'rounded', labelKey: 'mind.p.shapeRounded' },
+  { value: 'ellipse', labelKey: 'mind.p.shapeEllipse' },
+  { value: 'rectangle', labelKey: 'mind.p.shapeRect' },
 ];
 
-const FONT_WEIGHTS: { value: FontWeight; label: string }[] = [
-  { value: 'normal', label: '常规' },
-  { value: 'bold', label: '加粗' },
+const FONT_WEIGHTS: { value: FontWeight; labelKey: string }[] = [
+  { value: 'normal', labelKey: 'mind.p.regular' },
+  { value: 'bold', labelKey: 'mind.p.bold' },
 ];
 
-const BORDER_STYLES: { value: BorderStyle; label: string }[] = [
-  { value: 'solid', label: '实线' },
-  { value: 'dashed', label: '虚线' },
-  { value: 'none', label: '无' },
+const BORDER_STYLES: { value: BorderStyle; labelKey: string }[] = [
+  { value: 'solid', labelKey: 'mind.p.solid' },
+  { value: 'dashed', labelKey: 'mind.p.dashed' },
+  { value: 'none', labelKey: 'mind.p.none' },
 ];
 
 const BORDER_WIDTHS = [1, 2, 3, 4];
@@ -31,6 +32,7 @@ interface ShapeSectionProps {
 }
 
 export function ShapeSection({ nodeId }: ShapeSectionProps) {
+  const { t } = useI18n();
   const doc = useMindMapStore((s) => s.doc);
   const setNodeStyle = useMindMapStore((s) => s.setNodeStyle);
   const clearNodeStyle = useMindMapStore((s) => s.clearNodeStyle);
@@ -42,10 +44,10 @@ export function ShapeSection({ nodeId }: ShapeSectionProps) {
 
   return (
     <section>
-      <h3 className="mb-2 text-xs font-medium text-slate-500">外观</h3>
+      <h3 className="mb-2 text-xs font-medium text-slate-500">{t('mind.p.appearance')}</h3>
 
       <label className="mb-1 block text-xs text-slate-500" htmlFor="style-fill">
-        填充色
+        {t('mind.p.fill')}
       </label>
       <input
         id="style-fill"
@@ -56,7 +58,7 @@ export function ShapeSection({ nodeId }: ShapeSectionProps) {
       />
 
       <label className="mb-1 block text-xs text-slate-500" htmlFor="style-text">
-        文字色
+        {t('mind.p.textColor')}
       </label>
       <input
         id="style-text"
@@ -67,7 +69,7 @@ export function ShapeSection({ nodeId }: ShapeSectionProps) {
       />
 
       <label className="mb-1 block text-xs text-slate-500" htmlFor="style-border">
-        边框色
+        {t('mind.p.borderColor')}
       </label>
       <div className="mb-3 flex items-center gap-2">
         <input
@@ -81,16 +83,16 @@ export function ShapeSection({ nodeId }: ShapeSectionProps) {
           type="button"
           onClick={() => setNodeStyle({ borderColor: 'transparent' })}
           className="shrink-0 rounded border border-slate-200 px-2 py-1 text-xs"
-          aria-label="无边框"
+          aria-label={t('mind.p.noBorder')}
           aria-pressed={resolved.borderColor === 'transparent'}
-          title="无边框"
+          title={t('mind.p.noBorder')}
         >
-          无
+          {t('mind.p.none')}
         </button>
       </div>
 
       <span id="style-borderstyle" className="mb-1 block text-xs text-slate-500">
-        边框线型
+        {t('mind.p.borderStyle')}
       </span>
       <div className="mb-3 flex gap-2" role="group" aria-labelledby="style-borderstyle">
         {BORDER_STYLES.map((b) => (
@@ -105,13 +107,13 @@ export function ShapeSection({ nodeId }: ShapeSectionProps) {
                 : 'border-slate-200'
             }`}
           >
-            {b.label}
+            {t(b.labelKey)}
           </button>
         ))}
       </div>
 
       <label className="mb-1 block text-xs text-slate-500" htmlFor="style-borderwidth">
-        边框宽度
+        {t('mind.p.borderWidth')}
       </label>
       <select
         id="style-borderwidth"
@@ -128,7 +130,7 @@ export function ShapeSection({ nodeId }: ShapeSectionProps) {
       </select>
 
       <label className="mb-1 block text-xs text-slate-500" htmlFor="style-fontsize">
-        字号
+        {t('mind.p.fontSize')}
       </label>
       <select
         id="style-fontsize"
@@ -144,7 +146,7 @@ export function ShapeSection({ nodeId }: ShapeSectionProps) {
       </select>
 
       <span id="style-fontweight" className="mb-1 block text-xs text-slate-500">
-        字重
+        {t('mind.p.fontWeightLabel')}
       </span>
       <div className="mb-3 flex gap-2" role="group" aria-labelledby="style-fontweight">
         {FONT_WEIGHTS.map((w) => (
@@ -159,13 +161,13 @@ export function ShapeSection({ nodeId }: ShapeSectionProps) {
                 : 'border-slate-200'
             }`}
           >
-            {w.label}
+            {t(w.labelKey)}
           </button>
         ))}
       </div>
 
       <label className="mb-1 block text-xs text-slate-500" htmlFor="style-shape">
-        形状
+        {t('mind.p.shape')}
       </label>
       <select
         id="style-shape"
@@ -175,13 +177,13 @@ export function ShapeSection({ nodeId }: ShapeSectionProps) {
       >
         {SHAPES.map((sh) => (
           <option key={sh.value} value={sh.value}>
-            {sh.label}
+            {t(sh.labelKey)}
           </option>
         ))}
       </select>
 
       <label className="mb-1 block text-xs text-slate-500" htmlFor="style-fixedwidth">
-        节点宽度
+        {t('mind.p.nodeWidth')}
       </label>
       <div className="mb-3 flex items-center gap-2">
         <input
@@ -189,7 +191,7 @@ export function ShapeSection({ nodeId }: ShapeSectionProps) {
           type="number"
           min={40}
           max={800}
-          placeholder="自动"
+          placeholder={t('mind.p.auto')}
           value={resolved.fixedWidth ?? ''}
           onChange={(e) => {
             const raw = e.target.value;
@@ -207,10 +209,10 @@ export function ShapeSection({ nodeId }: ShapeSectionProps) {
           type="button"
           onClick={() => setNodeStyle({ fixedWidth: undefined })}
           className="shrink-0 rounded border border-slate-200 px-2 py-1 text-xs"
-          title="按内容适合宽度"
+          title={t('mind.p.fitWidthTip')}
           aria-pressed={resolved.fixedWidth == null}
         >
-          适合
+          {t('mind.p.fit')}
         </button>
       </div>
 
@@ -219,9 +221,9 @@ export function ShapeSection({ nodeId }: ShapeSectionProps) {
         onClick={clearNodeStyle}
         disabled={!node.style}
         className="flex w-full items-center justify-center gap-1 rounded border border-slate-200 px-2 py-1.5 text-sm disabled:opacity-30"
-        title="恢复主题默认样式"
+        title={t('mind.p.restoreThemeTip')}
       >
-        <Eraser size={14} /> 清除自定义样式
+        <Eraser size={14} /> {t('mind.p.clearCustomStyle')}
       </button>
     </section>
   );

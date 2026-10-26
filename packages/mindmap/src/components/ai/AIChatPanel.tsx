@@ -2,6 +2,7 @@
 // 交互模式与 eflink-pptx / eflink-word / eflink-excel 的 AIChatPanel 保持一致
 import { useEffect, useRef, useState } from 'react';
 import { ChevronLeft, History, ListTree, Settings, Sparkles, Trash2, Wand2, X } from 'lucide-react';
+import { useI18n } from '@eflink-tech/office-kit';
 import { useUiStore } from '../../store/uiStore';
 import { aiDb, aiSettingsStore, BUILTIN_TEMPLATES } from '../../ai/db';
 import { errorMessage, sendMessage, type ChatMessage } from '../../ai/aiService';
@@ -18,7 +19,15 @@ interface SimpleMessage {
 
 const ACCENT = '#2563eb';
 
+/** 内置模板名（ai/db.ts 规范中文存储值）→ 展示文案键 */
+const TEMPLATE_NAME_KEYS: Record<string, string> = {
+  '展开分支': 'mind.ai.tpl.expand',
+  '头脑风暴': 'mind.ai.tpl.inspire',
+  '利弊分析': 'mind.ai.tpl.prosCons',
+};
+
 export function AIChatPanel() {
+  const { t } = useI18n();
   const closePanel = useUiStore((s) => s.closePanel);
   const showToast = useUiStore((s) => s.showToast);
   const [view, setView] = useState<PanelView>('chat');
@@ -54,7 +63,7 @@ export function AIChatPanel() {
     const now = Date.now();
     void aiDb.conversations.put({
       id,
-      title: messages[0]?.content.replace(/\n/g, ' ').slice(0, 24) || '新对话',
+      title: messages[0]?.content.replace(/\n/g, ' ').slice(0, 24) || t('mind.ai.newChat'),
       messages: messages.map((m) => ({ ...m, time: now })),
       createdAt: now,
       updatedAt: now,
@@ -139,7 +148,7 @@ export function AIChatPanel() {
       }
       setBusy(true);
       setPendingTree(null);
-      const label = `生成导图：${topic.trim()}`;
+      const label = t('mind.ai.genTitle', { topic: topic.trim() });
       const next: SimpleMessage[] = [...messages, { role: 'user', content: label }];
       setMessages(next);
       try {
@@ -150,19 +159,23 @@ export function AIChatPanel() {
             { role: 'user', content: buildTreePrompt(topic.trim(), requirements.trim()) },
           ],
           onContentChunk: (_c, full) => {
-            setMessages([...next, { role: 'assistant', content: `正在生成…（${full.length} 字）` }]);
+            setMessages([...next, { role: 'assistant', content: t('mind.ai.generatingChars', { count: full.length }) }]);
           },
         });
         const tree = parseAITree(content);
         setPendingTree(tree);
         const preview = tree.children
-          .map((c) => `· ${c.text}${c.children?.length ? `（${c.children.length} 子分支）` : ''}`)
+          .map((c) => `· ${c.text}${c.children?.length ? t('mind.ai.subBranches', { count: c.children.length }) : ''}`)
           .slice(0, 10);
         setMessages([
           ...next,
           {
             role: 'assistant',
-            content: `已生成「${tree.root ?? topic.trim()}」：${countNodes(tree)} 个节点，${tree.children.length} 条主分支。\n${preview.join('\n')}`,
+            content: `${t('mind.ai.generatedSummary', {
+              root: tree.root ?? topic.trim(),
+              nodes: countNodes(tree),
+              branches: tree.children.length,
+            })}\n${preview.join('\n')}`,
           },
         ]);
       } catch (error) {
@@ -179,22 +192,29 @@ export function AIChatPanel() {
       const count = applyAITree(pendingTree);
       setPendingTree(null);
       setGenView(false);
-      showToast(`已应用 ${count} 个节点`);
-      setMessages((prev) => [...prev, { role: 'assistant', content: `已应用到导图（新增 ${count} 个节点）。可撤销（Ctrl+Z）回退。` }]);
+      showToast(t('mind.ai.appliedCount', { count }));
+      setMessages((prev) => [...prev, { role: 'assistant', content: t('mind.ai.appliedToMap', { count }) }]);
     } catch (error) {
-      showToast(error instanceof Error ? error.message : '应用失败');
-      setMessages((prev) => [...prev, { role: 'assistant', content: `⚠️ ${error instanceof Error ? error.message : '应用失败'}` }]);
+      const reason = error instanceof Error ? error.message : t('mind.ai.applyFailed');
+      showToast(reason, { error: true });
+      setMessages((prev) => [...prev, { role: 'assistant', content: `⚠️ ${reason}` }]);
     }
   }
+
+  /** 模板 chip 展示名：规范中文名为存储键，按 mind.ai.tpl.* 字典换语言 */
+  const templateName = (name: string) => {
+    const key = TEMPLATE_NAME_KEYS[name];
+    return key ? t(key) : name;
+  };
 
   /** 展开选中分支：把 AI 生成的子分支挂到选中节点下 */
   const runExpand = (templateId: string) => {
     const selected = getSelectedNodeText();
     if (!selected) {
-      setMessages((prev) => [...prev, { role: 'assistant', content: '⚠️ 请先选中要展开的节点' }]);
+      setMessages((prev) => [...prev, { role: 'assistant', content: `⚠️ ${t('mind.ai.selectNodeFirst')}` }]);
       return;
     }
-    const tpl = BUILTIN_TEMPLATES.find((t) => t.id === templateId);
+    const tpl = BUILTIN_TEMPLATES.find((x) => x.id === templateId);
     if (!tpl) return;
     void (async () => {
       const s = await aiSettingsStore.getSettings();
@@ -203,7 +223,7 @@ export function AIChatPanel() {
         return;
       }
       setBusy(true);
-      const label = `${tpl.name}：${selected}`;
+      const label = t('mind.ai.expandTitle', { template: templateName(tpl.name), node: selected });
       const next: SimpleMessage[] = [...messages, { role: 'user', content: label }];
       setMessages(next);
       try {
@@ -214,14 +234,14 @@ export function AIChatPanel() {
             { role: 'user', content: buildExpandPrompt(tpl.content, selected, getOutlineContext(1200)) },
           ],
           onContentChunk: (_c, full) => {
-            setMessages([...next, { role: 'assistant', content: `正在生成…（${full.length} 字）` }]);
+            setMessages([...next, { role: 'assistant', content: t('mind.ai.generatingChars', { count: full.length }) }]);
           },
         });
         // expand 模式：忽略 root，分支挂到选中节点下
         const tree = parseAITree(content, true);
         const count = applyAITree(tree);
-        showToast(`已新增 ${count} 个节点`);
-        setMessages([...next, { role: 'assistant', content: `已在「${selected}」下新增 ${count} 个节点。可撤销（Ctrl+Z）回退。` }]);
+        showToast(t('mind.ai.addedCount', { count }));
+        setMessages([...next, { role: 'assistant', content: t('mind.ai.expandedUnder', { node: selected, count }) }]);
       } catch (error) {
         setMessages([...next, { role: 'assistant', content: `⚠️ ${errorMessage(error)}` }]);
       } finally {
@@ -236,13 +256,13 @@ export function AIChatPanel() {
       <div className="flex h-10 shrink-0 items-center justify-between border-b border-slate-100 px-3">
         <span className="flex items-center gap-1 text-sm font-medium text-slate-800">
           <Sparkles size={15} style={{ color: ACCENT }} />
-          AI 助手
+          {t('mind.ai.title')}
         </span>
         <div className="flex items-center gap-0.5">
           <button
             type="button"
             className="rounded p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
-            title="会话历史"
+            title={t('mind.ai.history')}
             onClick={() => { loadHistory(); setView(view === 'history' ? 'chat' : 'history'); }}
           >
             <History size={15} />
@@ -250,7 +270,7 @@ export function AIChatPanel() {
           <button
             type="button"
             className="rounded p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
-            title="AI 设置"
+            title={t('mind.ai.settings')}
             onClick={() => setView(view === 'settings' ? 'chat' : 'settings')}
           >
             <Settings size={15} />
@@ -258,7 +278,7 @@ export function AIChatPanel() {
           <button
             type="button"
             className="rounded p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
-            title="新对话"
+            title={t('mind.ai.newChat')}
             onClick={() => { setMessages([]); setPendingTree(null); setConvId(null); setView('chat'); }}
           >
             <Trash2 size={15} />
@@ -266,7 +286,7 @@ export function AIChatPanel() {
           <button
             type="button"
             className="rounded p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
-            title="收起"
+            title={t('mind.ai.collapse')}
             onClick={closePanel}
           >
             <X size={15} />
@@ -282,9 +302,9 @@ export function AIChatPanel() {
             onClick={() => setView('chat')}
           >
             <ChevronLeft size={14} />
-            返回对话
+            {t('mind.ai.backToChat')}
           </button>
-          {historyList.length === 0 && <div className="py-6 text-center text-xs text-slate-400">暂无历史会话</div>}
+          {historyList.length === 0 && <div className="py-6 text-center text-xs text-slate-400">{t('mind.ai.noHistory')}</div>}
           <div className="space-y-1.5">
             {historyList.map((conv) => (
               <div key={conv.id} className="flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2">
@@ -301,7 +321,7 @@ export function AIChatPanel() {
                 <button
                   type="button"
                   className="shrink-0 rounded p-0.5 text-slate-400 hover:bg-red-50 hover:text-red-500"
-                  title="删除"
+                  title={t('action.delete')}
                   onClick={() => deleteConversation(conv.id)}
                 >
                   🗑
@@ -313,12 +333,12 @@ export function AIChatPanel() {
       ) : view === 'settings' ? (
         <div className="flex-1 overflow-y-auto p-3">
           <div className="mb-3 text-xs leading-relaxed text-slate-500">
-            配置任意 OpenAI 兼容接口（如通义千问、DeepSeek、Kimi）。密钥仅保存在本地浏览器（IndexedDB），不会上传。
+            {t('mind.ai.settingsIntro')}
           </div>
           {([
-            ['baseUrl', '接口地址', 'https://dashscope.aliyuncs.com/compatible-mode/v1'],
+            ['baseUrl', t('mind.ai.baseUrl'), 'https://dashscope.aliyuncs.com/compatible-mode/v1'],
             ['apiKey', 'API Key', 'sk-…'],
-            ['model', '模型', 'qwen-plus'],
+            ['model', t('mind.ai.model'), 'qwen-plus'],
           ] as const).map(([key, label, placeholder]) => (
             <div key={key} className="mb-2">
               <div className="mb-1 text-xs text-slate-500">{label}</div>
@@ -342,7 +362,7 @@ export function AIChatPanel() {
             style={{ backgroundColor: ACCENT }}
             onClick={saveSettings}
           >
-            保存设置
+            {t('mind.ai.saveSettings')}
           </button>
         </div>
       ) : (
@@ -358,25 +378,25 @@ export function AIChatPanel() {
                 data-testid="ai-gen-toggle"
               >
                 <Wand2 size={14} />
-                AI 生成导图
+                {t('mind.ai.generateMap')}
               </button>
             ) : (
               <div className="rounded-md bg-slate-50 p-2">
                 <div className="mb-1.5 flex items-center justify-between text-xs text-slate-500">
-                  <span>生成导图</span>
-                  <button type="button" className="text-slate-400 hover:text-slate-600" onClick={() => setGenView(false)}>收起</button>
+                  <span>{t('mind.ai.generate')}</span>
+                  <button type="button" className="text-slate-400 hover:text-slate-600" onClick={() => setGenView(false)}>{t('mind.ai.collapse')}</button>
                 </div>
                 <input
                   value={topic}
                   onChange={(e) => setTopic(e.target.value)}
-                  placeholder="输入主题，如：产品发布计划"
+                  placeholder={t('mind.ai.topicPlaceholder')}
                   className="mb-1.5 w-full rounded border border-slate-200 px-2 py-1.5 text-xs outline-none focus:border-[#2563eb]"
                   data-testid="ai-gen-topic"
                 />
                 <textarea
                   value={requirements}
                   onChange={(e) => setRequirements(e.target.value)}
-                  placeholder="补充要求（可选）：角度、层级、数量…"
+                  placeholder={t('mind.ai.requirementsPlaceholder')}
                   rows={2}
                   className="mb-1.5 w-full resize-none rounded border border-slate-200 px-2 py-1.5 text-xs outline-none focus:border-[#2563eb]"
                 />
@@ -388,7 +408,7 @@ export function AIChatPanel() {
                   onClick={generateTree}
                   data-testid="ai-gen-tree"
                 >
-                  {busy ? '生成中…' : '生成'}
+                  {busy ? t('mind.ai.generatingBtn') : t('mind.ai.generateBtn')}
                 </button>
                 {pendingTree && (
                   <button
@@ -399,7 +419,7 @@ export function AIChatPanel() {
                     data-testid="ai-insert-tree"
                   >
                     <ListTree size={13} />
-                    应用到导图
+                    {t('mind.ai.applyToMap')}
                   </button>
                 )}
               </div>
@@ -410,12 +430,12 @@ export function AIChatPanel() {
           <div ref={listRef} className="flex-1 space-y-2 overflow-y-auto p-3" data-testid="ai-messages">
             {!configured && (
               <div className="rounded-md bg-[#e8effd] p-2 text-xs text-slate-700">
-                尚未配置 AI 接口，点击右上角 ⚙️ 进行设置。
+                {t('mind.ai.notConfiguredHint')}
               </div>
             )}
             {configured && messages.length === 0 && (
               <div className="rounded-md bg-slate-50 p-2.5 text-xs leading-relaxed text-slate-500">
-                你可以让我生成整张导图，或选中节点后用下方快捷操作展开分支。
+                {t('mind.ai.welcomeHint')}
               </div>
             )}
             {messages.map((m, i) => (
@@ -433,15 +453,15 @@ export function AIChatPanel() {
 
           {/* 选中节点快捷操作 */}
           <div className="flex shrink-0 flex-wrap gap-1 border-t border-slate-100 px-2 pt-2">
-            {BUILTIN_TEMPLATES.map((t) => (
+            {BUILTIN_TEMPLATES.map((tpl) => (
               <button
-                key={t.id}
+                key={tpl.id}
                 type="button"
                 className="rounded-full border border-slate-200 px-2 py-0.5 text-[11px] text-slate-500 hover:border-[#2563eb] hover:text-[#2563eb] disabled:opacity-50"
                 disabled={busy}
-                onClick={() => runExpand(t.id)}
+                onClick={() => runExpand(tpl.id)}
               >
-                {t.name}
+                {templateName(tpl.name)}
               </button>
             ))}
           </div>
@@ -458,7 +478,7 @@ export function AIChatPanel() {
                 }
               }}
               rows={2}
-              placeholder="输入消息，Enter 发送"
+              placeholder={t('mind.ai.inputPlaceholder')}
               className="flex-1 resize-none rounded-md border border-slate-200 px-2 py-1.5 text-xs outline-none focus:border-[#2563eb]"
               data-testid="ai-input"
             />
@@ -468,7 +488,7 @@ export function AIChatPanel() {
                 className="rounded-md bg-slate-200 px-3 py-2 text-xs text-slate-600"
                 onClick={() => abortRef.current?.abort()}
               >
-                停止
+                {t('mind.ai.stop')}
               </button>
             ) : (
               <button
@@ -478,7 +498,7 @@ export function AIChatPanel() {
                 disabled={!input.trim()}
                 onClick={() => input.trim() && void doSend(input.trim())}
               >
-                发送
+                {t('mind.ai.send')}
               </button>
             )}
           </div>

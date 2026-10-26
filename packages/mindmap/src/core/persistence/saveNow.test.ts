@@ -40,7 +40,7 @@ describe('saveNow（手动云端保存）', () => {
     vi.mocked(useMindMapStore.getState).mockReturnValue({ doc: null } as never);
     await expect(saveNow()).resolves.toBe(false);
     expect(saveDocument).not.toHaveBeenCalled();
-    expect(showToast).toHaveBeenCalledWith('当前没有可保存的文档');
+    expect(showToast).toHaveBeenCalledWith('当前没有可保存的文档', { error: true });
   });
 
   it('保存成功：清除 dirty 与本地草稿，不弹 toast（由调用方决定文案）', async () => {
@@ -61,7 +61,7 @@ describe('saveNow（手动云端保存）', () => {
     await expect(saveNow()).resolves.toBe(false);
     expect(markSaved).not.toHaveBeenCalled();
     expect(clearDraft).not.toHaveBeenCalled();
-    expect(showToast).toHaveBeenCalledWith('保存失败，请稍后重试');
+    expect(showToast).toHaveBeenCalledWith('保存失败，请稍后重试', { error: true });
   });
 
   it('saveNowWithToast 成功后提示已保存', async () => {

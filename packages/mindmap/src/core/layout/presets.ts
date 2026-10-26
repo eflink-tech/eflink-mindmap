@@ -1,3 +1,5 @@
+import type { OfficeLocale } from '@eflink-tech/office-kit';
+import { translateTitle } from '../../i18n/assetTitles';
 import type {
   LayoutDefaults,
   LayoutPresetId,
@@ -362,6 +364,8 @@ export function toLegacyLayoutValue(layout: string): LegacyLayoutValue {
   }
 }
 
-export function legacyLayoutLabel(layout: string): string {
-  return getPreset(layout)?.categoryLabel ?? toLegacyLayoutValue(layout);
+/** 旧三布局下拉框展示名：categoryLabel 是中文存储值，展示时按当前语言换名（zh-CN 原样返回） */
+export function legacyLayoutLabel(layout: string, locale?: OfficeLocale): string {
+  const raw = getPreset(layout)?.categoryLabel ?? toLegacyLayoutValue(layout);
+  return translateTitle(raw, locale);
 }

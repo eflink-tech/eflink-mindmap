@@ -1,4 +1,5 @@
 // 样式预览：用 div 模拟当前选中节点外观
+import { useI18n } from '@eflink-tech/office-kit';
 import { resolveNodeStyle } from '../../../core/style/apply';
 import { getTheme } from '../../../core/style/themes';
 import { useMindMapStore } from '../../../store/mindMapStore';
@@ -8,6 +9,7 @@ interface StylePreviewProps {
 }
 
 export function StylePreview({ nodeId }: StylePreviewProps) {
+  const { t } = useI18n();
   const doc = useMindMapStore((s) => s.doc);
   if (!doc || !doc.nodes[nodeId]) return null;
 
@@ -24,7 +26,7 @@ export function StylePreview({ nodeId }: StylePreviewProps) {
 
   return (
     <section className="mb-4">
-      <h3 className="mb-2 text-xs font-medium text-slate-500">预览</h3>
+      <h3 className="mb-2 text-xs font-medium text-slate-500">{t('mind.p.preview')}</h3>
       <div className="flex min-h-[56px] items-center justify-center rounded-lg bg-slate-100 p-3">
         <div
           className="max-w-full truncate px-3 py-1.5 text-center text-sm"
@@ -47,7 +49,7 @@ export function StylePreview({ nodeId }: StylePreviewProps) {
             width: resolved.fixedWidth ? Math.min(resolved.fixedWidth, 240) : undefined,
           }}
         >
-          {node.text || '节点'}
+          {node.text || t('mind.p.nodePlaceholder')}
         </div>
       </div>
     </section>

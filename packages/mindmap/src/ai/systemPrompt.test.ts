@@ -53,6 +53,12 @@ describe('isPlaceholderRoot', () => {
     expect(isPlaceholderRoot('  ')).toBe(true);
     expect(isPlaceholderRoot('我的导图')).toBe(false);
   });
+  it('识别其他语言界面创建的默认占位文本（titleVariants 全覆盖）', () => {
+    expect(isPlaceholderRoot('Central topic')).toBe(true);
+    expect(isPlaceholderRoot('Tema central')).toBe(true);
+    expect(isPlaceholderRoot('Tópico central')).toBe(true);
+    expect(isPlaceholderRoot('Central Topic')).toBe(false);
+  });
 });
 
 describe('prompts', () => {

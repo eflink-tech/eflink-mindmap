@@ -672,7 +672,10 @@ describe('renameTitle', () => {
     useMindMapStore.getState().open(doc);
     await useMindMapStore.getState().renameTitle('新标题');
     expect(useMindMapStore.getState().doc?.title).toBe('原标题');
-    expect(useUiStore.getState().toast).toContain('失败');
+    // toast 为对象形态：文本多语 + error 标记（失败提示必须显式置 error）
+    const toast = useUiStore.getState().toast;
+    expect(toast?.text).toContain('失败');
+    expect(toast?.error).toBe(true);
   });
 });
 

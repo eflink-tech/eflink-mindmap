@@ -5,7 +5,7 @@ import { useUiStore } from '../store/uiStore';
 export function ToastHost() {
   const toast = useUiStore((s) => s.toast);
   if (!toast) return null;
-  const success = !toast.includes('失败') && !toast.includes('没有');
+  const success = !toast.error;
   return (
     <div
       role="status"
@@ -20,7 +20,7 @@ export function ToastHost() {
           <Check size={14} strokeWidth={3} className="text-white" />
         </span>
       ) : null}
-      <span className="text-sm leading-none text-slate-800">{toast}</span>
+      <span className="text-sm leading-none text-slate-800">{toast.text}</span>
     </div>
   );
 }

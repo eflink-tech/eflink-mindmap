@@ -2,6 +2,8 @@
 // 打开期间文档可能继续编辑，故分享内容以点击"分享"时刻的文档快照为准
 import { useEffect, useRef, useState, type JSX } from 'react';
 import { Check, Copy, Loader2, RefreshCw, Share2, TriangleAlert } from 'lucide-react';
+import { useI18n } from '@eflink-tech/office-kit';
+import { mindT } from '../../i18n/runtime';
 import { getMindMapShareHandler } from '../../core/share/shareBridge';
 import type { MindMapShareResult } from '../../core/share/shareBridge';
 import type { MindMapDocument } from '../../types/mindmap';
@@ -38,6 +40,7 @@ async function copyText(text: string): Promise<boolean> {
 }
 
 export function ShareDialog({ open, doc, onClose }: ShareDialogProps): JSX.Element | null {
+  const { t } = useI18n();
   const [state, setState] = useState<ShareState>({ phase: 'loading' });
   const [copied, setCopied] = useState(false);
   // 分享结果（链接 + 宿主业务文案）与复制态
@@ -60,7 +63,7 @@ export function ShareDialog({ open, doc, onClose }: ShareDialogProps): JSX.Eleme
     const handler = getMindMapShareHandler();
     const target = docRef.current;
     if (!handler || !target) {
-      setState({ phase: 'error', message: '当前环境不支持分享' });
+      setState({ phase: 'error', message: mindT('mind.share.unsupported') });
       return;
     }
     void handler(target)
@@ -72,7 +75,7 @@ export function ShareDialog({ open, doc, onClose }: ShareDialogProps): JSX.Eleme
       })
       .catch((err: unknown) => {
         if (!cancelled) {
-          setState({ phase: 'error', message: err instanceof Error ? err.message : '分享失败，请稍后重试' });
+          setState({ phase: 'error', message: err instanceof Error ? err.message : mindT('mind.share.failed') });
         }
       });
 
@@ -125,7 +128,7 @@ export function ShareDialog({ open, doc, onClose }: ShareDialogProps): JSX.Eleme
           <div className="flex items-center gap-2">
             <Share2 size={16} className="text-slate-500" />
             <h2 id="mindmap-share-dialog-title" className="text-base font-semibold text-slate-800">
-              分享导图
+              {t('mind.share.title')}
             </h2>
           </div>
         </div>
@@ -134,7 +137,7 @@ export function ShareDialog({ open, doc, onClose }: ShareDialogProps): JSX.Eleme
           {state.phase === 'loading' && (
             <div className="flex items-center justify-center gap-2 py-8 text-sm text-slate-500">
               <Loader2 size={16} className="animate-spin" />
-              正在生成分享链接...
+              {t('mind.share.loading')}
             </div>
           )}
 
@@ -148,7 +151,7 @@ export function ShareDialog({ open, doc, onClose }: ShareDialogProps): JSX.Eleme
                 className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50"
               >
                 <RefreshCw size={14} />
-                重试
+                {t('mind.share.retry')}
               </button>
             </div>
           )}
@@ -161,7 +164,7 @@ export function ShareDialog({ open, doc, onClose }: ShareDialogProps): JSX.Eleme
                   readOnly
                   value={result.url}
                   onFocus={(e) => e.currentTarget.select()}
-                  aria-label="分享链接"
+                  aria-label={t('mind.share.link')}
                   className="min-w-0 flex-1 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 focus:outline-none"
                 />
                 <button
@@ -174,7 +177,7 @@ export function ShareDialog({ open, doc, onClose }: ShareDialogProps): JSX.Eleme
                   }`}
                 >
                   {copied ? <Check size={14} /> : <Copy size={14} />}
-                  {copied ? '已复制' : '复制'}
+                  {copied ? t('action.copied') : t('action.copy')}
                 </button>
               </div>
               {result.tips && result.tips.length > 0 && (
@@ -194,7 +197,7 @@ export function ShareDialog({ open, doc, onClose }: ShareDialogProps): JSX.Eleme
             onClick={onCloseRef.current}
             className="rounded-md bg-blue-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-blue-700"
           >
-            完成
+            {t('mind.share.done')}
           </button>
         </div>
       </div>

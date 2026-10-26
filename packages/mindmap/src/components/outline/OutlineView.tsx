@@ -3,11 +3,13 @@
 // 全局快捷键（Tab 加子级、Enter 加同级、Delete 删除、F2 编辑）在列表下同样生效。
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { useCallback, useEffect, useRef } from 'react';
+import { useI18n } from '@eflink-tech/office-kit';
 import { toggleCollapse, updateText } from '../../core/editor/nodeOps';
 import { useMindMapStore } from '../../store/mindMapStore';
 import type { MindMapNode } from '../../types/mindmap';
 
 function OutlineItem({ id, depth }: { id: string; depth: number }) {
+  const { t } = useI18n();
   const node: MindMapNode | undefined = useMindMapStore((s) => s.doc?.nodes[id]);
   const selected = useMindMapStore((s) => s.selectedId === id);
   const editing = useMindMapStore((s) => s.editingId === id);
@@ -58,7 +60,7 @@ function OutlineItem({ id, depth }: { id: string; depth: number }) {
         {hasChildren ? (
           <button
             type="button"
-            title={collapsed ? '展开' : '折叠'}
+            title={collapsed ? t('mind.p.expand') : t('mind.p.collapse')}
             aria-expanded={!collapsed}
             className="flex h-4 w-4 shrink-0 items-center justify-center rounded text-slate-400 transition-colors hover:bg-slate-200 hover:text-slate-600"
             onClick={(e) => {

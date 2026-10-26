@@ -2,12 +2,14 @@
 // 概要文本编辑浮层：双击概要盒进入编辑，Enter/失焦提交，Esc 取消（交互对齐节点编辑浮层）。
 // 概要文本不参与布局，无需输入时实时写回，只在退出编辑时提交一次
 import { useCallback, useEffect, useRef } from 'react';
+import { useI18n } from '@eflink-tech/office-kit';
 import { updateSummaryText } from '../../core/editor/nodeOps';
 import { computeSummaryOverlays, summaryInputs } from '../../core/layout/overlays';
 import { useMindMapStore } from '../../store/mindMapStore';
 import { SUMMARY_BOX_HEIGHT, SUMMARY_BOX_WIDTH, SUMMARY_GAP } from './summaryLayout';
 
 export function SummaryEditorOverlay() {
+  const { t } = useI18n();
   const editingSummaryId = useMindMapStore((s) => s.editingSummaryId);
   const doc = useMindMapStore((s) => s.doc);
   const positions = useMindMapStore((s) => s.layoutResult?.positions);
@@ -72,6 +74,7 @@ export function SummaryEditorOverlay() {
       ref={ref}
       contentEditable
       suppressContentEditableWarning
+      aria-label={t('mind.p.editSummary')}
       className="absolute z-10 flex items-center justify-center rounded-lg border-2 border-blue-500 bg-white outline-none"
       style={{
         left: anchor.x * scale + v.x,

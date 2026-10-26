@@ -2,6 +2,7 @@
 // 编辑态覆盖层：透明浮在节点形状上，字体/内边距/行高与布局测量一致，
 // 双击进入时尽量「无感知」——只看到光标，看不到第二套文字或另一套盒子。
 import { useCallback, useEffect, useRef } from 'react';
+import { useI18n } from '@eflink-tech/office-kit';
 import { updateText } from '../../core/editor/nodeOps';
 import {
   LABEL_CHIP_HEIGHT,
@@ -14,6 +15,7 @@ import { getTheme } from '../../core/style/themes';
 import { useMindMapStore } from '../../store/mindMapStore';
 
 export function TextEditorOverlay() {
+  const { t } = useI18n();
   const editingId = useMindMapStore((s) => s.editingId);
   const doc = useMindMapStore((s) => s.doc);
   const box = useMindMapStore((s) => (s.editingId ? s.layoutResult?.positions[s.editingId] : undefined));
@@ -139,6 +141,7 @@ export function TextEditorOverlay() {
         ref={ref}
         contentEditable
         suppressContentEditableWarning
+        aria-label={t('mind.p.editNodeText')}
         className="outline-none"
         style={{
           flex: 1,

@@ -1,4 +1,6 @@
 import { create } from 'zustand';
+import { translateTitle } from '../i18n/assetTitles';
+import { mindT } from '../i18n/runtime';
 import { copySubtree, type ClipboardData } from '../core/editor/clipboard';
 import {
   addBoundary, addChild, addRelation, addSibling, addSummary,
@@ -569,7 +571,8 @@ export const useMindMapStore = create<MindMapStore>((set, get) => ({
     const indexes = ids.map((id) => children.indexOf(id));
     // 跨父节点的多选没有共同区间，不创建
     if (indexes.some((i) => i < 0)) return;
-    get().act((d) => addSummary(d, anchor.parentId!, [Math.min(...indexes), Math.max(...indexes)], '概要'));
+    // 概要文本是节点内容：默认值「概要」按当前界面语言写入文档
+    get().act((d) => addSummary(d, anchor.parentId!, [Math.min(...indexes), Math.max(...indexes)], translateTitle('概要')));
   },
 
   // 联系线创建模式：第一次点击记录起点，第二次点击生成联系线并退出模式
@@ -648,7 +651,7 @@ export const useMindMapStore = create<MindMapStore>((set, get) => ({
       await useDocumentsStore.getState().renameDoc(doc.id, next);
     } catch (err) {
       console.error('重命名失败', err);
-      useUiStore.getState().showToast('重命名失败，请重试');
+      useUiStore.getState().showToast(mindT('mind.store.renameFailed'), { error: true });
       return;
     }
     set({ doc: { ...doc, title: next, updatedAt: Date.now() } });

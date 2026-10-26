@@ -10,14 +10,18 @@ import type {
   Summary,
 } from '../../types/mindmap';
 import { newId } from '../../utils/id';
+import { translateTitle } from '../../i18n/assetTitles';
+import { mindT } from '../../i18n/runtime';
 import { DEFAULT_LAYOUT_PRESET_ID } from '../layout/presets';
 import { groupOf, markerEq, type MarkerGroupId } from '../markers/registry';
 import { cloneMetadata, type ClipNode, type ClipboardData } from './clipboard';
 import { branchSide } from './navigation';
 
+// 中文原文是查表键（titleVariants / isPlaceholderRoot 依赖），不可改动；
+// 写入文档时按当前界面语言落地（translateTitle / mindT）。
+// 默认文档标题「思维导图」走 mind.doc.defaultTitle（messages.ts），不再本地定义常量。
 const ROOT_TEXT = '中心主题';
 const DEFAULT_TEXT = '分支主题';
-const DEFAULT_TITLE = '思维导图';
 
 function withNodes(doc: MindMapDocument, nodes: Record<string, MindMapNode>): MindMapDocument {
   return { ...doc, nodes, updatedAt: Date.now() };
@@ -54,9 +58,9 @@ export function createDocument(title?: string): MindMapDocument {
   const rootId = newId();
   return {
     id: newId(),
-    title: title ?? DEFAULT_TITLE,
+    title: title ?? mindT('mind.doc.defaultTitle'),
     rootId,
-    nodes: { [rootId]: makeNode(rootId, null, title ?? ROOT_TEXT) },
+    nodes: { [rootId]: makeNode(rootId, null, title ?? translateTitle(ROOT_TEXT)) },
     themeId: 'classic',
     layout: DEFAULT_LAYOUT_PRESET_ID,
     viewport: { x: 0, y: 0, scale: 1 },
@@ -79,7 +83,7 @@ export function subtreeIds(doc: MindMapDocument, id: string): string[] {
   return out;
 }
 
-export function addChild(doc: MindMapDocument, parentId: string, text = DEFAULT_TEXT): MindMapDocument {
+export function addChild(doc: MindMapDocument, parentId: string, text = translateTitle(DEFAULT_TEXT)): MindMapDocument {
   const parent = doc.nodes[parentId];
   if (!parent) return doc;
   const id = newId();
@@ -99,7 +103,7 @@ export function addChild(doc: MindMapDocument, parentId: string, text = DEFAULT_
 export function addSibling(
   doc: MindMapDocument,
   nodeId: string,
-  text = DEFAULT_TEXT,
+  text = translateTitle(DEFAULT_TEXT),
   position: 'before' | 'after' = 'after',
 ): MindMapDocument {
   const node = doc.nodes[nodeId];

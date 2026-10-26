@@ -1,6 +1,7 @@
 // src/core/export/markdown.ts
 // Markdown 双向转换：# 数量映射节点深度（根 = 1 个 #）
 import type { MindMapDocument, MindMapNode } from '../../types/mindmap';
+import { mindT } from '../../i18n/runtime';
 import { createDocument } from '../editor/nodeOps';
 
 function walk(
@@ -28,7 +29,7 @@ export function importFromMarkdown(md: string): MindMapDocument {
     if (m) headings.push({ level: m[1].length, text: m[2].trim() });
   }
 
-  const doc = createDocument(headings[0]?.text || '思维导图');
+  const doc = createDocument(headings[0]?.text || mindT('mind.doc.defaultTitle'));
   if (!headings.length) return doc;
 
   // 确定性 id，避免测试随机性

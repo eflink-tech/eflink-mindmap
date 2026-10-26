@@ -1,7 +1,10 @@
 // packages/mindmap/src/MindMapEditor.tsx
 // 组件库入口组件：挂载即用，自动打开上次文档或新建（沿用原 App 启动流程）
 import { useEffect, useRef, useState } from 'react';
+import { I18nProvider, normalizeLocale, type OfficeLocale } from '@eflink-tech/office-kit';
 import { Editor } from './components/Editor';
+import { MIND_MESSAGES } from './i18n/messages';
+import { mindT, setMindLocale } from './i18n/runtime';
 import { loadDocument } from './core/persistence/db';
 import { useDocumentsStore } from './store/documentsStore';
 import { useMindMapStore } from './store/mindMapStore';
@@ -51,10 +54,17 @@ async function openOrCreateEditor(bootDocId?: string) {
 }
 
 /**
- * 开箱即用的思维导图编辑器：自带工具栏、画布、属性面板与状态栏，挂载后自动恢复上次编辑的文档
+ * 开箱即用的思维导图编辑器：自带顶栏菜单、工具栏、画布、属性面板与状态栏，挂载后自动恢复上次编辑的文档
  * @param bootDocId 指定启动文档 id（如分享查看页注入的只读快照），优先于本地"上次文档"
+ * @param locale 界面语言（zh-CN / en / es / pt-BR），默认 zh-CN
  */
-export function MindMapEditor({ bootDocId }: { bootDocId?: string } = {}) {
+export function MindMapEditor({
+  bootDocId,
+  locale,
+}: { bootDocId?: string; locale?: OfficeLocale | string } = {}) {
+  const resolved = normalizeLocale(locale);
+  // 非 React 模块（store / core / 导出）读取同一份语言
+  setMindLocale(resolved);
   const [ready, setReady] = useState(false);
   // StrictMode 下 effect 双执行，防止重复建档（自定义存储后端每次建档都会产生远端资源）
   const bootRef = useRef(false);
@@ -69,13 +79,15 @@ export function MindMapEditor({ bootDocId }: { bootDocId?: string } = {}) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  if (!ready || !useMindMapStore.getState().doc) {
-    return (
-      <div className="flex h-full items-center justify-center text-sm text-slate-400">
-        加载中…
-      </div>
-    );
-  }
-
-  return <Editor />;
+  return (
+    <I18nProvider locale={resolved} messages={MIND_MESSAGES}>
+      {(!ready || !useMindMapStore.getState().doc) ? (
+        <div className="flex h-full items-center justify-center text-sm text-slate-400">
+          {mindT('shell.loading')}
+        </div>
+      ) : (
+        <Editor />
+      )}
+    </I18nProvider>
+  );
 }

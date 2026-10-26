@@ -2,15 +2,17 @@
 // 点击图标 = 切换选中节点上的标记（同组互斥、再次点击移除），多选时整体应用。
 // Tab 状态存于 uiStore：插入菜单的「贴纸」项会直接跳转到贴纸 Tab。
 import { useState } from 'react';
+import { useI18n } from '@eflink-tech/office-kit';
 import { MARKER_GROUPS, STICKER_GROUPS, markerEq, markerId, markerLabel, stickerMarker } from '../../../core/markers/registry';
+import { translateTitle } from '../../../i18n/assetTitles';
 import type { Marker } from '../../../types/mindmap';
 import { useMindMapStore } from '../../../store/mindMapStore';
 import { useUiStore } from '../../../store/uiStore';
 import { MarkerIconSvg } from './MarkerIconSvg';
 
-const TABS: { id: 'markers' | 'stickers'; label: string }[] = [
-  { id: 'markers', label: '标记' },
-  { id: 'stickers', label: '贴纸' },
+const TABS: { id: 'markers' | 'stickers'; msgKey: string }[] = [
+  { id: 'markers', msgKey: 'mind.panel.markers' },
+  { id: 'stickers', msgKey: 'mind.c.tab.stickers' },
 ];
 
 function TabButton({ tab, label, current, onSelect }: {
@@ -56,6 +58,7 @@ function GroupHeader({ title, open, onToggle }: { title: string; open: boolean; 
 }
 
 export function MarkerPanel() {
+  const { t, locale } = useI18n();
   const tab = useUiStore((s) => s.markersTab);
   const setTab = useUiStore((s) => s.setMarkersTab);
   const [closedGroups, setClosedGroups] = useState<Set<string>>(new Set());
@@ -96,13 +99,13 @@ export function MarkerPanel() {
   return (
     <div className="flex w-80 shrink-0 flex-col border-l border-slate-200 bg-white">
       <div className="flex border-b border-slate-200">
-        {TABS.map((t) => (
-          <TabButton key={t.id} tab={t.id} label={t.label} current={tab} onSelect={setTab} />
+        {TABS.map((tabDef) => (
+          <TabButton key={tabDef.id} tab={tabDef.id} label={t(tabDef.msgKey)} current={tab} onSelect={setTab} />
         ))}
       </div>
 
       <div className="flex-1 overflow-y-auto p-3">
-        {!hasNode && <p className="mb-2 text-sm text-slate-400">请先选中一个节点</p>}
+        {!hasNode && <p className="mb-2 text-sm text-slate-400">{t('mind.c.marker.selectNode')}</p>}
 
         {tab === 'markers' && (
           <>
@@ -110,7 +113,11 @@ export function MarkerPanel() {
               const open = !closedGroups.has(group.id);
               return (
                 <section key={group.id} className="mb-1">
-                  <GroupHeader title={group.title} open={open} onToggle={() => toggleGroup(group.id)} />
+                  <GroupHeader
+                    title={translateTitle(group.title, locale)}
+                    open={open}
+                    onToggle={() => toggleGroup(group.id)}
+                  />
                   {open && (
                     <div className="grid grid-cols-7 gap-1 pb-2 pl-4">
                       {group.items.map((marker) => {
@@ -119,7 +126,7 @@ export function MarkerPanel() {
                           <button
                             key={markerId(marker)}
                             type="button"
-                            title={markerLabel(marker)}
+                            title={markerLabel(marker, locale)}
                             aria-pressed={active || undefined}
                             disabled={!hasNode}
                             className={`${iconButtonClass(active)} disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent`}
@@ -134,16 +141,16 @@ export function MarkerPanel() {
                 </section>
               );
             })}
-            <p className="pt-1 text-xs leading-5 text-slate-400">
-              点击图标应用到选中节点；同组标记互斥，再次点击已应用的图标可移除。
-            </p>
+            <p className="pt-1 text-xs leading-5 text-slate-400">{t('mind.c.marker.footer')}</p>
           </>
         )}
 
         {tab === 'stickers' &&
           STICKER_GROUPS.map((group) => (
             <section key={group.id} className="mb-3">
-              <h3 className="py-1.5 text-xs font-medium text-slate-700">▼ {group.title}</h3>
+              <h3 className="py-1.5 text-xs font-medium text-slate-700">
+                ▼ {translateTitle(group.title, locale)}
+              </h3>
               <div className="grid grid-cols-6 gap-1 pl-4">
                 {group.items.map((value) => {
                   const marker = stickerMarker(value);

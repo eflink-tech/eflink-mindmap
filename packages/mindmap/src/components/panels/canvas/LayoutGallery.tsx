@@ -1,11 +1,13 @@
 // 布局画廊：按 category 分组，可折叠，三列缩略图网格
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { useMemo, useState } from 'react';
+import { useI18n } from '@eflink-tech/office-kit';
 import {
   LAYOUT_PRESETS,
   type LayoutCategory,
   type LayoutPreset,
 } from '../../../core/layout/presets';
+import { translateTitle } from '../../../i18n/assetTitles';
 import { LayoutThumbnail } from './LayoutThumbnails';
 
 export interface LayoutGalleryProps {
@@ -38,6 +40,7 @@ function groupByCategory(presets: LayoutPreset[]): PresetGroup[] {
 }
 
 export function LayoutGallery({ selectedId, onSelect }: LayoutGalleryProps) {
+  const { locale } = useI18n();
   const groups = useMemo(() => groupByCategory(LAYOUT_PRESETS), []);
   const [collapsed, setCollapsed] = useState<ReadonlySet<LayoutCategory>>(() => new Set());
 
@@ -64,20 +67,21 @@ export function LayoutGallery({ selectedId, onSelect }: LayoutGalleryProps) {
               className="mb-1 flex w-full items-center gap-1 text-left text-xs font-medium text-slate-500 hover:text-slate-700"
             >
               {isCollapsed ? <ChevronRight size={12} /> : <ChevronDown size={12} />}
-              {g.label}
+              {translateTitle(g.label, locale)}
             </button>
             {!isCollapsed && (
               <div className="grid grid-cols-3 gap-1.5">
                 {g.items.map((preset) => {
                   const selected = selectedId === preset.id;
+                  const presetLabel = translateTitle(preset.label, locale);
                   return (
                     <button
                       key={preset.id}
                       type="button"
                       data-testid={`layout-preset-${preset.id}`}
                       aria-pressed={selected}
-                      aria-label={preset.label}
-                      title={preset.label}
+                      aria-label={presetLabel}
+                      title={presetLabel}
                       onClick={() => onSelect(preset.id)}
                       className={`flex flex-col items-center rounded border-2 p-1 ${
                         selected

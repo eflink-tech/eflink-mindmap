@@ -1,4 +1,5 @@
 // 属性面板：样式（节点外观）| 画布（布局 + 主题）
+import { useI18n } from '@eflink-tech/office-kit';
 import { useMindMapStore } from '../../store/mindMapStore';
 import { useUiStore } from '../../store/uiStore';
 import { CanvasOptionsSection } from './canvas/CanvasOptionsSection';
@@ -12,11 +13,12 @@ import { StylePreview } from './style/StylePreview';
 import { TextSection } from './style/TextSection';
 
 function StyleTabBody() {
+  const { t } = useI18n();
   const selectedId = useMindMapStore((s) => s.selectedId);
   const hasNode = useMindMapStore((s) => !!(s.doc && s.selectedId && s.doc.nodes[s.selectedId]));
 
   if (!hasNode || !selectedId) {
-    return <p className="text-sm text-slate-400">请选中一个节点</p>;
+    return <p className="text-sm text-slate-400">{t('mind.p.selectNode')}</p>;
   }
 
   return (
@@ -42,6 +44,7 @@ function CanvasTabBody() {
 }
 
 export function PropertiesPanel() {
+  const { t } = useI18n();
   const tab = useUiStore((s) => s.propertiesTab);
   const setTab = useUiStore((s) => s.setPropertiesTab);
 
@@ -56,7 +59,7 @@ export function PropertiesPanel() {
             tab === 'style' ? 'border-b-2 border-blue-500 font-medium text-blue-600' : 'text-slate-600'
           }`}
         >
-          样式
+          {t('mind.p.style')}
         </button>
         <button
           type="button"
@@ -66,7 +69,7 @@ export function PropertiesPanel() {
             tab === 'canvas' ? 'border-b-2 border-blue-500 font-medium text-blue-600' : 'text-slate-600'
           }`}
         >
-          画布
+          {t('mind.p.canvas')}
         </button>
       </div>
       <div className="flex-1 overflow-y-auto p-3">

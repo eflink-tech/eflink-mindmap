@@ -39,7 +39,11 @@ export const aiSettingsStore = {
   },
 };
 
-/** 选中节点快捷操作模板：{topic} 替换为选中节点文本 */
+/**
+ * 选中节点快捷操作模板：{topic} 替换为选中节点文本。
+ * name 是规范中文存储值（chip 展示时在 AIChatPanel 按 mind.ai.tpl.* 字典换语言），
+ * content 是发给模型的提示词，保持中文不翻译。
+ */
 export const BUILTIN_TEMPLATES: Template[] = [
   {
     id: 'tpl-expand',

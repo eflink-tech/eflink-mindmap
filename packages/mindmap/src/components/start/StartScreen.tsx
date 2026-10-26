@@ -1,6 +1,7 @@
 // src/components/start/StartScreen.tsx
 import { FilePlus2, FolderOpen, Pencil, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { useI18n } from '@eflink-tech/office-kit';
 import logoUrl from '../../assets/mindmap-eflink-logo.png';
 import { loadDocument } from '../../core/persistence/db';
 import { useDocumentsStore } from '../../store/documentsStore';
@@ -8,6 +9,7 @@ import { useMindMapStore } from '../../store/mindMapStore';
 import { useUiStore } from '../../store/uiStore';
 
 export function StartScreen() {
+  const { t } = useI18n();
   const { docs, refresh, createDoc, removeDoc } = useDocumentsStore();
   const setView = useUiStore((s) => s.setView);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -33,7 +35,7 @@ export function StartScreen() {
     <div className="mx-auto max-w-3xl p-10">
       <h1 className="mb-8 flex items-center gap-3 text-2xl font-bold">
         <img src={logoUrl} alt="" width={36} height={36} className="h-9 w-9 rounded-full" />
-        易飞思维导图
+        {t('mind.brand')}
       </h1>
       <button
         className="mb-6 flex items-center gap-2 rounded bg-blue-500 px-4 py-2 text-white"
@@ -46,7 +48,7 @@ export function StartScreen() {
           }
         }}
       >
-        <FilePlus2 size={18} /> 新建思维导图
+        <FilePlus2 size={18} /> {t('mind.file.newMap')}
       </button>
       <ul className="space-y-2">
         {docs.map((d) => (
@@ -88,12 +90,12 @@ export function StartScreen() {
                 setEditingId(d.id);
                 setTitle(d.title);
               }}
-              title="重命名"
-              aria-label={`重命名 ${d.title}`}
+              title={t('action.rename')}
+              aria-label={t('mind.p.renameAria', { title: d.title })}
             >
               <Pencil size={14} />
             </button>
-            <button onClick={() => removeDoc(d.id).catch((err) => console.error('删除失败', err))} title="删除">
+            <button onClick={() => removeDoc(d.id).catch((err) => console.error('删除失败', err))} title={t('action.delete')}>
               <Trash2 size={14} className="text-red-400" />
             </button>
           </li>

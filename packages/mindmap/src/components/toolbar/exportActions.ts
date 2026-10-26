@@ -1,5 +1,6 @@
 // src/components/toolbar/exportActions.ts
 // 导出动作：PNG 截图与 *.efm.json 下载/上传
+import { mindT } from '../../i18n/runtime';
 import { EFM_EXTENSION, exportToEfmJson, importFromEfmJson } from '../../core/export/efmJson';
 import { pngExportRegion } from '../../core/export/png';
 import { saveDocument } from '../../core/persistence/db';
@@ -11,7 +12,7 @@ import { getStage } from '../canvas/stageRef';
 // 标题可能来自用户导入内容，清洗文件名中的非法字符
 function safeFilename(title: string, ext: string): string {
   const cleaned = title.replace(/[\\/:*?"<>|\r\n]/g, '_').trim();
-  return `${cleaned || '思维导图'}.${ext}`;
+  return `${cleaned || mindT('mind.doc.defaultTitle')}.${ext}`;
 }
 
 // 导出文件名优先文档标题，否则中心主题，最后默认名
@@ -19,7 +20,7 @@ export function exportBasename(doc: MindMapDocument): string {
   const title = doc.title.trim();
   if (title) return title;
   const rootText = doc.nodes[doc.rootId]?.text?.trim();
-  return rootText || '思维导图';
+  return rootText || mindT('mind.doc.defaultTitle');
 }
 
 function download(href: string, filename: string): void {
@@ -86,6 +87,6 @@ export function importEfmJsonFile(file: File): void {
     })
     .catch((err) => {
       console.error('EFM 导入失败', err);
-      window.alert('导入失败，请确认选择的是有效的 *.efm.json 文件');
+      window.alert(mindT('mind.err.importFailed'));
     });
 }

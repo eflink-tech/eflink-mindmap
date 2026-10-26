@@ -1,4 +1,6 @@
 // AI 产物 → 导图节点（通过 store.act 批量落树，整体一个撤销单元）
+// 抛错文案经 mindT 多语化（在 AI 会话中展示）
+import { mindT } from '../i18n/runtime';
 import { addChild, updateText } from '../core/editor/nodeOps';
 import type { MindMapDocument } from '../types/mindmap';
 import { useMindMapStore } from '../store/mindMapStore';
@@ -14,7 +16,7 @@ import type { AITree, AITreeNode } from './types';
  */
 export function applyAITree(tree: AITree): number {
   const store = useMindMapStore.getState();
-  if (!store.doc) throw new Error('导图尚未就绪');
+  if (!store.doc) throw new Error(mindT('mind.ai.notReady'));
   // 选中节点同步捕获（act 前无异步间隙，快照安全）
   const targetId = store.selectedId && store.doc.nodes[store.selectedId] ? store.selectedId : store.doc.rootId;
 
@@ -24,7 +26,7 @@ export function applyAITree(tree: AITree): number {
     applied = result.count;
     return result.doc;
   });
-  if (!applied) throw new Error('未能写入任何节点');
+  if (!applied) throw new Error(mindT('mind.ai.noNodesWritten'));
   return applied;
 }
 

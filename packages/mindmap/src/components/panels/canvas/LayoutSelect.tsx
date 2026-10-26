@@ -2,11 +2,13 @@
 import { ChevronDown } from 'lucide-react';
 import { useEffect, useId, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
 import { createPortal } from 'react-dom';
+import { useI18n } from '@eflink-tech/office-kit';
 import {
   DEFAULT_LAYOUT_PRESET_ID,
   getPreset,
   normalizeLayoutId,
 } from '../../../core/layout/presets';
+import { translateTitle } from '../../../i18n/assetTitles';
 import { useMindMapStore } from '../../../store/mindMapStore';
 import { LayoutGallery } from './LayoutGallery';
 import { LayoutThumbnail } from './LayoutThumbnails';
@@ -25,6 +27,7 @@ function galleryPosition(anchor: DOMRect): CSSProperties {
 }
 
 export function LayoutSelect() {
+  const { t, locale } = useI18n();
   const doc = useMindMapStore((s) => s.doc);
   const setLayout = useMindMapStore((s) => s.setLayout);
   const [open, setOpen] = useState(false);
@@ -36,7 +39,7 @@ export function LayoutSelect() {
 
   const layoutId = doc ? normalizeLayoutId(doc.layout) : DEFAULT_LAYOUT_PRESET_ID;
   const preset = getPreset(layoutId);
-  const categoryLabel = preset?.categoryLabel ?? '布局';
+  const categoryLabel = preset ? translateTitle(preset.categoryLabel, locale) : t('mind.c.layout.label');
 
   useLayoutEffect(() => {
     if (!open) return;
@@ -75,7 +78,7 @@ export function LayoutSelect() {
 
   return (
     <section className="relative mb-4" ref={rootRef}>
-      <h3 className="mb-2 text-xs font-medium text-slate-500">布局</h3>
+      <h3 className="mb-2 text-xs font-medium text-slate-500">{t('mind.c.layout.label')}</h3>
       <button
         ref={triggerRef}
         type="button"
@@ -83,7 +86,7 @@ export function LayoutSelect() {
         aria-haspopup="dialog"
         aria-expanded={open}
         aria-controls={dialogId}
-        aria-label={`布局 ${categoryLabel}`}
+        aria-label={`${t('mind.c.layout.label')} ${categoryLabel}`}
         disabled={!doc}
         onClick={() => setOpen((v) => !v)}
         className="flex w-full items-center gap-2 rounded border border-slate-200 px-2 py-1.5 text-left hover:border-slate-300 disabled:cursor-not-allowed disabled:opacity-50"
@@ -101,7 +104,7 @@ export function LayoutSelect() {
             ref={popoverRef}
             id={dialogId}
             role="dialog"
-            aria-label="布局预设"
+            aria-label={t('mind.c.layout.presets')}
             data-testid="layout-gallery"
             style={pos}
             className="z-50 overflow-y-auto rounded-lg border border-slate-200 bg-white p-2 shadow-lg"

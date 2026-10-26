@@ -1,19 +1,21 @@
 // 画布选项：背景色、全局字体、分支线宽、彩虹分支
+import { useI18n } from '@eflink-tech/office-kit';
 import { DEFAULT_CANVAS_BACKGROUND, getCanvasOptions } from '../../../core/style/canvasOptions';
 import { getTheme } from '../../../core/style/themes';
 import { useMindMapStore } from '../../../store/mindMapStore';
 
-const FONTS: { value: string; label: string }[] = [
-  { value: '', label: '默认' },
-  { value: 'serif', label: '衬线' },
-  { value: 'monospace', label: '等宽' },
-  { value: 'PingFang SC', label: 'PingFang SC' },
-  { value: 'Microsoft YaHei', label: '微软雅黑' },
+const FONTS: { value: string; labelKey: string }[] = [
+  { value: '', labelKey: 'mind.p.fontDefault' },
+  { value: 'serif', labelKey: 'mind.p.fontSerif' },
+  { value: 'monospace', labelKey: 'mind.p.fontMono' },
+  { value: 'PingFang SC', labelKey: 'PingFang SC' },
+  { value: 'Microsoft YaHei', labelKey: 'mind.p.fontYaHei' },
 ];
 
 const LINE_WIDTHS = [1, 1.5, 2, 2.5, 3];
 
 export function CanvasOptionsSection() {
+  const { t } = useI18n();
   const doc = useMindMapStore((s) => s.doc);
   const setCanvasOption = useMindMapStore((s) => s.setCanvasOption);
 
@@ -29,7 +31,7 @@ export function CanvasOptionsSection() {
   return (
     <section className="mb-4 border-t border-slate-100 pt-4">
       <label className="mb-1 block text-xs text-slate-500" htmlFor="canvas-background">
-        背景颜色
+        {t('mind.p.background')}
       </label>
       <input
         id="canvas-background"
@@ -40,7 +42,7 @@ export function CanvasOptionsSection() {
       />
 
       <label className="mb-1 block text-xs text-slate-500" htmlFor="canvas-fontfamily">
-        全局字体
+        {t('mind.p.globalFont')}
       </label>
       <select
         id="canvas-fontfamily"
@@ -52,14 +54,14 @@ export function CanvasOptionsSection() {
         className="mb-3 w-full rounded border border-slate-300 px-2 py-1.5 text-sm"
       >
         {FONTS.map((f) => (
-          <option key={f.label} value={f.value}>
-            {f.label}
+          <option key={f.value} value={f.value}>
+            {t(f.labelKey)}
           </option>
         ))}
       </select>
 
       <label className="mb-1 block text-xs text-slate-500" htmlFor="canvas-linewidth">
-        分支线条宽度
+        {t('mind.p.branchLineWidth')}
       </label>
       <select
         id="canvas-linewidth"
@@ -69,7 +71,7 @@ export function CanvasOptionsSection() {
       >
         {LINE_WIDTHS.map((w) => (
           <option key={w} value={String(w)}>
-            {w === theme.connector.width ? `默认 (${w})` : w}
+            {w === theme.connector.width ? t('mind.p.defaultOption', { width: w }) : w}
           </option>
         ))}
       </select>
@@ -81,7 +83,7 @@ export function CanvasOptionsSection() {
           onChange={(e) => setCanvasOption({ rainbowBranches: e.target.checked })}
           className="rounded border-slate-300"
         />
-        彩虹分支
+        {t('mind.p.rainbow')}
       </label>
     </section>
   );

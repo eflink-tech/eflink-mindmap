@@ -6,13 +6,20 @@
 // - 图片：查看大图 + 删除按钮
 // 锚定选中节点右侧垂直居中（对齐 XMind）。
 import { useEffect, useRef, useState } from 'react';
+import { useI18n } from '@eflink-tech/office-kit';
 import { useMindMapStore } from '../../store/mindMapStore';
 import { useUiStore, type InsertEditorKind } from '../../store/uiStore';
 import { SaveStatusIndicator } from '../statusbar/SaveStatusIndicator';
 
-const TITLE_MAP: Record<InsertEditorKind, string> = { note: '笔记', labels: '标签', link: '链接', image: '图片' };
+const TITLE_KEYS: Record<InsertEditorKind, string> = {
+  note: 'mind.insert.note',
+  labels: 'mind.insert.label',
+  link: 'mind.insert.link',
+  image: 'mind.p.image',
+};
 
 export function NodeInsertOverlay() {
+  const { t } = useI18n();
   const kind = useUiStore((s) => s.insertEditor);
   const labelEditIndex = useUiStore((s) => s.labelEditIndex);
   const close = useUiStore((s) => s.closeInsertEditor);
@@ -136,7 +143,7 @@ export function NodeInsertOverlay() {
       onMouseDown={(e) => e.preventDefault()}
       onClick={onClick}
     >
-      删除
+      {t('action.delete')}
     </button>
   );
 
@@ -162,14 +169,14 @@ export function NodeInsertOverlay() {
       {kind !== 'image' && (
         <div className="mb-1 flex items-center justify-between">
           <span className="text-xs text-slate-400">
-            {TITLE_MAP[kind]}
+            {t(TITLE_KEYS[kind])}
             {kind === 'note'
               ? <SaveStatusIndicator prefix=" · " />
               : kind === 'labels'
                 ? labelEditIndex != null
-                  ? ' · Enter 替换'
-                  : ' · Enter 添加'
-                : ' · Enter 确认'}
+                  ? ` · ${t('mind.p.enterReplace')}`
+                  : ` · ${t('mind.p.enterAdd')}`
+                : ` · ${t('mind.p.enterConfirm')}`}
           </span>
           {/* 显式删除入口：笔记/链接有内容或标签编辑模式时可用 */}
           {((kind === 'note' && node.metadata?.note) ||
@@ -184,7 +191,7 @@ export function NodeInsertOverlay() {
           value={value}
           onChange={(e) => liveNote(e.target.value)}
           rows={4}
-          placeholder="输入笔记内容…（清空即删除笔记）"
+          placeholder={t('mind.p.notePlaceholder')}
           className="w-full resize-y rounded border border-slate-200 px-2 py-1 text-sm outline-none focus:border-blue-400"
           onBlur={close}
           onKeyDown={(e) => {
@@ -223,7 +230,7 @@ export function NodeInsertOverlay() {
             ref={inputRef}
             value={value}
             onChange={(e) => setValue(e.target.value)}
-            placeholder={labelEditIndex != null ? '修改标签' : '输入标签，逗号分隔可多个'}
+            placeholder={labelEditIndex != null ? t('mind.p.editLabel') : t('mind.p.labelPlaceholder')}
             className="w-full rounded border border-slate-200 px-2 py-1 text-sm outline-none focus:border-blue-400"
             onBlur={labelEditIndex != null ? commitLabelEdit : close}
             onKeyDown={(e) => {
@@ -247,7 +254,7 @@ export function NodeInsertOverlay() {
             }}
           />
           {labelEditIndex == null && labelCount > 0 && (
-            <div className="mt-1 text-xs text-slate-400">已添加 {labelCount} 个 · 空输入按退格删除末尾标签</div>
+            <div className="mt-1 text-xs text-slate-400">{t('mind.p.labelsAdded', { count: labelCount })}</div>
           )}
         </>
       )}
@@ -255,12 +262,12 @@ export function NodeInsertOverlay() {
         // 与笔记卡片同款：标题行（含删除按钮）+ 内容区；点击图片放大查看
         <div className="w-56">
           <div className="mb-1 flex items-center justify-between">
-            <span className="text-xs text-slate-400">图片</span>
+            <span className="text-xs text-slate-400">{t('mind.p.image')}</span>
             {delBtn(deleteImage)}
           </div>
           <img
             src={imageSrc}
-            alt="节点图片"
+            alt={t('mind.p.nodeImage')}
             className="block cursor-zoom-in rounded"
             style={{ maxWidth: 220 * scale, maxHeight: 220 * scale }}
             onClick={() => setLightbox(true)}
@@ -276,7 +283,7 @@ export function NodeInsertOverlay() {
         >
           <img
             src={imageSrc}
-            alt="节点图片放大"
+            alt={t('mind.p.nodeImageZoom')}
             className="max-h-[85vh] max-w-[85vw] rounded-lg shadow-2xl"
           />
         </div>
