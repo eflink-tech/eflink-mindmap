@@ -237,7 +237,7 @@ export function Editor() {
 
   // 宿主桥接：外部可查询脏状态、触发云端保存、丢弃本地草稿（编辑器卸载时移除）
   useEffect(() => {
-    ;(window as unknown as Record<string, unknown>).__eflinkEditorBridge = {
+    ;(window as unknown as Record<string, unknown>).__doculumaEditorBridge = {
       isDirty: () => useMindMapStore.getState().dirty,
       save: () => saveNow(),
       discard: () => {
@@ -250,7 +250,7 @@ export function Editor() {
       },
     };
     return () => {
-      delete (window as unknown as Record<string, unknown>).__eflinkEditorBridge;
+      delete (window as unknown as Record<string, unknown>).__doculumaEditorBridge;
     };
   }, []);
 

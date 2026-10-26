@@ -1,5 +1,7 @@
 // AI 数据持久化（Dexie）：设置 / 会话历史 / 内置提示词模板
 import Dexie, { type Table } from 'dexie';
+import { readLegacyIndexedDb } from '@eflink-tech/office-kit';
+import { LEGACY_AI_DB_NAME, LEGACY_AI_STORES } from '../core/persistence/legacy';
 import type { AISettings, Conversation, Template } from './types';
 
 export class AIDb extends Dexie {
@@ -8,7 +10,7 @@ export class AIDb extends Dexie {
   templates!: Table<Template, string>;
 
   constructor() {
-    super('eflink-mindmap-ai');
+    super('doculuma-mindmap-ai');
     this.version(1).stores({
       conversations: 'id, updatedAt',
       settings: 'key',
@@ -19,17 +21,50 @@ export class AIDb extends Dexie {
 
 export const aiDb = new AIDb();
 
+/**
+ * 旧 AI 库（efLink 时期）数据一次性导入：每张表仅在自己为空时灌入旧数据。
+ * 只读旧库、不删除，失败只打日志，不阻塞 AI 面板。
+ */
+let legacyImport: Promise<void> | null = null;
+
+/** 单张表搬运：旧库该表有数据且新表为空时才写入（原样搬行，不改结构） */
+async function importRows<T>(table: Table<T, string>, name: string, legacy: Record<string, unknown[]>) {
+  const rows = legacy[name];
+  if (!rows?.length) return;
+  if ((await table.count()) > 0) return;
+  await table.bulkPut(rows as T[]);
+}
+
+export function ensureLegacyImport(): Promise<void> {
+  if (!legacyImport) {
+    legacyImport = (async () => {
+      try {
+        const legacy = await readLegacyIndexedDb(LEGACY_AI_DB_NAME, LEGACY_AI_STORES);
+        if (!legacy) return;
+        await importRows(aiDb.conversations, 'conversations', legacy);
+        await importRows(aiDb.settings, 'settings', legacy);
+        await importRows(aiDb.templates, 'templates', legacy);
+      } catch (error) {
+        console.error('导入旧版 AI 数据失败:', error);
+      }
+    })();
+  }
+  return legacyImport;
+}
+
 const SETTINGS_KEY = 'main';
 const DEFAULT_SETTINGS: AISettings = { baseUrl: '', apiKey: '', model: '' };
 
 export const aiSettingsStore = {
   async getSettings(): Promise<AISettings> {
+    await ensureLegacyImport();
     const row = await aiDb.settings.get(SETTINGS_KEY);
     if (!row) return { ...DEFAULT_SETTINGS };
     return { baseUrl: row.baseUrl, apiKey: row.apiKey, model: row.model };
   },
 
   async saveSettings(s: AISettings): Promise<void> {
+    await ensureLegacyImport();
     await aiDb.settings.put({ key: SETTINGS_KEY, ...s });
   },
 

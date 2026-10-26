@@ -4,6 +4,7 @@ import { mindT } from '../../i18n/runtime';
 import { EFM_EXTENSION, exportToEfmJson, importFromEfmJson } from '../../core/export/efmJson';
 import { pngExportRegion } from '../../core/export/png';
 import { saveDocument } from '../../core/persistence/db';
+import { LAST_DOC_KEY } from '../../core/persistence/keys';
 import { getCanvasBackground } from '../../core/style/canvasOptions';
 import type { MindMapDocument } from '../../types/mindmap';
 import { useMindMapStore } from '../../store/mindMapStore';
@@ -81,7 +82,7 @@ export function importEfmJsonFile(file: File): void {
       const doc = importFromEfmJson(text);
       useMindMapStore.getState().open(doc);
       // 与 App/StartScreen 的刷新恢复逻辑保持一致：记录最近打开文档
-      localStorage.setItem('efmindmap:lastDoc', doc.id);
+      localStorage.setItem(LAST_DOC_KEY, doc.id);
       // 导入的文档尚未入库，立即写入云端（默认后端为 IndexedDB），不依赖用户手动保存
       void saveDocument(doc).catch((err) => console.error('导入文档保存失败:', err));
     })

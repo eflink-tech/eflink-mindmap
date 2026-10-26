@@ -69,9 +69,14 @@ function makeDoc(layout) {
 }
 
 async function putDoc(page, layout) {
-  await page.evaluate(async (doc) => {
+  // 与编辑器保持一致（无法在本 node 脚本里 import TS 常量，改键时请同步）：
+  // 库名见 packages/mindmap/src/core/persistence/db.ts，
+  // last-doc key 见 packages/mindmap/src/core/persistence/keys.ts 的 LAST_DOC_KEY
+  const DB_NAME = 'doculuma-mindmap';
+  const LAST_DOC_KEY = 'doculuma:mindmap:last-doc';
+  await page.evaluate(async ({ doc, dbName, lastDocKey }) => {
     const db = await new Promise((resolve, reject) => {
-      const req = indexedDB.open('efmindmap');
+      const req = indexedDB.open(dbName);
       req.onsuccess = () => resolve(req.result);
       req.onerror = () => reject(req.error);
     });
@@ -86,8 +91,8 @@ async function putDoc(page, layout) {
       tx.onerror = () => reject(tx.error);
     });
     db.close();
-    localStorage.setItem('efmindmap:lastDoc', doc.id);
-  }, makeDoc(layout));
+    localStorage.setItem(lastDocKey, doc.id);
+  }, { doc: makeDoc(layout), dbName: DB_NAME, lastDocKey: LAST_DOC_KEY });
 }
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));

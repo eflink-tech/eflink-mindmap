@@ -1,5 +1,6 @@
 // 本地草稿兜底：文档变化后延迟写入 localStorage，作为云端保存（手动 ⌘S）失败/未发生时的恢复来源。
 // 注意：这里不再直连云端/IndexedDB；云端保存只在显式操作（⌘S / 菜单「保存」/ 分享前强制保存）时发生（见 ./saveNow）。
+import { DRAFT_KEY_PREFIX } from './keys';
 import type { MindMapDocument } from '../../types/mindmap';
 
 const DELAY = 500;
@@ -7,7 +8,7 @@ let timer: ReturnType<typeof setTimeout> | undefined;
 
 /** 本地草稿存储 key（按文档 id 隔离） */
 export function draftKey(docId: string): string {
-  return `eflink:draft:mindmap:${docId}`;
+  return `${DRAFT_KEY_PREFIX}${docId}`;
 }
 
 /** 防抖写入本地草稿：不调用云端保存、不清 dirty（dirty 仅随云端保存成功清除） */

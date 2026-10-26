@@ -6,11 +6,10 @@ import { Editor } from './components/Editor';
 import { MIND_MESSAGES } from './i18n/messages';
 import { mindT, setMindLocale } from './i18n/runtime';
 import { loadDocument } from './core/persistence/db';
+import { LAST_DOC_KEY } from './core/persistence/keys';
 import { useDocumentsStore } from './store/documentsStore';
 import { useMindMapStore } from './store/mindMapStore';
 import { useUiStore } from './store/uiStore';
-
-const LAST_DOC_KEY = 'efmindmap:lastDoc';
 
 /** 打开已有文档或新建，并进入编辑器 */
 async function openOrCreateEditor(bootDocId?: string) {

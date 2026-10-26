@@ -128,6 +128,14 @@ const ROWS = {
   ],
   'mind.ai.applyFailed': ['应用失败', 'Failed to apply', 'No se pudo aplicar', 'Falha ao aplicar'],
 
+  // AI 面板：系统提示词（发给模型，随界面语言切换回答语言；品牌名固定为 DocuLuma MindMap）
+  'mind.ai.systemPrompt': [
+    '你是 DocuLuma MindMap 的 AI 助手，回答简洁专业，用中文。',
+    'You are the AI assistant in DocuLuma MindMap. Answer concisely and professionally, in English.',
+    'Eres el asistente de IA de DocuLuma MindMap. Responde de forma concisa y profesional, en español.',
+    'Você é o assistente de IA do DocuLuma MindMap. Responda de forma concisa e profissional, em português.',
+  ],
+
   // AI 面板：头部 / 历史 / 设置
   'mind.ai.newChat': ['新对话', 'New chat', 'Nuevo chat', 'Nova conversa'],
   'mind.ai.title': ['AI 助手', 'AI Assistant', 'Asistente de IA', 'Assistente de IA'],

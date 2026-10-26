@@ -38,10 +38,11 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { OfficeHeader, useI18n, type OfficeMenu } from '@eflink-tech/office-kit';
-import logoUrl from '../../assets/mindmap-eflink-logo.png';
+import logoUrl from '../../assets/mindmap-doculuma-logo.png';
 import { getEditorBackHref } from '../../core/chrome';
 import { menuShortcutLabel } from '../../core/shortcuts/catalog';
 import { saveNow, saveNowWithToast } from '../../core/persistence/saveNow';
+import { LAST_DOC_KEY } from '../../core/persistence/keys';
 import { getCanvasOptions } from '../../core/style/canvasOptions';
 import { getMindMapShareHandler } from '../../core/share/shareBridge';
 import { useDocumentsStore } from '../../store/documentsStore';
@@ -126,7 +127,7 @@ export function ToolBar() {
       try {
         const doc = await useDocumentsStore.getState().createDoc();
         useMindMapStore.getState().open(doc);
-        localStorage.setItem('efmindmap:lastDoc', doc.id);
+        localStorage.setItem(LAST_DOC_KEY, doc.id);
       } catch (err) {
         console.error('新建文档失败', err);
       }

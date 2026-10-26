@@ -11,7 +11,7 @@ type Row = readonly [string, string, string, string];
 const ORDER = ['zh-CN', 'en', 'es', 'pt-BR'] as const;
 
 const ROWS = {
-  'mind.brand': ['易飞思维导图', 'Eflink MindMap', 'Eflink Mapa Mental', 'Eflink Mapa Mental'],
+  'mind.brand': ['DocuLuma MindMap', 'DocuLuma MindMap', 'DocuLuma MindMap', 'DocuLuma MindMap'],
   'mind.untitled': ['未命名导图', 'Untitled mind map', 'Mapa mental sin título', 'Mapa mental sem título'],
   'mind.doc.defaultTitle': ['思维导图', 'Mind map', 'Mapa mental', 'Mapa mental'],
 

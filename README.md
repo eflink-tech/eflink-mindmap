@@ -1,4 +1,4 @@
-# EFLink MindMap 易飞思维导图
+# DocuLuma MindMap
 
 开箱即用的在线思维导图编辑器。基于 [Konva](https://konvajs.org/) 画布引擎与 React 构建，**既可以独立运行（本仓库 demo 应用），也可以作为 React 组件嵌入任意应用**（npm 包 `@eflink-tech/mindmap`）。
 
@@ -92,7 +92,7 @@ eflink-mindmap/
 │       ├── core/       # 编辑器内核（布局策略、节点操作、标记、快捷键、导出、持久化）
 │       ├── store/      # zustand 状态（文档 / UI / 文档列表）
 │       └── types/      # 数据模型
-├── apps/demo/          # 独立 demo 应用（易飞思维导图）
+├── apps/demo/          # 独立 demo 应用（DocuLuma MindMap）
 ├── e2e/                # Playwright 端到端测试
 └── scripts/            # CI 发布辅助脚本
 ```
@@ -109,7 +109,7 @@ git push          # 推送后机器人自动开 Version PR
 
 ## 联系我们
 
-- **在线体验**：<https://eflink.tech>（易飞思维导图 · 免费在线思维导图）
+- **在线体验**：<https://offices.doculuma.com/mindmap>（DocuLuma MindMap · 免费在线思维导图）
 - **问题反馈与交流**：[eflink.tech/contact](https://eflink.tech/contact)
 - **邮箱**：[support@eflink.tech](mailto:support@eflink.tech)
 

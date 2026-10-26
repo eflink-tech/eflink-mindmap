@@ -2,8 +2,9 @@
 import { FilePlus2, FolderOpen, Pencil, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useI18n } from '@eflink-tech/office-kit';
-import logoUrl from '../../assets/mindmap-eflink-logo.png';
+import logoUrl from '../../assets/mindmap-doculuma-logo.png';
 import { loadDocument } from '../../core/persistence/db';
+import { LAST_DOC_KEY } from '../../core/persistence/keys';
 import { useDocumentsStore } from '../../store/documentsStore';
 import { useMindMapStore } from '../../store/mindMapStore';
 import { useUiStore } from '../../store/uiStore';
@@ -24,7 +25,7 @@ export function StartScreen() {
       const doc = await loadDocument(id);
       if (!doc) return;
       useMindMapStore.getState().open(doc);
-      localStorage.setItem('efmindmap:lastDoc', id);
+      localStorage.setItem(LAST_DOC_KEY, id);
       setView('editor');
     } catch (err) {
       console.error('打开文档失败', err);
