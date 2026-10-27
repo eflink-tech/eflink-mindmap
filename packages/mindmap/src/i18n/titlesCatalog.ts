@@ -42,7 +42,7 @@ export const CATALOG_TITLES = {
   紫藤: ['Wisteria', 'Glicinia', 'Wisteria'],
   缤纷: ['Colorful', 'Colorido', 'Colorido'],
   // 经典分组（「经典」同时是主题名与分组标签）
-  经典: ['Classic', 'Clásico', 'Clásico'],
+  经典: ['Classic', 'Clásico', 'Clássico'],
   墨黑: ['Ink', 'Tinta', 'Tinta'],
   商务: ['Business', 'Negocios', 'Negócios'], // 亦用于贴纸分组「商务」
   清新: ['Fresh', 'Fresco', 'Fresco'],

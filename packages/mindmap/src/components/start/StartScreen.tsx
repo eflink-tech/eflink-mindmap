@@ -2,7 +2,7 @@
 import { FilePlus2, FolderOpen, Pencil, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useI18n } from '@eflink-tech/office-kit';
-import logoUrl from '../../assets/mindmap-doculuma-logo.png';
+import { getActiveEditorBrand } from '../../brand';
 import { loadDocument } from '../../core/persistence/db';
 import { LAST_DOC_KEY } from '../../core/persistence/keys';
 import { useDocumentsStore } from '../../store/documentsStore';
@@ -35,8 +35,8 @@ export function StartScreen() {
   return (
     <div className="mx-auto max-w-3xl p-10">
       <h1 className="mb-8 flex items-center gap-3 text-2xl font-bold">
-        <img src={logoUrl} alt="" width={36} height={36} className="h-9 w-9 rounded-full" />
-        {t('mind.brand')}
+        <img src={getActiveEditorBrand().logo} alt="" width={36} height={36} className="h-9 w-9 rounded-full" />
+        {getActiveEditorBrand().name}
       </h1>
       <button
         className="mb-6 flex items-center gap-2 rounded bg-blue-500 px-4 py-2 text-white"

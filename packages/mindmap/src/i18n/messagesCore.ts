@@ -3,10 +3,7 @@
 // 与 office-kit 的 OFFICE_LOCALES 一致；只收录 mind.ai. / mind.save. / mind.store. 前缀，
 // 通用动作与状态复用 office-kit shell.* / action.*，导图基础键复用 messages.ts 的 mind.*。
 import type { OfficeMessagesByLocale } from '@eflink-tech/office-kit';
-
-type Row = readonly [string, string, string, string];
-
-const ORDER = ['zh-CN', 'en', 'es', 'pt-BR'] as const;
+import { buildMessages, type Row } from './buildMessages';
 
 const ROWS = {
   // 手动保存（saveNow）
@@ -273,14 +270,4 @@ const ROWS = {
   'mind.ai.tpl.prosCons': ['利弊分析', 'Pros & cons', 'Análisis de pros y contras', 'Análise de prós e contras'],
 } as const satisfies Record<string, Row>;
 
-function build(): OfficeMessagesByLocale {
-  const out: OfficeMessagesByLocale = { 'zh-CN': {}, en: {}, es: {}, 'pt-BR': {} };
-  for (const [key, values] of Object.entries(ROWS)) {
-    ORDER.forEach((locale, index) => {
-      out[locale]![key] = values[index];
-    });
-  }
-  return out;
-}
-
-export const CORE_MESSAGES: OfficeMessagesByLocale = build();
+export const CORE_MESSAGES: OfficeMessagesByLocale = buildMessages(ROWS);

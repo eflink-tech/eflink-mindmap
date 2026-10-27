@@ -1,7 +1,8 @@
 // AI 数据持久化（Dexie）：设置 / 会话历史 / 内置提示词模板
 import Dexie, { type Table } from 'dexie';
-import { readLegacyIndexedDb } from '@eflink-tech/office-kit';
+import { isLegacyImportDone, markLegacyImportDone, readLegacyIndexedDb } from '@eflink-tech/office-kit';
 import { LEGACY_AI_DB_NAME, LEGACY_AI_STORES } from '../core/persistence/legacy';
+import { LEGACY_AI_IMPORT_DONE_KEYS } from '../core/persistence/keys';
 import type { AISettings, Conversation, Template } from './types';
 
 export class AIDb extends Dexie {
@@ -27,12 +28,28 @@ export const aiDb = new AIDb();
  */
 let legacyImport: Promise<void> | null = null;
 
-/** 单张表搬运：旧库该表有数据且新表为空时才写入（原样搬行，不改结构） */
-async function importRows<T>(table: Table<T, string>, name: string, legacy: Record<string, unknown[]>) {
-  const rows = legacy[name];
-  if (!rows?.length) return;
-  if ((await table.count()) > 0) return;
+/**
+ * 单张表搬运（仿 draw 的 importTable）：旧库该表有数据且新表为空时才写入（原样搬行，不改结构）。
+ * 无论导入成功还是跳过都落一次性标记：否则用户删光会话后，
+ * 空表判据再次命中，旧数据会"复活"且永远删不干净。
+ * bulkPut 失败不落标记，下个会话自然重试。
+ */
+async function importRows<T>(
+  table: Table<T, string>,
+  rows: unknown[] | undefined,
+  markerKey: string,
+): Promise<void> {
+  if (isLegacyImportDone(markerKey)) return;
+  if (!rows?.length) {
+    markLegacyImportDone(markerKey);
+    return;
+  }
+  if ((await table.count()) > 0) {
+    markLegacyImportDone(markerKey);
+    return;
+  }
   await table.bulkPut(rows as T[]);
+  markLegacyImportDone(markerKey);
 }
 
 export function ensureLegacyImport(): Promise<void> {
@@ -41,9 +58,11 @@ export function ensureLegacyImport(): Promise<void> {
       try {
         const legacy = await readLegacyIndexedDb(LEGACY_AI_DB_NAME, LEGACY_AI_STORES);
         if (!legacy) return;
-        await importRows(aiDb.conversations, 'conversations', legacy);
-        await importRows(aiDb.settings, 'settings', legacy);
-        await importRows(aiDb.templates, 'templates', legacy);
+        await Promise.all([
+          importRows(aiDb.conversations, legacy.conversations, LEGACY_AI_IMPORT_DONE_KEYS.conversations),
+          importRows(aiDb.settings, legacy.settings, LEGACY_AI_IMPORT_DONE_KEYS.settings),
+          importRows(aiDb.templates, legacy.templates, LEGACY_AI_IMPORT_DONE_KEYS.templates),
+        ]);
       } catch (error) {
         console.error('导入旧版 AI 数据失败:', error);
       }

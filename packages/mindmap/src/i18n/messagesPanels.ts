@@ -3,10 +3,7 @@
 // [zh-CN, en, es, pt-BR]，与 office-kit 的 OFFICE_LOCALES 一致。
 // 仅收录 mind.p.* 前缀的键；公共动作复用 COMMON_MESSAGES，导图主文案复用 messages.ts。
 import type { OfficeMessagesByLocale } from '@eflink-tech/office-kit';
-
-type Row = readonly [string, string, string, string];
-
-const ORDER = ['zh-CN', 'en', 'es', 'pt-BR'] as const;
+import { buildMessages, type Row } from './buildMessages';
 
 const ROWS = {
   // 属性面板：页签与空状态
@@ -147,14 +144,4 @@ const ROWS = {
   'mind.p.renameAria': ['重命名 {title}', 'Rename {title}', 'Renombrar {title}', 'Renomear {title}'],
 } as const satisfies Record<string, Row>;
 
-function build(): OfficeMessagesByLocale {
-  const out: OfficeMessagesByLocale = { 'zh-CN': {}, en: {}, es: {}, 'pt-BR': {} };
-  for (const [key, values] of Object.entries(ROWS)) {
-    ORDER.forEach((locale, index) => {
-      out[locale]![key] = values[index];
-    });
-  }
-  return out;
-}
-
-export const PANEL_MESSAGES: OfficeMessagesByLocale = build();
+export const PANEL_MESSAGES: OfficeMessagesByLocale = buildMessages(ROWS);

@@ -235,9 +235,11 @@ export function Editor() {
     };
   }, []);
 
-  // 宿主桥接：外部可查询脏状态、触发云端保存、丢弃本地草稿（编辑器卸载时移除）
+  // 宿主桥接：外部可查询脏状态、触发云端保存、丢弃本地草稿（编辑器卸载时移除）。
+  // __eflinkEditorBridge 是旧宿主的过渡期别名（同一对象），确认宿主全部改用新名后移除。
   useEffect(() => {
-    ;(window as unknown as Record<string, unknown>).__doculumaEditorBridge = {
+    const bridgeRoot = window as unknown as Record<string, unknown>;
+    bridgeRoot.__doculumaEditorBridge = {
       isDirty: () => useMindMapStore.getState().dirty,
       save: () => saveNow(),
       discard: () => {
@@ -249,8 +251,10 @@ export function Editor() {
         }
       },
     };
+    bridgeRoot.__eflinkEditorBridge = bridgeRoot.__doculumaEditorBridge;
     return () => {
-      delete (window as unknown as Record<string, unknown>).__doculumaEditorBridge;
+      delete bridgeRoot.__doculumaEditorBridge;
+      delete bridgeRoot.__eflinkEditorBridge;
     };
   }, []);
 

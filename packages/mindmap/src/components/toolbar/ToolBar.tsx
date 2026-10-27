@@ -38,7 +38,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { OfficeHeader, useI18n, type OfficeMenu } from '@eflink-tech/office-kit';
-import logoUrl from '../../assets/mindmap-doculuma-logo.png';
+import { getActiveEditorBrand } from '../../brand';
 import { getEditorBackHref } from '../../core/chrome';
 import { menuShortcutLabel } from '../../core/shortcuts/catalog';
 import { saveNow, saveNowWithToast } from '../../core/persistence/saveNow';
@@ -289,7 +289,7 @@ export function ToolBar() {
   return (
     <>
       <OfficeHeader
-        brand={{ logo: logoUrl, name: t('mind.brand') }}
+        brand={getActiveEditorBrand()}
         backHref={getEditorBackHref()}
         menus={menus}
         actions={actions}

@@ -3,10 +3,7 @@
 // 只收录 mind.c.* 前缀键；由入口与 MIND_MESSAGES 一并合并注册，本模块不自注册。
 // 数组列顺序固定为 [zh-CN, en, es, pt-BR]，与 office-kit 的 OFFICE_LOCALES 一致。
 import type { OfficeMessagesByLocale } from '@eflink-tech/office-kit';
-
-type Row = readonly [string, string, string, string];
-
-const ORDER = ['zh-CN', 'en', 'es', 'pt-BR'] as const;
+import { buildMessages, type Row } from './buildMessages';
 
 const ROWS = {
   // 配色方案（ThemeGallery）
@@ -73,14 +70,4 @@ const ROWS = {
   ],
 } as const satisfies Record<string, Row>;
 
-function build(): OfficeMessagesByLocale {
-  const out: OfficeMessagesByLocale = { 'zh-CN': {}, en: {}, es: {}, 'pt-BR': {} };
-  for (const [key, values] of Object.entries(ROWS)) {
-    ORDER.forEach((locale, index) => {
-      out[locale]![key] = values[index];
-    });
-  }
-  return out;
-}
-
-export const CATALOG_MESSAGES: OfficeMessagesByLocale = build();
+export const CATALOG_MESSAGES: OfficeMessagesByLocale = buildMessages(ROWS);

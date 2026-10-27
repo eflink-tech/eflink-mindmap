@@ -1,14 +1,11 @@
 // packages/mindmap/src/i18n/messages.ts
 // 思维导图界面文案字典。数组列顺序固定为 [zh-CN, en, es, pt-BR]，
-// 与 office-kit 的 OFFICE_LOCALES 一致；新增语言需同步改 ORDER 与 Row。
+// 与 office-kit 的 OFFICE_LOCALES 一致；新增语言需同步改 buildMessages.ts 的 ORDER 与 Row。
 import { registerOfficeMessages, type OfficeMessagesByLocale } from '@eflink-tech/office-kit';
+import { buildMessages, ORDER, type Row } from './buildMessages';
 import { CATALOG_MESSAGES } from './messagesCatalog';
 import { CORE_MESSAGES } from './messagesCore';
 import { PANEL_MESSAGES } from './messagesPanels';
-
-type Row = readonly [string, string, string, string];
-
-const ORDER = ['zh-CN', 'en', 'es', 'pt-BR'] as const;
 
 const ROWS = {
   'mind.brand': ['DocuLuma MindMap', 'DocuLuma MindMap', 'DocuLuma MindMap', 'DocuLuma MindMap'],
@@ -117,17 +114,7 @@ const ROWS = {
   'mind.newDocFailed': ['新建文档失败', 'Failed to create the document', 'No se pudo crear el documento', 'Falha ao criar o documento'],
 } as const satisfies Record<string, Row>;
 
-function build(): OfficeMessagesByLocale {
-  const out: OfficeMessagesByLocale = { 'zh-CN': {}, en: {}, es: {}, 'pt-BR': {} };
-  for (const [key, values] of Object.entries(ROWS)) {
-    ORDER.forEach((locale, index) => {
-      out[locale]![key] = values[index];
-    });
-  }
-  return out;
-}
-
-const CHROME_MESSAGES = build();
+const CHROME_MESSAGES = buildMessages(ROWS);
 
 /** 面板、目录素材与 AI/存储链路各自单独文件维护，此处合并为编辑器唯一字典入口 */
 function merge(): OfficeMessagesByLocale {

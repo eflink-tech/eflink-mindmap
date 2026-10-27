@@ -1,5 +1,5 @@
 /** @eflink-tech/mindmap 对外导出面：编辑器组件 + store + 持久化辅助 */
-// 顶栏/菜单栏样式来自 office-kit：库构建会外部化该依赖，必须在此显式引入才会打进 dist/styles.css
+// 顶栏/菜单栏样式来自 office-kit：宿主只引入 dist/styles.css，必须在此显式引入才会打进产物
 import '@eflink-tech/office-kit/styles.css'
 import './styles.css'
 import { migrateLegacyLocalStorage } from './core/persistence/legacy'
@@ -8,6 +8,10 @@ import { migrateLegacyLocalStorage } from './core/persistence/legacy'
 migrateLegacyLocalStorage()
 
 export { MindMapEditor } from './MindMapEditor'
+export type { MindMapEditorProps } from './MindMapEditor'
+// 品牌切换：'doculuma' | 'eflink' 内置品牌（本地存储命名空间始终是 doculuma:*，与品牌无关）
+export { builtinEditorBrand, resolveEditorBrandId, EDITOR_BRAND_IDS } from './brand'
+export type { EditorBrandId } from './brand'
 export { useMindMapStore } from './store/mindMapStore'
 export { useUiStore } from './store/uiStore'
 export { useDocumentsStore } from './store/documentsStore'

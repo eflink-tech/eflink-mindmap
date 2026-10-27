@@ -13,11 +13,16 @@ import { addChild, createDocument } from '../../core/editor/nodeOps';
 const HAS_CJK = /[一-鿿]/;
 const LOCALES = ['en', 'es', 'pt-BR'] as const;
 
-/** translateTitle 原样返回即视为查表未命中 */
+/** translateTitle 原样返回即视为查表未命中；en/es/pt-BR 三列逐列检查（仿 draw 的 titleCoverage） */
 function missingFrom(label: string, values: Array<string | undefined | null>, out: string[]) {
   for (const value of values) {
     if (!value || !HAS_CJK.test(value)) continue;
-    if (translateTitle(value, 'en') === value) out.push(`${label}: ${value}`);
+    for (const locale of LOCALES) {
+      if (translateTitle(value, locale) === value) {
+        out.push(`${label}[${locale}]: ${value}`);
+        break;
+      }
+    }
   }
 }
 
