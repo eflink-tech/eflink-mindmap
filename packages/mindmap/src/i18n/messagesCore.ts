@@ -30,20 +30,20 @@ const ROWS = {
   'mind.store.efm.invalidDoc': [
     '无效的思维导图文档',
     'Invalid mind map document',
-    'Documento de mapa mental no válido',
+    'Documento de mapa mental inválido',
     'Documento de mapa mental inválido',
   ],
   'mind.store.efm.missingField': [
     '文档缺少 {field}',
     'Document is missing {field}',
     'Al documento le falta {field}',
-    'O documento não tem {field}',
+    'Falta {field} no documento',
   ],
   'mind.store.efm.invalidNode': [
     '节点无效: {key}',
     'Invalid node: {key}',
-    'Nodo no válido: {key}',
-    'Nó inválido: {key}',
+    'Tema inválido: {key}',
+    'Tópico inválido: {key}',
   ],
   'mind.store.efm.rootMissing': [
     'rootId 不在 nodes 中',
@@ -54,7 +54,7 @@ const ROWS = {
   'mind.store.efm.invalidViewport': [
     'viewport 无效',
     'Invalid viewport',
-    'Viewport no válido',
+    'Viewport inválido',
     'Viewport inválido',
   ],
   'mind.store.efm.invalidJson': [
@@ -80,7 +80,7 @@ const ROWS = {
   'mind.ai.err.unauthorized': [
     'API Key 无效（401）',
     'Invalid API key (401)',
-    'Clave de API no válida (401)',
+    'Clave de API inválida (401)',
     'Chave de API inválida (401)',
   ],
   'mind.ai.err.rateLimited': [
@@ -100,8 +100,8 @@ const ROWS = {
   'mind.ai.err.badStructure': [
     '导图 JSON 结构不正确',
     'Invalid mind map JSON structure',
-    'La estructura JSON del mapa mental no es correcta',
-    'A estrutura JSON do mapa mental não é correta',
+    'La estructura JSON del mapa mental no es válida',
+    'A estrutura JSON do mapa mental não é válida',
   ],
   'mind.ai.err.emptyContent': [
     'AI 未生成有效的导图内容',
@@ -120,8 +120,8 @@ const ROWS = {
   'mind.ai.noNodesWritten': [
     '未能写入任何节点',
     'No topics could be written',
-    'No se pudo escribir ningún nodo',
-    'Nenhum nó pôde ser escrito',
+    'No se pudo escribir ningún tema',
+    'Nenhum tópico pôde ser escrito',
   ],
   'mind.ai.applyFailed': ['应用失败', 'Failed to apply', 'No se pudo aplicar', 'Falha ao aplicar'],
 
@@ -138,13 +138,13 @@ const ROWS = {
   'mind.ai.title': ['AI 助手', 'AI Assistant', 'Asistente de IA', 'Assistente de IA'],
   'mind.ai.history': ['会话历史', 'Chat history', 'Historial de chats', 'Histórico de conversas'],
   'mind.ai.settings': ['AI 设置', 'AI settings', 'Ajustes de IA', 'Configurações de IA'],
-  'mind.ai.collapse': ['收起', 'Collapse', 'Colapsar', 'Recolher'],
+  'mind.ai.collapse': ['收起', 'Collapse', 'Contraer', 'Recolher'],
   'mind.ai.backToChat': ['返回对话', 'Back to chat', 'Volver al chat', 'Voltar à conversa'],
   'mind.ai.noHistory': [
     '暂无历史会话',
     'No saved conversations',
     'No hay conversaciones guardadas',
-    'Nenhuma conversa guardada',
+    'Nenhuma conversa salva',
   ],
   'mind.ai.settingsIntro': [
     '配置任意 OpenAI 兼容接口（如通义千问、DeepSeek、Kimi）。密钥仅保存在本地浏览器（IndexedDB），不会上传。',
@@ -172,9 +172,9 @@ const ROWS = {
   ],
   'mind.ai.requirementsPlaceholder': [
     '补充要求（可选）：角度、层级、数量…',
-    'Extra requirements (optional): angle, depth, count…',
+    'Extra requirements (optional): focus, depth, number of topics…',
     'Requisitos adicionales (opcional): enfoque, niveles, cantidad…',
-    'Requisitos adicionais (opcional): ângulo, níveis, quantidade…',
+    'Requisitos adicionais (opcional): perspectiva, níveis, quantidade…',
   ],
   'mind.ai.generatingBtn': ['生成中…', 'Generating…', 'Generando…', 'Gerando…'],
   'mind.ai.generateBtn': ['生成', 'Generate', 'Generar', 'Gerar'],
@@ -190,14 +190,14 @@ const ROWS = {
   'mind.ai.welcomeHint': [
     '你可以让我生成整张导图，或选中节点后用下方快捷操作展开分支。',
     'Ask me to generate a whole mind map, or select a topic and use the quick actions below to expand its branches.',
-    'Puedes pedirme que genere todo el mapa mental, o seleccionar un nodo y usar las acciones rápidas de abajo para expandir sus ramas.',
+    'Puedes pedirme que genere todo el mapa mental, o seleccionar un tema y usar las acciones rápidas de abajo para expandir sus ramas.',
     'Você pode pedir que eu gere o mapa mental inteiro, ou selecionar um tópico e usar as ações rápidas abaixo para expandir seus ramos.',
   ],
   'mind.ai.inputPlaceholder': [
     '输入消息，Enter 发送',
     'Type a message; press Enter to send',
-    'Escribe un mensaje; Enter para enviar',
-    'Digite uma mensagem; Enter para enviar',
+    'Escribe un mensaje; presiona Enter para enviar',
+    'Digite uma mensagem e pressione Enter para enviar',
   ],
   'mind.ai.stop': ['停止', 'Stop', 'Detener', 'Parar'],
   'mind.ai.send': ['发送', 'Send', 'Enviar', 'Enviar'],
@@ -230,37 +230,37 @@ const ROWS = {
   'mind.ai.generatedSummary': [
     '已生成「{root}」：{nodes} 个节点，{branches} 条主分支。',
     'Generated "{root}": {nodes} topics, {branches} main branches.',
-    'Se generó «{root}»: {nodes} nodos, {branches} ramas principales.',
-    'Gerado "{root}": {nodes} tópicos, {branches} ramos principais.',
+    'Se generó «{root}»: {nodes} temas, {branches} ramas principales.',
+    'Foi gerado "{root}": {nodes} tópicos, {branches} ramos principais.',
   ],
   'mind.ai.appliedCount': [
     '已应用 {count} 个节点',
     'Applied {count} topics',
-    'Se aplicaron {count} nodos',
+    'Se aplicaron {count} temas',
     '{count} tópicos aplicados',
   ],
   'mind.ai.appliedToMap': [
     '已应用到导图（新增 {count} 个节点）。可撤销（Ctrl+Z）回退。',
     'Applied to the mind map ({count} new topics). Undo (Ctrl+Z) to revert.',
-    'Aplicado al mapa mental ({count} nodos nuevos). Puedes deshacer (Ctrl+Z).',
+    'Aplicado al mapa mental ({count} temas nuevos). Puedes deshacer (Ctrl+Z).',
     'Aplicado ao mapa mental ({count} novos tópicos). Você pode desfazer (Ctrl+Z).',
   ],
   'mind.ai.addedCount': [
     '已新增 {count} 个节点',
     'Added {count} topics',
-    'Se añadieron {count} nodos',
+    'Se añadieron {count} temas',
     '{count} tópicos adicionados',
   ],
   'mind.ai.expandedUnder': [
     '已在「{node}」下新增 {count} 个节点。可撤销（Ctrl+Z）回退。',
     'Added {count} topics under "{node}". Undo (Ctrl+Z) to revert.',
-    'Se añadieron {count} nodos bajo «{node}». Puedes deshacer (Ctrl+Z).',
+    'Se añadieron {count} temas bajo «{node}». Puedes deshacer (Ctrl+Z).',
     'Foram adicionados {count} tópicos sob "{node}". Você pode desfazer (Ctrl+Z).',
   ],
   'mind.ai.selectNodeFirst': [
     '请先选中要展开的节点',
-    'Select the topic to expand first',
-    'Selecciona primero el nodo que quieres expandir',
+    'Select a topic first to expand it',
+    'Selecciona primero el tema que quieres expandir',
     'Selecione primeiro o tópico que deseja expandir',
   ],
 

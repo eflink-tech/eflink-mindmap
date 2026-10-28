@@ -23,7 +23,7 @@ export const CATALOG_TITLES = {
   林地: ['Woodland', 'Bosque', 'Bosque'],
   奶油: ['Cream', 'Crema', 'Creme'],
   夏威夷: ['Hawaii', 'Hawái', 'Havaí'],
-  松果: ['Pinecone', 'Piña', 'Pinha'],
+  松果: ['Pinecone', 'Cono de pino', 'Pinha'],
   反乌托邦: ['Dystopia', 'Distopía', 'Distopia'],
   水粉: ['Gouache', 'Guache', 'Guache'],
   华丽: ['Glamour', 'Glamour', 'Glamour'],
@@ -39,7 +39,7 @@ export const CATALOG_TITLES = {
   壁炉: ['Fireside', 'Chimenea', 'Lareira'],
   假日: ['Holiday', 'Vacaciones', 'Férias'],
   海洋: ['Ocean', 'Océano', 'Oceano'],
-  紫藤: ['Wisteria', 'Glicinia', 'Wisteria'],
+  紫藤: ['Wisteria', 'Glicinia', 'Glicínia'],
   缤纷: ['Colorful', 'Colorido', 'Colorido'],
   // 经典分组（「经典」同时是主题名与分组标签）
   经典: ['Classic', 'Clásico', 'Clássico'],
@@ -79,7 +79,7 @@ export const CATALOG_TITLES = {
 
   // ---------- 布局分组：CATEGORY_LABELS ----------
   思维导图: ['Mind Map', 'Mapa mental', 'Mapa mental'],
-  逻辑图: ['Logic Chart', 'Diagrama lógico', 'Gráfico lógico'],
+  逻辑图: ['Logic Chart', 'Diagrama lógico', 'Diagrama lógico'],
   括号图: ['Brace Map', 'Mapa de llaves', 'Mapa de colchetes'],
   组织结构图: ['Org Chart', 'Organigrama', 'Organograma'],
   树形图: ['Tree Diagram', 'Diagrama de árbol', 'Diagrama de árvore'],
@@ -101,7 +101,7 @@ export const CATALOG_TITLES = {
   向下逻辑: ['Logic Down', 'Lógica abajo', 'Lógica embaixo'],
   向上逻辑: ['Logic Up', 'Lógica arriba', 'Lógica acima'],
   双向逻辑: ['Two-Sided Logic', 'Lógica bilateral', 'Lógica bilateral'],
-  大纲逻辑: ['Outline Logic', 'Lógica esquema', 'Lógica esquema'],
+  大纲逻辑: ['Outline Logic', 'Lógica de esquema', 'Lógica de esquema'],
   // 括号图
   向右括号: ['Brace Right', 'Llaves derecha', 'Colchetes direita'],
   向左括号: ['Brace Left', 'Llaves izquierda', 'Colchetes esquerda'],
@@ -116,7 +116,7 @@ export const CATALOG_TITLES = {
   向左组织: ['Org Left', 'Org izquierda', 'Org esquerda'],
   双向组织: ['Two-Sided Org', 'Org bilateral', 'Org bilateral'],
   环形组织: ['Org Radial', 'Org radial', 'Org radial'],
-  圆角组织架构: ['Org Chart', 'Organigrama', 'Organigrama'],
+  圆角组织架构: ['Rounded Org Chart', 'Organigrama redondeado', 'Organograma'],
   // 树形图
   向右树形: ['Tree Right', 'Árbol derecha', 'Árvore direita'],
   向左树形: ['Tree Left', 'Árbol izquierda', 'Árvore esquerda'],
@@ -163,18 +163,18 @@ export const CATALOG_TITLES = {
   编辑主题: ['Edit topic', 'Editar tema', 'Editar tópico'],
   插入子主题: ['Insert subtopic', 'Insertar subtema', 'Inserir subtópico'],
   插入同级主题: ['Insert sibling topic', 'Insertar tema del mismo nivel', 'Inserir tópico irmão'],
-  在前方插入同级: ['Insert sibling before', 'Insertar tema anterior', 'Inserir tópico anterior'],
-  折叠: ['Collapse', 'Plegar', 'Recolher'],
+  在前方插入同级: ['Insert sibling before', 'Insertar tema antes del actual', 'Inserir tópico antes do atual'],
+  折叠: ['Collapse', 'Contraer', 'Recolher'],
   展开: ['Expand', 'Expandir', 'Expandir'],
-  切换折叠: ['Toggle collapse', 'Alternar plegado', 'Alternar recolhimento'],
+  切换折叠: ['Toggle collapse', 'Alternar contraído', 'Alternar recolhimento'],
   适应屏幕: ['Fit to screen', 'Ajustar a la pantalla', 'Ajustar à tela'],
   放大: ['Zoom in', 'Acercar', 'Ampliar'],
   缩小: ['Zoom out', 'Alejar', 'Reduzir'],
-  按住拖动画布: ['Hold to drag canvas', 'Mantén para arrastrar el lienzo', 'Segure para arrastar o canvas'],
+  按住拖动画布: ['Hold to drag canvas', 'Mantén para arrastrar el lienzo', 'Segure para arrastar a tela'],
   节点导航: ['Navigate topics', 'Navegar entre temas', 'Navegar entre tópicos'],
   '取消选中 / 退出连线': [
     'Deselect / exit linking',
-    'Deseleccionar / salir del enlace',
+    'Deseleccionar / salir del modo de conexión',
     'Desmarcar / sair da conexão',
   ],
 
@@ -187,7 +187,7 @@ export const CATALOG_TITLES = {
   弹性曲线: ['Flexible Curve', 'Curva elástica', 'Curva elástica'],
   对称曲线: ['Symmetric Curve', 'Curva simétrica', 'Curva simétrica'],
   单向曲线: ['One-Sided Curve', 'Curva unilateral', 'Curva unilateral'],
-  双向曲线: ['Two-Sided Curve', 'Curva bidireccional', 'Curva bidirecional'],
+  双向曲线: ['Two-Sided Curve', 'Curva bilateral', 'Curva bidirecional'],
   多段曲线: ['Multi-Segment Curve', 'Curva multisegmentos', 'Curva multissegmentos'],
 
   // ---------- 鱼骨 6M 类别（创建时写入节点文本） ----------

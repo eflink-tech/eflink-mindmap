@@ -15,7 +15,7 @@ const ROWS = {
   'mind.p.background': ['背景颜色', 'Background color', 'Color de fondo', 'Cor de fundo'],
   'mind.p.globalFont': ['全局字体', 'Global font', 'Fuente global', 'Fonte global'],
   'mind.p.branchLineWidth': ['分支线条宽度', 'Branch width', 'Grosor de ramas', 'Espessura dos ramos'],
-  'mind.p.rainbow': ['彩虹分支', 'Rainbow branches', 'Ramas de colores', 'Ramos coloridos'],
+  'mind.p.rainbow': ['彩虹分支', 'Rainbow branches', 'Ramas arcoíris', 'Ramos arco-íris'],
   'mind.p.defaultOption': ['默认 ({width})', 'Default ({width})', 'Predeterminado ({width})', 'Padrão ({width})'],
 
   // 字体下拉选项
@@ -35,7 +35,7 @@ const ROWS = {
   ],
   'mind.p.balanced': ['平衡布局', 'Balanced layout', 'Diseño equilibrado', 'Layout equilibrado'],
   'mind.p.compact': ['紧凑布局', 'Compact layout', 'Diseño compacto', 'Layout compacto'],
-  'mind.p.equalWidthSiblings': ['同级等宽', 'Equal sibling width', 'Igualar hermanos', 'Igualar irmãos'],
+  'mind.p.equalWidthSiblings': ['同级等宽', 'Equal sibling width', 'Igualar temas hermanos', 'Igualar tópicos irmãos'],
 
   // 外观（ShapeSection）
   'mind.p.appearance': ['外观', 'Appearance', 'Apariencia', 'Aparência'],
@@ -44,7 +44,7 @@ const ROWS = {
   'mind.p.borderColor': ['边框色', 'Border color', 'Color del borde', 'Cor da borda'],
   'mind.p.borderStyle': ['边框线型', 'Border style', 'Estilo de borde', 'Estilo da borda'],
   'mind.p.borderWidth': ['边框宽度', 'Border width', 'Grosor del borde', 'Espessura da borda'],
-  'mind.p.fontSize': ['字号', 'Font size', 'Tamaño fuente', 'Tamanho fonte'],
+  'mind.p.fontSize': ['字号', 'Font size', 'Tamaño de fuente', 'Tamanho da fonte'],
   'mind.p.fontWeightLabel': ['字重', 'Weight', 'Grosor', 'Peso'],
   'mind.p.shape': ['形状', 'Shape', 'Forma', 'Forma'],
   'mind.p.nodeWidth': ['节点宽度', 'Topic width', 'Ancho del tema', 'Largura do tópico'],
@@ -52,7 +52,7 @@ const ROWS = {
   'mind.p.fitWidthTip': ['按内容适合宽度', 'Fit width to content', 'Ajustar al contenido', 'Ajustar ao conteúdo'],
   'mind.p.fit': ['适合', 'Fit', 'Ajustar', 'Ajustar'],
   'mind.p.restoreThemeTip': ['恢复主题默认样式', 'Restore theme defaults', 'Restaurar estilo del tema', 'Restaurar estilo do tema'],
-  'mind.p.clearCustomStyle': ['清除自定义样式', 'Clear custom style', 'Borrar estilo', 'Limpar estilo'],
+  'mind.p.clearCustomStyle': ['清除自定义样式', 'Clear custom style', 'Borrar estilo personalizado', 'Limpar estilo personalizado'],
   'mind.p.noBorder': ['无边框', 'No border', 'Sin borde', 'Sem borda'],
   'mind.p.shapeRounded': ['圆角矩形', 'Rounded', 'Redondeado', 'Arredondado'],
   'mind.p.shapeEllipse': ['椭圆', 'Ellipse', 'Elipse', 'Elipse'],
@@ -70,9 +70,9 @@ const ROWS = {
   'mind.p.underline': ['下划线', 'Underline', 'Subrayado', 'Sublinhado'],
   'mind.p.strikethrough': ['删除线', 'Strikethrough', 'Tachado', 'Riscado'],
   'mind.p.align': ['对齐', 'Align', 'Alinear', 'Alinhar'],
-  'mind.p.alignLeft': ['左对齐', 'Align left', 'Alinear izquierda', 'Alinhar esquerda'],
+  'mind.p.alignLeft': ['左对齐', 'Align left', 'Alinear a la izquierda', 'Alinhar à esquerda'],
   'mind.p.alignCenter': ['居中', 'Center', 'Centrar', 'Centralizar'],
-  'mind.p.alignRight': ['右对齐', 'Align right', 'Alinear derecha', 'Alinhar direita'],
+  'mind.p.alignRight': ['右对齐', 'Align right', 'Alinear a la derecha', 'Alinhar à direita'],
 
   // 分支线（BranchSection）
   'mind.p.branchLine': ['分支线', 'Branch line', 'Línea de rama', 'Linha de ramo'],
@@ -99,7 +99,7 @@ const ROWS = {
     '输入笔记内容…（清空即删除笔记）',
     'Type a note… (clearing it deletes the note)',
     'Escribe una nota… (vaciarla la elimina)',
-    'Digite uma nota… (limpá-la a exclui)',
+    'Digite uma nota… (se limpar o campo, a nota é excluída)',
   ],
   'mind.p.editLabel': ['修改标签', 'Edit label', 'Editar etiqueta', 'Editar etiqueta'],
   'mind.p.labelPlaceholder': [
@@ -123,8 +123,8 @@ const ROWS = {
   'mind.p.editBoundary': ['编辑外框', 'Edit boundary', 'Editar marco', 'Editar moldura'],
 
   // 大纲视图
-  'mind.p.expand': ['展开', 'Expand', 'Desplegar', 'Expandir'],
-  'mind.p.collapse': ['折叠', 'Collapse', 'Colapsar', 'Recolher'],
+  'mind.p.expand': ['展开', 'Expand', 'Expandir', 'Expandir'],
+  'mind.p.collapse': ['折叠', 'Collapse', 'Contraer', 'Recolher'],
 
   // 状态栏
   'mind.p.zoomPercent': [

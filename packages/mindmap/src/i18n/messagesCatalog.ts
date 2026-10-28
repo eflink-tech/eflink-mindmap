@@ -41,7 +41,7 @@ const ROWS = {
   ],
 
   // 标记面板（MarkerPanel）
-  'mind.c.tab.stickers': ['贴纸', 'Stickers', 'Pegatinas', 'Adesivos'],
+  'mind.c.tab.stickers': ['贴纸', 'Stickers', 'Stickers', 'Adesivos'],
   'mind.c.marker.selectNode': [
     '请先选中一个节点',
     'Select a topic first',
@@ -51,8 +51,8 @@ const ROWS = {
   'mind.c.marker.footer': [
     '点击图标应用到选中节点；同组标记互斥，再次点击已应用的图标可移除。',
     'Click an icon to apply it to the selected topic; icons in the same group are mutually exclusive, and clicking an applied icon again removes it.',
-    'Haz clic en un icono para aplicarlo al tema seleccionado; los iconos del mismo grupo son excluyentes y volver a hacer clic en uno aplicado lo elimina.',
-    'Clique um ícone para aplicá-lo ao tópico selecionado; os ícones do mesmo grupo são exclusivos e clicar novamente no ícone aplicado o remove.',
+    'Haz clic en un icono para aplicarlo al tema seleccionado; los iconos del mismo grupo son mutuamente excluyentes y volver a hacer clic en uno aplicado lo elimina.',
+    'Clique um ícone para aplicá-lo ao tópico selecionado; os ícones do mesmo grupo são mutuamente exclusivos e clicar novamente no ícone aplicado o remove.',
   ],
 
   // 快捷键弹窗（ShortcutsDialog）
