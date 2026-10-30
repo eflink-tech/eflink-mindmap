@@ -21,6 +21,7 @@ A mind map editor for the web. Run it standalone, or embed `<MindMapEditor />` i
 - 大纲视图：画布 / 大纲双模式切换，列表内直接编辑层级
 - 编辑能力：撤销重做、快捷键体系（导航 / 编辑 / 缩放）、双击编辑、文字按填充自适应
 - 持久化：IndexedDB（Dexie）自动保存，刷新后自动恢复上次文档；文档重命名 / 删除 / 列表管理
+- 导入：`.efm` JSON 文档与 XMind 文件（`.xmind`，兼容 XMind 2020+ / XMind 8），保留节点层级、笔记、标签、链接、图片、标记、折叠、外框、概要与联系线
 - 导出：`.efm` JSON 文档 + 画布 PNG 图片
 - 工程化：Vite + TypeScript + Vitest 单测 + Playwright e2e + OxLint
 
@@ -52,6 +53,7 @@ function Page() {
 - `useUiStore` / `useDocumentsStore`：面板 / 视图状态与文档列表管理
 - `db, saveDocument / loadDocument / listDocuments / deleteDocument / renameDocument`：IndexedDB 持久化辅助
 - `createDocument`：创建空白文档数据
+- `parseXmind`：把 `.xmind` 文件解析为 `MindMapDocument`（宿主自定义导入时可直接复用）
 - `MindMapDocument / MindMapNode / DocumentMeta`：文档数据模型
 
 > **Tailwind 说明**：组件库内部布局用到少量 Tailwind 工具类（已随 `styles.css` 提供回退样式）。若宿主使用 Tailwind v4 且希望得到与 demo 一致的布局，请在入口 CSS 中显式扫描组件包：

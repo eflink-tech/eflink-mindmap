@@ -106,10 +106,10 @@ const ROWS = {
   ],
   'mind.err.imageReadFailed': ['图片读取失败，请重新选择文件', 'Could not read the image; choose the file again', 'No se pudo leer la imagen; vuelve a elegir el archivo', 'Não foi possível ler a imagem; escolha o arquivo novamente'],
   'mind.err.importFailed': [
-    '导入失败，请确认选择的是有效的 *.efm.json 文件',
-    'Import failed; make sure the file is a valid *.efm.json',
-    'Error al importar; confirma que el archivo es un *.efm.json válido',
-    'Falha na importação; confirme se o arquivo é um *.efm.json válido',
+    '导入失败，请确认文件格式与文件完整性',
+    'Import failed; check the file format and that the file is intact',
+    'Error al importar; comprueba el formato y que el archivo esté intacto',
+    'Falha na importação; verifique o formato e se o arquivo está intacto',
   ],
   'mind.newDocFailed': ['新建文档失败', 'Failed to create the document', 'No se pudo crear el documento', 'Falha ao criar o documento'],
 } as const satisfies Record<string, Row>;

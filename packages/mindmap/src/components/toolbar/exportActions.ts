@@ -1,7 +1,8 @@
 // src/components/toolbar/exportActions.ts
-// 导出动作：PNG 截图与 *.efm.json 下载/上传
+// 导入导出动作：PNG 截图、*.efm.json 下载/上传、*.xmind 导入
 import { mindT } from '../../i18n/runtime';
 import { EFM_EXTENSION, exportToEfmJson, importFromEfmJson } from '../../core/export/efmJson';
+import { parseXmind } from '../../core/import/xmind';
 import { pngExportRegion } from '../../core/export/png';
 import { saveDocument } from '../../core/persistence/db';
 import { LAST_DOC_KEY } from '../../core/persistence/keys';
@@ -78,16 +79,36 @@ export function exportEfmJson(): void {
 export function importEfmJsonFile(file: File): void {
   void file
     .text()
-    .then((text) => {
-      const doc = importFromEfmJson(text);
-      useMindMapStore.getState().open(doc);
-      // 与 App/StartScreen 的刷新恢复逻辑保持一致：记录最近打开文档
-      localStorage.setItem(LAST_DOC_KEY, doc.id);
-      // 导入的文档尚未入库，立即写入云端（默认后端为 IndexedDB），不依赖用户手动保存
-      void saveDocument(doc).catch((err) => console.error('导入文档保存失败:', err));
-    })
+    .then((text) => openImportedDocument(importFromEfmJson(text)))
     .catch((err) => {
       console.error('EFM 导入失败', err);
       window.alert(mindT('mind.err.importFailed'));
     });
+}
+
+/** 单入口导入：按扩展名分发 XMind / EFM JSON */
+export function importMindMapFile(file: File): void {
+  if (/\.xmind$/i.test(file.name)) {
+    void importXmindFile(file);
+    return;
+  }
+  importEfmJsonFile(file);
+}
+
+async function importXmindFile(file: File): Promise<void> {
+  try {
+    const doc = await parseXmind(await file.arrayBuffer(), { fileName: file.name });
+    openImportedDocument(doc);
+  } catch (err) {
+    console.error('XMind 导入失败', err);
+    window.alert(err instanceof Error ? err.message : mindT('mind.err.importFailed'));
+  }
+}
+
+function openImportedDocument(doc: MindMapDocument): void {
+  useMindMapStore.getState().open(doc);
+  // 与 App/StartScreen 的刷新恢复逻辑保持一致：记录最近打开文档
+  localStorage.setItem(LAST_DOC_KEY, doc.id);
+  // 导入的文档尚未入库，立即写入云端（默认后端为 IndexedDB），不依赖用户手动保存
+  void saveDocument(doc).catch((err) => console.error('导入文档保存失败:', err));
 }

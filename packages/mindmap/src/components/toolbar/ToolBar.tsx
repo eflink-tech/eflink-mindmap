@@ -50,7 +50,7 @@ import { useMindMapStore } from '../../store/mindMapStore';
 import { useUiStore } from '../../store/uiStore';
 import type { MindMapDocument } from '../../types/mindmap';
 import { ConfirmDialog } from '../ConfirmDialog';
-import { exportEfmJson, exportPng, importEfmJsonFile } from './exportActions';
+import { exportEfmJson, exportPng, importMindMapFile } from './exportActions';
 import { ShortcutsDialog } from './ShortcutsDialog';
 import { ShareDialog } from './ShareDialog';
 
@@ -95,7 +95,7 @@ function Divider() {
 
 export function ToolBar() {
   const { t } = useI18n();
-  const efmRef = useRef<HTMLInputElement>(null);
+  const importRef = useRef<HTMLInputElement>(null);
   const imageRef = useRef<HTMLInputElement>(null);
   // 分享弹窗（doc 为点击"分享"时刻的文档快照，弹窗期间编辑不影响本次分享内容）
   const [shareOpen, setShareOpen] = useState(false);
@@ -134,10 +134,10 @@ export function ToolBar() {
     })();
   };
 
-  const onPickEfm = (e: ChangeEvent<HTMLInputElement>) => {
+  const onPickImport = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     e.target.value = '';
-    if (file) importEfmJsonFile(file);
+    if (file) importMindMapFile(file);
   };
 
   const onPickImage = (e: ChangeEvent<HTMLInputElement>) => {
@@ -183,7 +183,7 @@ export function ToolBar() {
             shortcut: menuShortcutLabel('save'),
             onSelect: () => void saveNowWithToast(),
           },
-          { key: 'import', label: t('action.import'), icon: <Upload size={16} />, onSelect: () => efmRef.current?.click() },
+          { key: 'import', label: t('action.import'), icon: <Upload size={16} />, onSelect: () => importRef.current?.click() },
           { key: 'exportEfm', label: t('mind.file.exportEfm'), icon: <Download size={16} />, onSelect: exportEfmJson },
           { key: 'exportPng', label: t('action.exportImage'), icon: <Image size={16} />, onSelect: exportPng },
         ],
@@ -330,7 +330,7 @@ export function ToolBar() {
       </div>
 
       {/* 常驻挂载：菜单关闭后选中的文件仍能触发 onChange */}
-      <input ref={efmRef} type="file" accept=".efm.json,.json,application/json" className="sr-only" aria-hidden="true" tabIndex={-1} onChange={onPickEfm} />
+      <input ref={importRef} type="file" accept=".xmind,.efm.json,.json,application/json" className="sr-only" aria-hidden="true" tabIndex={-1} onChange={onPickImport} />
       <input ref={imageRef} type="file" accept="image/*" className="sr-only" aria-hidden="true" tabIndex={-1} onChange={onPickImage} />
 
       <ShortcutsDialog open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />

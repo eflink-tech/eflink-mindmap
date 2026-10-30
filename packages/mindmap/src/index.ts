@@ -29,6 +29,8 @@ export {
   renameDocument,
 } from './core/persistence/db'
 export { createDocument } from './core/editor/nodeOps'
+export { parseXmind } from './core/import/xmind'
+export type { XmindImportOptions } from './core/import/xmind'
 export { MIND_MESSAGES, setMindLocale, getMindLocale, mindT } from './i18n'
 export type { OfficeLocale } from '@eflink-tech/office-kit'
 export type { MindMapDocument, MindMapNode, DocumentMeta } from './types/mindmap'

@@ -69,6 +69,24 @@ const ROWS = {
     'Formato de archivo no compatible: {format}',
     'Formato de arquivo não compatível: {format}',
   ],
+  'mind.store.xmind.invalidZip': [
+    '不是有效的 XMind 文件',
+    'Not a valid XMind file',
+    'No es un archivo XMind válido',
+    'Não é um arquivo XMind válido',
+  ],
+  'mind.store.xmind.noContent': [
+    'XMind 文件中没有可导入的画布',
+    'The XMind file has no canvas to import',
+    'El archivo XMind no tiene ningún lienzo que importar',
+    'O arquivo XMind não tem nenhuma tela para importar',
+  ],
+  'mind.store.xmind.parseFailed': [
+    '解析 XMind 文件失败，请确认文件未损坏',
+    'Could not parse the XMind file; make sure it is not corrupted',
+    'No se pudo analizar el archivo XMind; asegúrate de que no esté dañado',
+    'Não foi possível analisar o arquivo XMind; verifique se ele não está corrompido',
+  ],
 
   // AI 服务与解析错误
   'mind.ai.err.notConfigured': [
