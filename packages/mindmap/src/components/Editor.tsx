@@ -3,15 +3,21 @@ import { useEffect } from 'react';
 import type { NavDir } from '../core/editor/navigation';
 import { draftKey } from '../core/persistence/autosave';
 import { saveNow, saveNowWithToast } from '../core/persistence/saveNow';
+import { useDocumentsStore } from '../store/documentsStore';
 import { useMindMapStore } from '../store/mindMapStore';
+import { startPresentationMode } from '../store/presentation';
 import { useUiStore } from '../store/uiStore';
 import { Canvas } from './canvas/Canvas';
 import { BoundaryEditorOverlay } from './canvas/BoundaryEditorOverlay';
 import { NodeInsertOverlay } from './canvas/NodeInsertOverlay';
+import { SearchBar } from './canvas/SearchBar';
 import { OutlineView } from './outline/OutlineView';
 import { AIChatPanel } from './ai/AIChatPanel';
 import { MarkerPanel } from './panels/marker/MarkerPanel';
 import { PropertiesPanel } from './panels/PropertiesPanel';
+import { PresentationControls } from './presentation/PresentationControls';
+import { StartScreen } from './start/StartScreen';
+import { SheetTabs } from './sheets/SheetTabs';
 import { TextEditorOverlay } from './canvas/TextEditorOverlay';
 import { SummaryEditorOverlay } from './canvas/SummaryEditorOverlay';
 import { StatusBar } from './statusbar/StatusBar';
@@ -63,10 +69,64 @@ function blockBrowserPageZoom(e: KeyboardEvent): void {
 export function Editor() {
   const panel = useUiStore((s) => s.panel);
   const canvasMode = useUiStore((s) => s.canvasMode);
+  const presenting = useUiStore((s) => s.presentation !== null);
+  const view = useUiStore((s) => s.view);
+  const docId = useMindMapStore((s) => s.doc?.id ?? null);
+
+  // 打开/切换文档后载入所属工作簿的画布标签
+  useEffect(() => {
+    const doc = useMindMapStore.getState().doc;
+    if (doc) void useDocumentsStore.getState().loadSheets(doc);
+  }, [docId]);
+
+  // 演示模式：尝试进入全屏；用户用系统方式退出全屏时同步结束演示
+  useEffect(() => {
+    if (!presenting) return;
+    void document.documentElement.requestFullscreen?.().catch(() => {
+      // 不支持全屏或权限被拒绝时仍在页面内演示
+    });
+    const onFullscreenChange = () => {
+      if (!document.fullscreenElement) useUiStore.getState().stopPresentation();
+    };
+    document.addEventListener('fullscreenchange', onFullscreenChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', onFullscreenChange);
+      if (document.fullscreenElement) {
+        void document.exitFullscreen?.().catch(() => {});
+      }
+    };
+  }, [presenting]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      // 文件列表页不响应编辑器快捷键
+      if (useUiStore.getState().view === 'start') return;
       const mod = isModKey(e);
+      // F5：进入 / 退出演示（抑制浏览器刷新）
+      if (e.key === 'F5') {
+        e.preventDefault();
+        if (useUiStore.getState().presentation) useUiStore.getState().stopPresentation();
+        else startPresentationMode();
+        return;
+      }
+      // 演示模式下拦截翻页与退出，禁用其余编辑快捷键
+      if (useUiStore.getState().presentation) {
+        if (e.key === 'Escape' || e.key === 'Backspace') {
+          e.preventDefault();
+          useUiStore.getState().stopPresentation();
+          return;
+        }
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === 'PageDown' || e.key === ' ') {
+          e.preventDefault();
+          useUiStore.getState().stepPresentation(1);
+          return;
+        }
+        if (e.key === 'ArrowLeft' || e.key === 'ArrowUp' || e.key === 'PageUp') {
+          e.preventDefault();
+          useUiStore.getState().stepPresentation(-1);
+        }
+        return;
+      }
       // ⌘S/Ctrl+S：拦截浏览器「另存为」，触发云端保存并提示「已保存」（编辑框内也可用）
       if (mod && e.key.toLowerCase() === 's') {
         blockBrowserPageZoom(e);
@@ -84,6 +144,12 @@ export function Editor() {
         } else if (isCanvasZoomOutKey(e)) {
           s.zoomOut();
         }
+        return;
+      }
+      // ⌘F/Ctrl+F：打开查找/替换（与浏览器查找一致，任何聚焦状态下都拦截）
+      if (mod && e.key.toLowerCase() === 'f') {
+        blockBrowserPageZoom(e);
+        useUiStore.getState().openSearch();
         return;
       }
       const target = e.target as HTMLElement;
@@ -154,6 +220,11 @@ export function Editor() {
         return;
       }
       if (e.key === 'Escape') {
+        // 查找浮层优先关闭（浮层内 Esc 已在组件里处理，这里兜底焦点不在输入框时）
+        if (useUiStore.getState().searchOpen) {
+          useUiStore.getState().closeSearch();
+          return;
+        }
         if (useUiStore.getState().linking) {
           useUiStore.getState().endLinking();
           return;
@@ -258,6 +329,25 @@ export function Editor() {
     };
   }, []);
 
+  if (view === 'start') {
+    return (
+      <div className="h-full overflow-auto bg-slate-50">
+        <StartScreen />
+      </div>
+    );
+  }
+
+  if (presenting) {
+    return (
+      <div className="flex h-full flex-col bg-white">
+        <div className="relative min-h-0 flex-1 overflow-hidden">
+          <Canvas />
+          <PresentationControls />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex h-full flex-col">
       <ToolBar />
@@ -276,12 +366,14 @@ export function Editor() {
               <NodeInsertOverlay />
             </>
           )}
+          <SearchBar />
         </div>
         {panel === 'properties' && <PropertiesPanel />}
         {panel === 'markers' && <MarkerPanel />}
         {/* AI 助手面板（右侧独立列，参考 eflink-draw / eflink-pptx） */}
         {panel === 'ai' && <AIChatPanel />}
       </div>
+      <SheetTabs />
       <StatusBar />
     </div>
   );

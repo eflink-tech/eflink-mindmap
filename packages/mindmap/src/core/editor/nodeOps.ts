@@ -1,6 +1,7 @@
 // 节点操作纯函数：所有函数返回新文档，不修改入参
 import type {
   Boundary,
+  BranchDirection,
   Marker,
   MindMapDocument,
   MindMapNode,
@@ -8,6 +9,7 @@ import type {
   NodeStyle,
   Relation,
   Summary,
+  SummaryStyle,
 } from '../../types/mindmap';
 import { newId } from '../../utils/id';
 import { translateTitle } from '../../i18n/assetTitles';
@@ -56,9 +58,11 @@ function ensureRootSide(doc: MindMapDocument, childId: string): MindMapDocument 
 // 显式传入标题时，根节点文本与标题保持一致；未传时沿用默认根文本
 export function createDocument(title?: string): MindMapDocument {
   const rootId = newId();
+  const id = newId();
   return {
-    id: newId(),
+    id,
     title: title ?? mindT('mind.doc.defaultTitle'),
+    workbookId: id,
     rootId,
     nodes: { [rootId]: makeNode(rootId, null, title ?? translateTitle(ROOT_TEXT)) },
     themeId: 'classic',
@@ -261,18 +265,20 @@ export function pasteSubtree(
     return id;
   }
 
-  const rootCopy = build(clip.root, targetId);
+  const rootCopies = (clip.roots?.length ? clip.roots : [clip.root]).map((root) => build(root, targetId));
   nodes[targetId] = {
     ...target,
-    children: [...target.children, rootCopy],
+    children: [...target.children, ...rootCopies],
     metadata: { ...target.metadata, collapsed: false },
   };
   // 粘贴到根级别时重新分配左右归属，避免多次粘贴堆在同一侧
   if (targetId === doc.rootId) {
-    nodes[rootCopy] = {
-      ...nodes[rootCopy],
-      metadata: { ...nodes[rootCopy].metadata, side: nextRootChildSide({ ...doc, nodes }) },
-    };
+    for (const rootCopy of rootCopies) {
+      nodes[rootCopy] = {
+        ...nodes[rootCopy],
+        metadata: { ...nodes[rootCopy].metadata, side: nextRootChildSide({ ...doc, nodes }) },
+      };
+    }
   }
   return withNodes(doc, nodes);
 }
@@ -290,6 +296,22 @@ export function updateRelationLabel(doc: MindMapDocument, id: string, label: str
   return {
     ...doc,
     relations: doc.relations.map((r) => (r.id === id ? { ...r, label } : r)),
+    updatedAt: Date.now(),
+  };
+}
+
+// 修改联系线样式（颜色/线宽），未传的字段沿用当前值
+export function updateRelationStyle(
+  doc: MindMapDocument,
+  id: string,
+  patch: Partial<{ color: string; width: number }>,
+): MindMapDocument {
+  const current = doc.relations.find((r) => r.id === id);
+  if (!current) return doc;
+  const next = { color: '#F43F5E', width: 2, ...current.style, ...patch };
+  return {
+    ...doc,
+    relations: doc.relations.map((r) => (r.id === id ? { ...r, style: next } : r)),
     updatedAt: Date.now(),
   };
 }
@@ -326,6 +348,22 @@ export function updateBoundaryTitle(doc: MindMapDocument, id: string, title: str
   };
 }
 
+// 修改外框样式（描边色/填充色）
+export function updateBoundaryStyle(
+  doc: MindMapDocument,
+  id: string,
+  patch: Partial<{ color: string; fill: string }>,
+): MindMapDocument {
+  const current = doc.boundaries.find((b) => b.id === id);
+  if (!current) return doc;
+  const next = { color: '#B6BCC3', fill: 'rgba(0, 0, 0, 0.05)', ...current.style, ...patch };
+  return {
+    ...doc,
+    boundaries: doc.boundaries.map((b) => (b.id === id ? { ...b, style: next } : b)),
+    updatedAt: Date.now(),
+  };
+}
+
 // 在父节点的指定子节点区间上创建概要；区间越界或反向时返回原文档
 export function addSummary(
   doc: MindMapDocument,
@@ -346,6 +384,22 @@ export function updateSummaryText(doc: MindMapDocument, id: string, text: string
   return {
     ...doc,
     summaries: doc.summaries.map((s) => (s.id === id ? { ...s, text } : s)),
+    updatedAt: Date.now(),
+  };
+}
+
+// 修改概要样式（填充色/文字色/边框色），未传字段沿用当前值
+export function updateSummaryStyle(
+  doc: MindMapDocument,
+  id: string,
+  patch: Partial<SummaryStyle>,
+): MindMapDocument {
+  const current = doc.summaries.find((s) => s.id === id);
+  if (!current) return doc;
+  const next = { ...current.style, ...patch };
+  return {
+    ...doc,
+    summaries: doc.summaries.map((s) => (s.id === id ? { ...s, style: next } : s)),
     updatedAt: Date.now(),
   };
 }
@@ -371,6 +425,24 @@ export function updateMetadata(
   return withNodes(doc, {
     ...doc.nodes,
     [nodeId]: { ...node, metadata: merged },
+  });
+}
+
+// 设置/清除分支级生长方向；null 表示恢复继承整图方向
+export function setBranchDirection(
+  doc: MindMapDocument,
+  nodeId: string,
+  dir: BranchDirection | null,
+): MindMapDocument {
+  const node = doc.nodes[nodeId];
+  if (!node) return doc;
+  const current = node.metadata?.branchDirection ?? null;
+  if (current === dir) return doc;
+  const { branchDirection: _omit, ...rest } = node.metadata ?? {};
+  const metadata: NodeMetadata = dir ? { ...rest, branchDirection: dir } : rest;
+  return withNodes(doc, {
+    ...doc.nodes,
+    [nodeId]: { ...node, metadata: Object.keys(metadata).length ? metadata : undefined },
   });
 }
 

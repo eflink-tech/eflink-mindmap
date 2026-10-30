@@ -87,6 +87,24 @@ const ROWS = {
     'No se pudo analizar el archivo XMind; asegúrate de que no esté dañado',
     'Não foi possível analisar o arquivo XMind; verifique se ele não está corrompido',
   ],
+  'mind.store.freemind.parseFailed': [
+    '解析 FreeMind 文件失败，请确认文件未损坏',
+    'Could not parse the FreeMind file; make sure it is not corrupted',
+    'No se pudo analizar el archivo FreeMind; asegúrate de que no esté dañado',
+    'Não foi possível analisar o arquivo FreeMind; verifique se ele não está corrompido',
+  ],
+  'mind.store.opml.parseFailed': [
+    '解析 OPML 文件失败，请确认文件未损坏',
+    'Could not parse the OPML file; make sure it is not corrupted',
+    'No se pudo analizar el archivo OPML; asegúrate de que no esté dañado',
+    'Não foi possível analisar o arquivo OPML; verifique se ele não está corrompido',
+  ],
+  'mind.store.kityminder.parseFailed': [
+    '解析 KityMinder 文件失败，请确认文件未损坏',
+    'Could not parse the KityMinder file; make sure it is not corrupted',
+    'No se pudo analizar el archivo KityMinder; asegúrate de que no esté dañado',
+    'Não foi possível analisar o arquivo KityMinder; verifique se ele não está corrompido',
+  ],
 
   // AI 服务与解析错误
   'mind.ai.err.notConfigured': [

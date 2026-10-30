@@ -73,20 +73,20 @@ test.describe('思维导图 MVP E2E', () => {
 
     await trigger.click();
     await expect(page.getByTestId('layout-gallery')).toBeVisible();
-    await page.getByTestId('layout-preset-logic-right-curve').click();
+    await page.getByTestId('layout-preset-logic-right').click();
     await expect(page.getByTestId('layout-gallery')).toBeHidden();
     await expect(trigger).toContainText('逻辑图');
 
     await trigger.click();
-    await page.getByTestId('layout-preset-org-down-rounded').click();
+    await page.getByTestId('layout-preset-org-down').click();
     await expect(trigger).toContainText('组织结构图');
 
     await trigger.click();
-    await page.getByTestId('layout-preset-brace-solid').click();
+    await page.getByTestId('layout-preset-brace-right').click();
     await expect(trigger).toContainText('括号图');
 
     await trigger.click();
-    await page.getByTestId('layout-preset-timeline-h-rect').click();
+    await page.getByTestId('layout-preset-timeline-h').click();
     await expect(trigger).toContainText('时间轴');
 
     await trigger.click();

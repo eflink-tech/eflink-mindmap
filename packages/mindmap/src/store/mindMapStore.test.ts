@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { addRelation, createDocument, updateSummaryText } from '../core/editor/nodeOps';
 import { getCanvasOptions } from '../core/style/canvasOptions';
+import { getTheme } from '../core/style/themes';
 import { useMindMapStore } from './mindMapStore';
 import { useUiStore } from './uiStore';
 
@@ -232,6 +233,30 @@ describe('样式 actions', () => {
     expect(useMindMapStore.getState().doc?.themeId).toBe('dancing');
   });
 
+  it('setStyleOverrides 深合并并可整体清除，均进入历史', () => {
+    useMindMapStore.getState().open(createDocument());
+    useMindMapStore.getState().setStyleOverrides({ colors: { primary: '#123456' } });
+    useMindMapStore.getState().setStyleOverrides({ node: { fontSize: 22 } });
+    const doc = useMindMapStore.getState().doc!;
+    expect(doc.styleOverrides?.colors?.primary).toBe('#123456');
+    expect(doc.styleOverrides?.node?.fontSize).toBe(22);
+    // 第二次合并保留前一次的 colors
+    expect(getTheme(doc).colors.primary).toBe('#123456');
+    expect(getTheme(doc).node.fontSize).toBe(22);
+
+    useMindMapStore.getState().setStyleOverrides(null);
+    expect(useMindMapStore.getState().doc?.styleOverrides).toBeUndefined();
+    useMindMapStore.getState().undo();
+    expect(useMindMapStore.getState().doc?.styleOverrides?.node?.fontSize).toBe(22);
+  });
+
+  it('清除不存在的微调不产生历史', () => {
+    useMindMapStore.getState().open(createDocument());
+    const before = useMindMapStore.getState().history;
+    useMindMapStore.getState().setStyleOverrides(null);
+    expect(useMindMapStore.getState().history).toBe(before);
+  });
+
   it('setNodeStyle 合并样式到选中节点', () => {
     useMindMapStore.getState().open(createDocument());
     const id = useMindMapStore.getState().selectedId!;
@@ -266,6 +291,24 @@ describe('样式 actions', () => {
     expect(useMindMapStore.getState().doc).toBe(before);
   });
 
+  it('setNodeStyle / clearNodeStyle 作用于所有选中节点', () => {
+    useMindMapStore.getState().open(createDocument());
+    useMindMapStore.getState().addTopic('child');
+    const a = useMindMapStore.getState().selectedId!;
+    useMindMapStore.getState().addTopic('sibling');
+    const b = useMindMapStore.getState().selectedId!;
+    useMindMapStore.getState().selectMany([a, b]);
+    useMindMapStore.getState().setNodeStyle({ fillColor: '#123456' });
+    const doc = useMindMapStore.getState().doc!;
+    expect(doc.nodes[a].style?.fillColor).toBe('#123456');
+    expect(doc.nodes[b].style?.fillColor).toBe('#123456');
+    // 一次撤销回到两者都无样式
+    useMindMapStore.getState().undo();
+    const undone = useMindMapStore.getState().doc!;
+    expect(undone.nodes[a].style).toBeUndefined();
+    expect(undone.nodes[b].style).toBeUndefined();
+  });
+
   it('setCanvasOption 合并并进入历史', () => {
     useMindMapStore.getState().open(createDocument());
     useMindMapStore.getState().setCanvasOption({ compact: true });
@@ -281,6 +324,46 @@ describe('样式 actions', () => {
     expect(useMindMapStore.getState().canUndo()).toBe(false);
     useMindMapStore.getState().setCanvasOption({});
     expect(useMindMapStore.getState().canUndo()).toBe(false);
+  });
+});
+
+describe('查找/替换', () => {
+  it('replaceInNodes 只替换指定节点且一次撤销恢复', () => {
+    useMindMapStore.getState().open(createDocument());
+    useMindMapStore.getState().addTopic('child');
+    const a = useMindMapStore.getState().selectedId!;
+    useMindMapStore.getState().editSelectedText('Alpha');
+    useMindMapStore.getState().addTopic('sibling');
+    const b = useMindMapStore.getState().selectedId!;
+    useMindMapStore.getState().editSelectedText('Alpha');
+    useMindMapStore.getState().replaceInNodes([a], 'alpha', 'Beta');
+    const doc = useMindMapStore.getState().doc!;
+    expect(doc.nodes[a].text).toBe('Beta');
+    expect(doc.nodes[b].text).toBe('Alpha');
+    useMindMapStore.getState().undo();
+    expect(useMindMapStore.getState().doc!.nodes[a].text).toBe('Alpha');
+  });
+
+  it('replaceInNodes 空查询不动作', () => {
+    useMindMapStore.getState().open(createDocument());
+    useMindMapStore.getState().addTopic('child');
+    const id = useMindMapStore.getState().selectedId!;
+    const before = useMindMapStore.getState().doc;
+    useMindMapStore.getState().replaceInNodes([id], '', 'x');
+    expect(useMindMapStore.getState().doc).toBe(before);
+  });
+
+  it('focusNode 把节点平移到视口中心', () => {
+    useMindMapStore.getState().open(createDocument());
+    useMindMapStore.getState().addTopic('child');
+    const id = useMindMapStore.getState().selectedId!;
+    useMindMapStore.getState().focusNode(id);
+    const s = useMindMapStore.getState();
+    const box = s.layoutResult!.positions[id];
+    const { width, height } = s.stageSize;
+    const v = s.doc!.viewport;
+    expect(box.x * v.scale + v.x).toBeCloseTo(width / 2);
+    expect(box.y * v.scale + v.y).toBeCloseTo(height / 2);
   });
 });
 
@@ -309,6 +392,27 @@ describe('复制/剪切/粘贴', () => {
     useMindMapStore.getState().paste();
     const texts = Object.values(useMindMapStore.getState().doc!.nodes).map((n) => n.text);
     expect(texts.filter((t) => t === '待剪切')).toHaveLength(1);
+  });
+
+  it('多选剪切复制全部子树并删除选中节点', () => {
+    useMindMapStore.getState().open(createDocument());
+    useMindMapStore.getState().addTopic('child');
+    const a = useMindMapStore.getState().selectedId!;
+    useMindMapStore.getState().editSelectedText('甲');
+    useMindMapStore.getState().addTopic('sibling');
+    const b = useMindMapStore.getState().selectedId!;
+    useMindMapStore.getState().editSelectedText('乙');
+    useMindMapStore.getState().selectMany([a, b]);
+    useMindMapStore.getState().cutSelected();
+    const s = useMindMapStore.getState();
+    expect(s.doc!.nodes[a]).toBeUndefined();
+    expect(s.doc!.nodes[b]).toBeUndefined();
+    // 剪贴板里保留了两棵顶层子树，而不是只复制锚点
+    expect(s.clipboard?.roots?.map((r) => r.text)).toEqual(['甲', '乙']);
+    s.paste();
+    const texts = Object.values(useMindMapStore.getState().doc!.nodes).map((n) => n.text);
+    expect(texts.filter((t) => t === '甲')).toHaveLength(1);
+    expect(texts.filter((t) => t === '乙')).toHaveLength(1);
   });
 
   it('无剪贴板时 paste 无效', () => {
@@ -462,6 +566,52 @@ describe('关系结构 actions', () => {
     useMindMapStore.getState().updateMetadataSelected({ link: 'https://x.com' });
     const doc = useMindMapStore.getState().doc!;
     expect(doc.nodes[doc.rootId].metadata?.link).toBe('https://x.com');
+  });
+
+  it('联系线标签与样式可修改并进入历史', () => {
+    useMindMapStore.getState().open(createDocument());
+    useMindMapStore.getState().addTopic('child');
+    const a = useMindMapStore.getState().selectedId!;
+    useMindMapStore.getState().addTopic('sibling');
+    const b = useMindMapStore.getState().selectedId!;
+    useUiStore.getState().startLinking();
+    useMindMapStore.getState().pickLinkNode(a);
+    useMindMapStore.getState().pickLinkNode(b);
+    const relId = useMindMapStore.getState().doc!.relations[0].id;
+
+    useMindMapStore.getState().updateRelationLabelById(relId, '依赖');
+    useMindMapStore.getState().setRelationStyle(relId, { color: '#123456' });
+    useMindMapStore.getState().setRelationStyle(relId, { width: 3 });
+    const rel = useMindMapStore.getState().doc!.relations[0];
+    expect(rel.label).toBe('依赖');
+    expect(rel.style).toEqual({ color: '#123456', width: 3 });
+
+    useMindMapStore.getState().undo();
+    expect(useMindMapStore.getState().doc!.relations[0].style?.width).toBe(2);
+  });
+
+  it('外框样式与备注标题可修改', () => {
+    useMindMapStore.getState().open(createDocument());
+    useMindMapStore.getState().addBoundarySelected();
+    const id = useMindMapStore.getState().doc!.boundaries[0].id;
+    useMindMapStore.getState().setBoundaryStyle(id, { color: '#AA0000', fill: '#FFF0F0' });
+    useMindMapStore.getState().updateBoundaryTitleById(id, '阶段一');
+    const boundary = useMindMapStore.getState().doc!.boundaries[0];
+    expect(boundary.title).toBe('阶段一');
+    expect(boundary.style).toEqual({ color: '#AA0000', fill: '#FFF0F0' });
+  });
+
+  it('概要文字与样式可修改', () => {
+    useMindMapStore.getState().open(createDocument());
+    useMindMapStore.getState().addTopic('child');
+    useMindMapStore.getState().addSummarySelected();
+    const id = useMindMapStore.getState().doc!.summaries[0].id;
+    useMindMapStore.getState().updateSummaryTextById(id, '总结');
+    useMindMapStore.getState().setSummaryStyle(id, { fillColor: '#EEEEEE' });
+    useMindMapStore.getState().setSummaryStyle(id, { textColor: '#111111' });
+    const summary = useMindMapStore.getState().doc!.summaries[0];
+    expect(summary.text).toBe('总结');
+    expect(summary.style).toEqual({ fillColor: '#EEEEEE', textColor: '#111111' });
   });
 });
 
@@ -732,5 +882,25 @@ describe('连线态跨场景清理', () => {
     useMindMapStore.getState().removeSelected();
     expect(useUiStore.getState().linking).toBe(false);
     expect(useUiStore.getState().linkFrom).toBeNull();
+  });
+});
+
+describe('分支级方向', () => {
+  it('设置/清除方向写入元数据并可撤销', () => {
+    useMindMapStore.getState().addTopic('child');
+    const branchId = useMindMapStore.getState().selectedId!;
+    useMindMapStore.getState().addTopic('grandchild');
+    useMindMapStore.getState().select(branchId);
+
+    useMindMapStore.getState().setBranchDirectionSelected('down');
+    const doc = useMindMapStore.getState().doc!;
+    expect(doc.nodes[branchId].metadata?.branchDirection).toBe('down');
+
+    useMindMapStore.getState().setBranchDirectionSelected(null);
+    const cleared = useMindMapStore.getState().doc!;
+    expect(cleared.nodes[branchId].metadata?.branchDirection).toBeUndefined();
+
+    useMindMapStore.getState().undo();
+    expect(useMindMapStore.getState().doc!.nodes[branchId].metadata?.branchDirection).toBe('down');
   });
 });

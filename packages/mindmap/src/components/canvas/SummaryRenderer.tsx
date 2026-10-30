@@ -33,11 +33,14 @@ export function SummaryRenderer() {
         if (!overlay) return null;
         const { anchor, bracketPoints } = overlay;
         const selected = selectedSummaryId === s.id;
+        const fill = s.style?.fillColor ?? '#FFFFFF';
+        const textColor = s.style?.textColor ?? '#0F172A';
+        const border = s.style?.borderColor ?? '#0F172A';
         return (
           <Fragment key={s.id}>
             <Line
               points={bracketPoints}
-              stroke={selected ? '#2563EB' : '#334155'}
+              stroke={selected ? '#2563EB' : border}
               strokeWidth={1.5}
               lineCap="round"
               lineJoin="round"
@@ -49,8 +52,8 @@ export function SummaryRenderer() {
               width={SUMMARY_BOX_WIDTH}
               height={SUMMARY_BOX_HEIGHT}
               cornerRadius={8}
-              fill="#FFFFFF"
-              stroke={selected ? '#2563EB' : '#0F172A'}
+              fill={fill}
+              stroke={selected ? '#2563EB' : border}
               strokeWidth={selected ? 2 : 1.5}
               onClick={(e) => {
                 e.cancelBubble = true;
@@ -71,7 +74,7 @@ export function SummaryRenderer() {
               height={SUMMARY_BOX_HEIGHT}
               text={s.text}
               fontSize={12}
-              fill="#0F172A"
+              fill={textColor}
               align="center"
               verticalAlign="middle"
               listening={false}

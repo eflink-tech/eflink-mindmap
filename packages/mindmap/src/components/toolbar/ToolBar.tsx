@@ -8,7 +8,10 @@ import {
   CirclePlus,
   Copy,
   Download,
+  FileCode2,
   FilePlus2,
+  FileText,
+  FolderOpen,
   GitCommitHorizontal,
   Image,
   ImagePlus,
@@ -19,9 +22,11 @@ import {
   MessageCircle,
   Network,
   NotebookPen,
+  Play,
   Redo2,
   Save,
   Scissors,
+  Search,
   Share2,
   SlidersHorizontal,
   Sparkles,
@@ -47,10 +52,19 @@ import { getCanvasOptions } from '../../core/style/canvasOptions';
 import { getMindMapShareHandler } from '../../core/share/shareBridge';
 import { useDocumentsStore } from '../../store/documentsStore';
 import { useMindMapStore } from '../../store/mindMapStore';
+import { startPresentationMode } from '../../store/presentation';
 import { useUiStore } from '../../store/uiStore';
 import type { MindMapDocument } from '../../types/mindmap';
 import { ConfirmDialog } from '../ConfirmDialog';
-import { exportEfmJson, exportPng, importMindMapFile } from './exportActions';
+import {
+  exportEfmJson,
+  exportFreeMindFile,
+  exportMarkdownFile,
+  exportOpmlFile,
+  exportPng,
+  exportXmindFile,
+  importMindMapFile,
+} from './exportActions';
 import { ShortcutsDialog } from './ShortcutsDialog';
 import { ShareDialog } from './ShareDialog';
 
@@ -174,7 +188,10 @@ export function ToolBar() {
       key: 'file',
       label: t('shell.menu.file'),
       items: [
-        [{ key: 'new', label: t('mind.file.newMap'), icon: <FilePlus2 size={16} />, onSelect: () => setNewDocConfirmOpen(true) }],
+        [
+          { key: 'new', label: t('mind.file.newMap'), icon: <FilePlus2 size={16} />, onSelect: () => setNewDocConfirmOpen(true) },
+          { key: 'allFiles', label: t('mind.file.allFiles'), icon: <FolderOpen size={16} />, onSelect: () => useUiStore.getState().setView('start') },
+        ],
         [
           {
             key: 'save',
@@ -184,8 +201,21 @@ export function ToolBar() {
             onSelect: () => void saveNowWithToast(),
           },
           { key: 'import', label: t('action.import'), icon: <Upload size={16} />, onSelect: () => importRef.current?.click() },
-          { key: 'exportEfm', label: t('mind.file.exportEfm'), icon: <Download size={16} />, onSelect: exportEfmJson },
-          { key: 'exportPng', label: t('action.exportImage'), icon: <Image size={16} />, onSelect: exportPng },
+          {
+            key: 'export',
+            label: t('action.export'),
+            icon: <Download size={16} />,
+            children: [
+              [
+                { key: 'exportEfm', label: t('mind.file.exportEfm'), icon: <Braces size={16} />, onSelect: exportEfmJson },
+                { key: 'exportXmind', label: t('mind.file.exportXmind'), icon: <Network size={16} />, onSelect: exportXmindFile },
+                { key: 'exportMarkdown', label: t('mind.file.exportMarkdown'), icon: <FileText size={16} />, onSelect: exportMarkdownFile },
+                { key: 'exportOpml', label: t('mind.file.exportOpml'), icon: <ListTree size={16} />, onSelect: exportOpmlFile },
+                { key: 'exportFreeMind', label: t('mind.file.exportFreeMind'), icon: <FileCode2 size={16} />, onSelect: exportFreeMindFile },
+                { key: 'exportPng', label: t('action.exportImage'), icon: <Image size={16} />, onSelect: exportPng },
+              ],
+            ],
+          },
         ],
       ],
     },
@@ -203,6 +233,9 @@ export function ToolBar() {
           { key: 'paste', label: t('action.paste'), icon: <ClipboardPaste size={16} />, shortcut: menuShortcutLabel('paste'), disabled: !hasClipboard, onSelect: () => store().paste() },
           { key: 'delete', label: t('action.delete'), icon: <Trash2 size={16} />, shortcut: menuShortcutLabel('remove'), disabled: cutOrDeleteDisabled, onSelect: () => store().removeSelected() },
         ],
+        [
+          { key: 'find', label: t('action.find'), icon: <Search size={16} />, shortcut: menuShortcutLabel('find'), onSelect: () => useUiStore.getState().openSearch() },
+        ],
       ],
     },
     {
@@ -211,6 +244,7 @@ export function ToolBar() {
       items: [
         [
           { key: 'fit', label: t('mind.view.fitToScreen'), icon: <Maximize size={16} />, shortcut: menuShortcutLabel('fitToScreen'), onSelect: () => store().fitToScreen() },
+          { key: 'present', label: t('mind.present.start'), icon: <Play size={16} />, shortcut: menuShortcutLabel('present'), onSelect: () => startPresentationMode() },
           { key: 'zoomIn', label: t('action.zoomIn'), icon: <ZoomIn size={16} />, shortcut: menuShortcutLabel('zoomIn'), onSelect: () => store().zoomIn() },
           { key: 'zoomOut', label: t('action.zoomOut'), icon: <ZoomOut size={16} />, shortcut: menuShortcutLabel('zoomOut'), onSelect: () => store().zoomOut() },
         ],
@@ -322,6 +356,7 @@ export function ToolBar() {
         <ToolButton icon={Redo2} label={t('action.redo')} disabled={!canRedo} onClick={() => store().redo()} />
         <ToolButton icon={Waves} label={t('mind.tool.flow')} title={t('mind.tool.flowTip')} active={flowAnimation} onClick={() => store().setCanvasOption({ flowAnimation: !flowAnimation })} />
         <ToolButton icon={Maximize} label={t('mind.view.fitToScreen')} title={t('mind.tool.fitTip', { shortcut: menuShortcutLabel('fitToScreen') ?? '' })} onClick={() => store().fitToScreen()} />
+        <ToolButton icon={Search} label={t('action.find')} title={`${t('action.find')} (${menuShortcutLabel('find') ?? 'Ctrl+F'})`} onClick={() => useUiStore.getState().openSearch()} />
         <div className="ml-auto flex items-center">
           <ToolButton icon={Sparkles} label={t('mind.tool.ai')} title={t('mind.tool.aiTip')} active={panel === 'ai'} onClick={() => togglePanel('ai')} />
           <ToolButton icon={Tag} label={t('mind.panel.markers')} active={panel === 'markers'} onClick={() => togglePanel('markers')} />
@@ -330,7 +365,15 @@ export function ToolBar() {
       </div>
 
       {/* 常驻挂载：菜单关闭后选中的文件仍能触发 onChange */}
-      <input ref={importRef} type="file" accept=".xmind,.efm.json,.json,application/json" className="sr-only" aria-hidden="true" tabIndex={-1} onChange={onPickImport} />
+      <input
+        ref={importRef}
+        type="file"
+        accept=".xmind,.mm,.opml,.md,.markdown,.km,.efm.json,.json,application/json,text/markdown,text/x-opml"
+        className="sr-only"
+        aria-hidden="true"
+        tabIndex={-1}
+        onChange={onPickImport}
+      />
       <input ref={imageRef} type="file" accept="image/*" className="sr-only" aria-hidden="true" tabIndex={-1} onChange={onPickImage} />
 
       <ShortcutsDialog open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />

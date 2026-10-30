@@ -161,6 +161,46 @@ describe('measureNode', () => {
     );
     expect(again).toBe(italic);
   });
+
+  it('内嵌图片在节点顶部增加 4:3 图片块高度与最小宽度', () => {
+    const plain = measureNode({ text: 'ab' }, theme, widthOf, 2);
+    const withImage = measureNode(
+      { text: 'ab', metadata: { image: 'data:image/png;base64,AAAA' } },
+      theme,
+      widthOf,
+      2,
+    );
+    // 默认图片宽 160 → 高 120 + 间距 6
+    expect(withImage.height).toBeCloseTo(plain.height + 120 + 6);
+    expect(withImage.width).toBeCloseTo(160 + 28);
+    const wideText = measureNode(
+      { text: 'x'.repeat(20), metadata: { image: 'data:image/png;base64,AAAA' } },
+      theme,
+      widthOf,
+      2,
+    );
+    expect(wideText.width).toBeCloseTo(200 + 28);
+  });
+
+  it('imageWidth 参与测量并区分缓存', () => {
+    const plain = measureNode({ text: 'ab' }, theme, widthOf, 2);
+    const small = measureNode(
+      { text: 'ab', metadata: { image: 'img', imageWidth: 96 } },
+      theme,
+      widthOf,
+      2,
+    );
+    const defaultSize = measureNode(
+      { text: 'ab', metadata: { image: 'img' } },
+      theme,
+      widthOf,
+      2,
+    );
+    expect(small.height).toBeCloseTo(plain.height + 96 * 0.75 + 6);
+    expect(defaultSize.height).toBeCloseTo(plain.height + 160 * 0.75 + 6);
+    expect(small).not.toBe(defaultSize);
+    expect(small.width).toBeCloseTo(96 + 28);
+  });
 });
 
 describe('measureAllNodes', () => {

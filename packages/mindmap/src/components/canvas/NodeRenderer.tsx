@@ -1,6 +1,6 @@
 // src/components/canvas/NodeRenderer.tsx
 import { useCallback, useRef, useState } from 'react';
-import { Circle, Ellipse, Group, Line, Path, Rect, Text } from 'react-konva';
+import { Circle, Ellipse, Group, Image as KonvaImage, Line, Path, Rect, Text } from 'react-konva';
 import type Konva from 'konva';
 import type { NodeShape } from '../../types/mindmap';
 import { findDropTarget } from '../../core/editor/dragOps';
@@ -10,7 +10,7 @@ import { getStructure } from '../../core/layout/structures';
 import { MARKER_GAP, iconSizeOf, markerId, markersRowWidth } from '../../core/markers/registry';
 import {
   LABEL_CHIP_FONT, LABEL_CHIP_HEIGHT, LABEL_CHIP_PAD_X, LABEL_ROW_GAP,
-  canvasWidthOf, labelsRowWidth, measureNode,
+  NODE_IMAGE_RATIO, canvasWidthOf, imageBlockHeight, labelsRowWidth, measureNode, nodeImageWidth,
 } from '../../core/layout/measure';
 import { resolveNodeStyle } from '../../core/style/apply';
 import { getCanvasOptions } from '../../core/style/canvasOptions';
@@ -18,6 +18,7 @@ import { getTheme } from '../../core/style/themes';
 import { useMindMapStore } from '../../store/mindMapStore';
 import { useUiStore } from '../../store/uiStore';
 import { MarkerGlyphKonva } from './MarkerGlyphKonva';
+import { useNodeImage } from './useNodeImage';
 
 // 悬停描边色：对齐 XMind 的浅蓝鼠标经过效果
 const HOVER_COLOR = '#7CB8F0';
@@ -135,6 +136,13 @@ export function NodeRenderer({ nodeId }: Props) {
   // 编辑态由 HTML 浮层接管文字，隐藏 Konva Text 避免重影
   const editing = useMindMapStore((s) => s.editingId === nodeId);
   const preview = useMindMapStore((s) => s.dropPreview);
+  // 查找命中高亮 / 标记过滤淡出（不参与布局，只影响绘制）
+  const searchQuery = useUiStore((s) => s.searchQuery.trim().toLowerCase());
+  const markerFilter = useUiStore((s) => s.markerFilter);
+  // 演示模式当前页节点：蓝色环标注，与查找命中的琥珀环区分
+  const presentingId = useUiStore((s) =>
+    s.presentation ? (s.presentation.ids[s.presentation.index] ?? null) : null,
+  );
   const groupRef = useRef<Konva.Group>(null);
   // 悬停状态（对齐 XMind）：悬停时节点出现浅蓝描边，折叠圆圈仅在悬停/折叠时显示
   const [hovered, setHovered] = useState(false);
@@ -162,6 +170,8 @@ export function NodeRenderer({ nodeId }: Props) {
   // 标签胶囊行占节点底部额外高度：节点形状本身只覆盖文本区域
   const labels = node?.metadata?.labels ?? [];
   const labelsExtra = labels.length ? LABEL_CHIP_HEIGHT + LABEL_ROW_GAP : 0;
+  const imageSrc = node?.metadata?.image;
+  const image = useNodeImage(imageSrc);
 
   const onDragMove = useCallback(
     (e: Konva.KonvaEventObject<DragEvent>) => {
@@ -203,8 +213,28 @@ export function NodeRenderer({ nodeId }: Props) {
   const shapeH = box.height - labelsExtra;
   const shapeTop = -box.height / 2;
   const shapeCenterY = shapeTop + shapeH / 2;
+  // 内嵌图片占据形状顶部，文字/标记在剩余区域内垂直居中
+  const imageExtra = imageBlockHeight(node.metadata);
+  const textTop = shapeTop + imageExtra;
+  const textH = Math.max(1, shapeH - imageExtra);
+  const textCenterY = textTop + textH / 2;
+  const imageW = nodeImageWidth(node.metadata);
+  const imageH = imageW * NODE_IMAGE_RATIO;
+  // 图片按 contain 缩放居中在 4:3 框内
+  const imageFit = (() => {
+    if (!imageW || !image?.width || !image?.height) {
+      return { w: imageW, h: imageH, x: 0, y: 0 };
+    }
+    const s = Math.min(imageW / image.width, imageH / image.height);
+    const w = image.width * s;
+    const h = image.height * s;
+    return { w, h, x: (imageW - w) / 2, y: (imageH - h) / 2 };
+  })();
 
   const isTarget = preview?.targetId === nodeId;
+  const isSearchHit = !!searchQuery && node.text.toLowerCase().includes(searchQuery);
+  const isPresenting = presentingId === nodeId;
+  const filterDimmed = !!markerFilter && !markers.some((m) => markerId(m) === markerFilter);
   // 选中态用独立的「外侧蓝色高亮环」表达（见下方 Ring），节点自身边框保持主题原样，
   // 避免深蓝描边融进蓝/紫等饱和填充色里而看不出选中。
   const strokeWidth = isTarget
@@ -226,6 +256,7 @@ export function NodeRenderer({ nodeId }: Props) {
       ref={groupRef}
       x={box.x}
       y={box.y}
+      opacity={filterDimmed ? 0.25 : 1}
       draggable={node.parentId !== null}
       onDragMove={onDragMove}
       onDragEnd={onDragEnd}
@@ -271,6 +302,39 @@ export function NodeRenderer({ nodeId }: Props) {
           listening={false}
         />
       )}
+      {imageSrc && imageW > 0 && (
+        // 内嵌图片：绘制在形状顶部（4:3 框内 contain），点击打开图片浮层（查看大图/改尺寸/删除）
+        <Group
+          x={-imageW / 2}
+          y={shapeTop + theme.node.padding[1]}
+          clipFunc={(ctx) => {
+            ctx.beginPath();
+            ctx.roundRect(0, 0, imageW, imageH, 6);
+            ctx.closePath();
+          }}
+          onClick={(e) => {
+            e.cancelBubble = true;
+            useMindMapStore.getState().select(nodeId);
+            useUiStore.getState().openInsertEditor('image');
+          }}
+          onDblClick={(e) => {
+            e.cancelBubble = true;
+          }}
+          onMouseEnter={(e) => setStageCursor(e, 'pointer')}
+          onMouseLeave={(e) => setStageCursor(e, '')}
+        >
+          <Rect width={imageW} height={imageH} fill="#F1F5F9" />
+          {image && (
+            <KonvaImage
+              image={image}
+              x={imageFit.x}
+              y={imageFit.y}
+              width={imageFit.w}
+              height={imageFit.h}
+            />
+          )}
+        </Group>
+      )}
       {hovered && !selected && (
         // 悬停描边：浅蓝细线画在节点外侧 3px（对齐 XMind 鼠标经过效果），选中环存在时让位
         <NodeBody
@@ -306,10 +370,26 @@ export function NodeRenderer({ nodeId }: Props) {
           shadowOpacity={0.55}
         />
       )}
+      {(isSearchHit || isPresenting) && (
+        // 查找命中/演示页：外侧环（选中环之外再让 2px），与选中/悬停环互不遮挡
+        <NodeBody
+          shape={style.shape}
+          width={box.width}
+          height={shapeH}
+          shapeTop={shapeTop}
+          shapeCenterY={shapeCenterY}
+          pad={selected ? 7 : 3}
+          cornerRadius={style.shape === 'pill' ? shapeH / 2 + 3 : style.shape === 'rounded' ? 11 : 2}
+          stroke={isPresenting ? '#2563EB' : '#F59E0B'}
+          strokeWidth={isPresenting ? 3 : 2}
+          fillEnabled={false}
+          listening={false}
+        />
+      )}
       {!editing && (
         <Text
           x={-box.width / 2 + theme.node.padding[0] + markersWidth}
-          y={shapeTop}
+          y={textTop}
           text={lines.join('\n')}
           fontSize={style.fontSize}
           fontFamily={style.fontFamily}
@@ -317,7 +397,7 @@ export function NodeRenderer({ nodeId }: Props) {
           textDecoration={textDecorationOf(style.underline, style.strikethrough)}
           fill={style.textColor}
           width={box.width - theme.node.padding[0] * 2 - markersWidth}
-          height={shapeH}
+          height={textH}
           align={style.textAlign}
           verticalAlign="middle"
           wrap="none"
@@ -332,7 +412,7 @@ export function NodeRenderer({ nodeId }: Props) {
           const size = iconSizeOf(m);
           const cx = cursor + size / 2;
           cursor += size + MARKER_GAP;
-          return <MarkerGlyphKonva key={markerId(m)} marker={m} x={cx} y={shapeCenterY} size={size} />;
+          return <MarkerGlyphKonva key={markerId(m)} marker={m} x={cx} y={textCenterY} size={size} />;
         });
       })()}
       {labels.length > 0 &&
@@ -386,13 +466,11 @@ export function NodeRenderer({ nodeId }: Props) {
           });
         })()}
       {(() => {
-        // 元数据指示图标：链接/笔记/图片存在时显示在节点右上角；点击打开对应浮层（查看/编辑/删除）。
-        // 图标带 22×22 的透明热区（Konva 中 opacity:0 的形状仍可命中），避免字形太小点不中
+        // 元数据指示图标：链接/笔记存在时显示在节点右上角；图片已内嵌渲染，不再显示图标
         const icons = [
           node.metadata?.link ? { ch: '🔗', editor: 'link' as const } : null,
           node.metadata?.note ? { ch: '📝', editor: 'note' as const } : null,
-          node.metadata?.image ? { ch: '🖼️', editor: 'image' as const } : null,
-        ].filter((x): x is { ch: string; editor: 'link' | 'note' | 'image' } => x !== null);
+        ].filter((x): x is { ch: string; editor: 'link' | 'note' } => x !== null);
         if (!icons.length) return null;
         const HIT = 22;
         let x = box.width / 2 + 2;

@@ -1,7 +1,15 @@
 // src/components/toolbar/exportActions.ts
-// 导入导出动作：PNG 截图、*.efm.json 下载/上传、*.xmind 导入
+// 导入导出动作：PNG 截图、*.efm.json 下载/上传、外部脑图格式导入
 import { mindT } from '../../i18n/runtime';
 import { EFM_EXTENSION, exportToEfmJson, importFromEfmJson } from '../../core/export/efmJson';
+import { exportToFreeMind } from '../../core/export/freeMind';
+import { exportToMarkdown } from '../../core/export/markdown';
+import { exportToOpml } from '../../core/export/opml';
+import { exportToXmind } from '../../core/export/xmind';
+import { importFromMarkdown } from '../../core/export/markdown';
+import { parseFreeMind } from '../../core/import/freeMind';
+import { parseKityMinder } from '../../core/import/kityMinder';
+import { parseOpml } from '../../core/import/opml';
 import { parseXmind } from '../../core/import/xmind';
 import { pngExportRegion } from '../../core/export/png';
 import { saveDocument } from '../../core/persistence/db';
@@ -76,6 +84,36 @@ export function exportEfmJson(): void {
   );
 }
 
+export function exportXmindFile(): void {
+  const { doc } = useMindMapStore.getState();
+  if (!doc) return;
+  const bytes = exportToXmind(doc);
+  // 复制到独立 ArrayBuffer：BlobPart 不接受可能来自 SharedArrayBuffer 的视图
+  const zip = new Uint8Array(bytes.length);
+  zip.set(bytes);
+  const url = URL.createObjectURL(new Blob([zip], { type: 'application/zip' }));
+  download(url, safeFilename(exportBasename(doc), 'xmind'));
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+export function exportMarkdownFile(): void {
+  const { doc } = useMindMapStore.getState();
+  if (!doc) return;
+  downloadText(exportToMarkdown(doc), safeFilename(exportBasename(doc), 'md'), 'text/markdown;charset=utf-8');
+}
+
+export function exportOpmlFile(): void {
+  const { doc } = useMindMapStore.getState();
+  if (!doc) return;
+  downloadText(exportToOpml(doc), safeFilename(exportBasename(doc), 'opml'), 'text/x-opml;charset=utf-8');
+}
+
+export function exportFreeMindFile(): void {
+  const { doc } = useMindMapStore.getState();
+  if (!doc) return;
+  downloadText(exportToFreeMind(doc), safeFilename(exportBasename(doc), 'mm'), 'application/xml;charset=utf-8');
+}
+
 export function importEfmJsonFile(file: File): void {
   void file
     .text()
@@ -86,13 +124,42 @@ export function importEfmJsonFile(file: File): void {
     });
 }
 
-/** 单入口导入：按扩展名分发 XMind / EFM JSON */
+type TextImporter = (text: string, options: { fileName?: string }) => MindMapDocument;
+
+/** 单入口导入：按扩展名分发 XMind / FreeMind / OPML / Markdown / KityMinder / EFM JSON */
 export function importMindMapFile(file: File): void {
-  if (/\.xmind$/i.test(file.name)) {
+  const name = file.name.toLowerCase();
+  if (name.endsWith('.xmind')) {
     void importXmindFile(file);
     return;
   }
+  if (name.endsWith('.mm')) {
+    importTextFile(file, parseFreeMind);
+    return;
+  }
+  if (name.endsWith('.opml')) {
+    importTextFile(file, parseOpml);
+    return;
+  }
+  if (name.endsWith('.km')) {
+    importTextFile(file, parseKityMinder);
+    return;
+  }
+  if (name.endsWith('.md') || name.endsWith('.markdown')) {
+    importTextFile(file, (text) => importFromMarkdown(text));
+    return;
+  }
   importEfmJsonFile(file);
+}
+
+function importTextFile(file: File, parse: TextImporter): void {
+  void file
+    .text()
+    .then((text) => openImportedDocument(parse(text, { fileName: file.name })))
+    .catch((err) => {
+      console.error('导入失败', file.name, err);
+      window.alert(err instanceof Error ? err.message : mindT('mind.err.importFailed'));
+    });
 }
 
 async function importXmindFile(file: File): Promise<void> {

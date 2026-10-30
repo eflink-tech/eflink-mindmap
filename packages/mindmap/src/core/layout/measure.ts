@@ -78,8 +78,29 @@ export interface MeasurableNode {
     fixedWidth?: number;
     italic?: boolean;
   };
-  /** 节点元数据：标记行占文字左侧宽度，标签胶囊行占节点下方高度（与 MindMapNode 结构对齐） */
-  metadata?: { markers?: Marker[]; labels?: string[] };
+  /** 节点元数据：标记行占文字左侧宽度，标签胶囊行占节点下方高度，内嵌图片占节点顶部高度 */
+  metadata?: { markers?: Marker[]; labels?: string[]; image?: string; imageWidth?: number };
+}
+
+// ---------- 内嵌图片块（节点顶部） ----------
+
+export const NODE_IMAGE_DEFAULT_WIDTH = 160;
+/** 图片框固定 4:3；实际图片按 contain 缩放居中，保证不同尺寸图片的节点高度稳定 */
+export const NODE_IMAGE_RATIO = 0.75;
+export const NODE_IMAGE_GAP = 6;
+/** 图片浮层里的 S/M/L 三档宽度 */
+export const NODE_IMAGE_PRESETS = [96, 144, 216] as const;
+
+/** 节点内嵌图片的显示宽度；未设 image 时为 0 */
+export function nodeImageWidth(metadata?: { image?: string; imageWidth?: number }): number {
+  if (!metadata?.image) return 0;
+  return Math.max(24, metadata.imageWidth ?? NODE_IMAGE_DEFAULT_WIDTH);
+}
+
+/** 图片块占用的额外高度（含与文字的行间距）；无图时为 0 */
+export function imageBlockHeight(metadata?: { image?: string; imageWidth?: number }): number {
+  const width = nodeImageWidth(metadata);
+  return width ? width * NODE_IMAGE_RATIO + NODE_IMAGE_GAP : 0;
 }
 
 // ---------- 标签胶囊行（节点下方） ----------
@@ -119,7 +140,9 @@ export function measureNode(
   const labels = node.metadata?.labels;
   const markerKey = markers?.length ? markers.map(markerId).join(',') : '';
   const labelKey = labels?.length ? labels.join('¦') : '';
-  const key = `${node.text}|${font}|${node.style?.fixedWidth ?? ''}|${italic ? 'i' : ''}|${markerKey}|${labelKey}`;
+  const imageWidth = nodeImageWidth(node.metadata);
+  const imageKey = imageWidth ? String(imageWidth) : '';
+  const key = `${node.text}|${font}|${node.style?.fixedWidth ?? ''}|${italic ? 'i' : ''}|${markerKey}|${labelKey}|${imageKey}`;
   const hit = cache.get(key);
   if (hit) return hit;
 
@@ -129,6 +152,8 @@ export function measureNode(
   const markersHeight = markersRowHeight(markers);
   // 标签胶囊行显示在节点下方（对齐 XMind）：计入节点高度，形状本身不变高
   const labelsExtra = labels?.length ? LABEL_CHIP_HEIGHT + LABEL_ROW_GAP : 0;
+  // 内嵌图片显示在文字上方：固定高度块，同时抬高节点最小宽度
+  const imageExtra = imageBlockHeight(node.metadata);
   const fixedWidth = node.style?.fixedWidth;
   const maxContentWidth = Math.max(
     1,
@@ -140,10 +165,15 @@ export function measureNode(
     maxContentWidth,
     Math.max(...lines.map((l) => widthOf(l, font)), 1),
   );
+  const textWidth =
+    fixedWidth != null
+      ? fixedWidth
+      : Math.max(contentWidth + padX * 2 + markersWidth, imageWidth + padX * 2);
   const size: Cached = {
     key,
-    width: fixedWidth != null ? fixedWidth : contentWidth + padX * 2 + markersWidth,
-    height: Math.max(lines.length * lineHeight, markersHeight) + padY * 2 + labelsExtra,
+    width: textWidth,
+    height:
+      Math.max(lines.length * lineHeight, markersHeight) + padY * 2 + labelsExtra + imageExtra,
     lines,
   };
   if (cache.size > 2000) cache.clear();

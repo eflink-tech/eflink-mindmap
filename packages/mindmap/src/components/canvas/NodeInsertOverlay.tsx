@@ -7,6 +7,7 @@
 // 锚定选中节点右侧垂直居中（对齐 XMind）。
 import { useEffect, useRef, useState } from 'react';
 import { useI18n } from '@eflink-tech/office-kit';
+import { NODE_IMAGE_DEFAULT_WIDTH, NODE_IMAGE_PRESETS } from '../../core/layout/measure';
 import { useMindMapStore } from '../../store/mindMapStore';
 import { useUiStore, type InsertEditorKind } from '../../store/uiStore';
 import { SaveStatusIndicator } from '../statusbar/SaveStatusIndicator';
@@ -114,7 +115,7 @@ export function NodeInsertOverlay() {
     close();
   };
   const deleteImage = () => {
-    useMindMapStore.getState().updateMetadataNode(selectedId, { image: undefined });
+    useMindMapStore.getState().updateMetadataNode(selectedId, { image: undefined, imageWidth: undefined });
     close();
   };
   // 显式删除：笔记/链接/标签编辑模式的「删除」按钮
@@ -259,7 +260,7 @@ export function NodeInsertOverlay() {
         </>
       )}
       {kind === 'image' && (
-        // 与笔记卡片同款：标题行（含删除按钮）+ 内容区；点击图片放大查看
+        // 与笔记卡片同款：标题行（含删除按钮）+ 内容区；点击图片放大查看，S/M/L 切换节点内嵌尺寸
         <div className="w-56">
           <div className="mb-1 flex items-center justify-between">
             <span className="text-xs text-slate-400">{t('mind.p.image')}</span>
@@ -272,6 +273,32 @@ export function NodeInsertOverlay() {
             style={{ maxWidth: 220 * scale, maxHeight: 220 * scale }}
             onClick={() => setLightbox(true)}
           />
+          <div className="mt-1.5 flex items-center gap-1">
+            <span className="text-xs text-slate-400">{t('mind.p.imageSize')}</span>
+            {NODE_IMAGE_PRESETS.map((w, i) => {
+              const active = (node.metadata?.imageWidth ?? NODE_IMAGE_DEFAULT_WIDTH) === w;
+              return (
+                <button
+                  key={w}
+                  type="button"
+                  title={`${w}px`}
+                  className={`rounded px-2 py-0.5 text-xs ${
+                    active
+                      ? 'bg-blue-500 text-white'
+                      : 'border border-slate-200 text-slate-600 hover:bg-slate-50'
+                  }`}
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() =>
+                    useMindMapStore
+                      .getState()
+                      .updateMetadataNode(selectedId, { imageWidth: w })
+                  }
+                >
+                  {['S', 'M', 'L'][i]}
+                </button>
+              );
+            })}
+          </div>
         </div>
       )}
       </div>

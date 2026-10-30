@@ -14,7 +14,51 @@ const ROWS = {
 
   // 顶栏菜单：文件
   'mind.file.newMap': ['新建导图', 'New mind map', 'Nuevo mapa mental', 'Novo mapa mental'],
+  'mind.file.allFiles': ['全部文件', 'All files', 'Todos los archivos', 'Todos os arquivos'],
   'mind.file.exportEfm': ['导出 EFM', 'Export EFM', 'Exportar EFM', 'Exportar EFM'],
+  'mind.file.exportXmind': ['XMind 文件', 'XMind file', 'Archivo XMind', 'Arquivo XMind'],
+  'mind.file.exportMarkdown': ['Markdown 大纲', 'Markdown outline', 'Esquema Markdown', 'Esquema Markdown'],
+  'mind.file.exportOpml': ['OPML 大纲', 'OPML outline', 'Esquema OPML', 'Esquema OPML'],
+  'mind.file.exportFreeMind': ['FreeMind 文件', 'FreeMind file', 'Archivo FreeMind', 'Arquivo FreeMind'],
+
+  // 工作簿画布（工作表）标签
+  'mind.sheet.new': ['新建画布', 'New sheet', 'Nueva hoja', 'Nova tela'],
+  'mind.sheet.defaultTitle': ['画布 {n}', 'Sheet {n}', 'Hoja {n}', 'Tela {n}'],
+  'mind.sheet.deleteConfirm': [
+    '确定删除这张画布？',
+    'Delete this sheet?',
+    '¿Eliminar esta hoja?',
+    'Excluir esta tela?',
+  ],
+  'mind.sheet.deleteWorkbookConfirm': [
+    '确定删除整个工作簿（含全部画布）？',
+    'Delete the whole workbook (all sheets)?',
+    '¿Eliminar todo el libro (todas las hojas)?',
+    'Excluir toda a pasta de trabalho (todas as telas)?',
+  ],
+  'mind.sheet.count': ['{count} 张画布', '{count} sheets', '{count} hojas', '{count} telas'],
+  'mind.template.title': [
+    '从模板开始',
+    'Start from a template',
+    'Empezar con una plantilla',
+    'Começar com um modelo',
+  ],
+  'mind.template.use': [
+    '使用模板 {name}',
+    'Use template {name}',
+    'Usar la plantilla {name}',
+    'Usar o modelo {name}',
+  ],
+  'mind.present.start': ['演示', 'Present', 'Presentar', 'Apresentar'],
+  'mind.present.prev': ['上一页', 'Previous', 'Anterior', 'Anterior'],
+  'mind.present.next': ['下一页', 'Next', 'Siguiente', 'Próximo'],
+  'mind.present.exit': ['退出演示', 'Exit presentation', 'Salir de la presentación', 'Sair da apresentação'],
+  'mind.present.page': [
+    '{current} / {total}',
+    '{current} / {total}',
+    '{current} / {total}',
+    '{current} / {total}',
+  ],
   'mind.file.newConfirm': [
     '确定新建导图？当前画布将被清空并替换为空白导图。',
     'Create a new mind map? The current canvas will be cleared and replaced with a blank map.',

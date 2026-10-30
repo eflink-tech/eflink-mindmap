@@ -12,6 +12,12 @@ export type InsertEditorKind = 'note' | 'labels' | 'link' | 'image';
 /** 画布主区视图模式：思维导图画布 / 大纲列表 */
 export type CanvasMode = 'mindmap' | 'outline';
 
+/** 演示模式：ids 为逐页聚焦的节点序列，index 为当前页 */
+export interface PresentationState {
+  ids: string[];
+  index: number;
+}
+
 interface UiStore {
   view: 'start' | 'editor';
   panel: PanelKind | null;
@@ -29,7 +35,22 @@ interface UiStore {
   toast: { text: string; error: boolean } | null;
   /** 空格按住状态：进入画布平移模式（光标抓手，任意位置可拖拽移动画布） */
   spacePanning: boolean;
+  /** 查找/替换浮层是否打开 */
+  searchOpen: boolean;
+  /** 查找词（实时过滤）；替换框单独维护在组件内 */
+  searchQuery: string;
+  /** 标记过滤：只显示带该标记的节点（markerId）；null 不过滤 */
+  markerFilter: string | null;
+  /** 演示模式（隐藏工具栏等外壳，逐页聚焦节点）；null 为未演示 */
+  presentation: PresentationState | null;
+  startPresentation: (ids: string[]) => void;
+  stepPresentation: (delta: 1 | -1) => void;
+  stopPresentation: () => void;
   setSpacePanning: (v: boolean) => void;
+  openSearch: () => void;
+  closeSearch: () => void;
+  setSearchQuery: (q: string) => void;
+  setMarkerFilter: (id: string | null) => void;
   setView: (v: 'start' | 'editor') => void;
   togglePanel: (p: PanelKind) => void;
   closePanel: () => void;
@@ -59,10 +80,50 @@ export const useUiStore = create<UiStore>((set, get) => ({
   linkFrom: null,
   toast: null,
   spacePanning: false,
+  searchOpen: false,
+  searchQuery: '',
+  markerFilter: null,
+  presentation: null,
   setSpacePanning: (v) => set({ spacePanning: v }),
-  // 切回开始页时复位连线模式，避免连线态残留到下一场景
+  openSearch: () => set({ searchOpen: true }),
+  // 关闭时清空过滤条件，避免隐藏的命中高亮/标记过滤残留
+  closeSearch: () => set({ searchOpen: false, searchQuery: '', markerFilter: null }),
+  setSearchQuery: (q) => set({ searchQuery: q }),
+  setMarkerFilter: (id) => set({ markerFilter: id }),
+  // 演示模式进入时收拢查找/浮层，避免演示画面被遮挡
+  startPresentation: (ids) =>
+    ids.length > 0 &&
+    set({
+      presentation: { ids, index: 0 },
+      searchOpen: false,
+      searchQuery: '',
+      markerFilter: null,
+      insertEditor: null,
+      panel: null,
+      canvasMode: 'mindmap',
+    }),
+  stepPresentation: (delta) => {
+    const state = get().presentation;
+    if (!state) return;
+    const index = Math.min(state.ids.length - 1, Math.max(0, state.index + delta));
+    if (index !== state.index) set({ presentation: { ...state, index } });
+  },
+  stopPresentation: () => set({ presentation: null }),
+  // 切回开始页时复位连线/查找/演示状态，避免残留到下一场景
   setView: (view) =>
-    set(view === 'start' ? { view, linking: false, linkFrom: null } : { view }),
+    set(
+      view === 'start'
+        ? {
+            view,
+            linking: false,
+            linkFrom: null,
+            searchOpen: false,
+            searchQuery: '',
+            markerFilter: null,
+            presentation: null,
+          }
+        : { view },
+    ),
   togglePanel: (p) => set({ panel: get().panel === p ? null : p }),
   closePanel: () => set({ panel: null }),
   setPropertiesTab: (tab) => set({ propertiesTab: tab }),

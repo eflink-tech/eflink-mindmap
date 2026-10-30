@@ -1,6 +1,7 @@
 import type {
   Box,
   ConnectorPath,
+  LayoutStructureId,
   MindMapDocument,
   NodeSize,
   SizeMap,
@@ -20,6 +21,8 @@ export interface LayoutCtx {
   widths: Map<string, number>;
   hGap: number;
   vGap: number;
+  /** 当前结构是否支持分支级方向（矩阵/时间轴等固定网格结构忽略该覆盖） */
+  branchDirections: boolean;
 }
 
 /** 获取可见子节点（折叠则返回空） */
@@ -81,19 +84,49 @@ export function placeH(
   ctx.positions[id] = box;
 
   const kids = visibleChildren(ctx, id);
+  const over = ctx.branchDirections ? ctx.doc.nodes[id].metadata?.branchDirection : undefined;
+
+  // 分支级方向覆盖为竖直：该节点的子树改为上下排布（未设置时不会进入此分支）
+  if (over === 'down' || over === 'up') {
+    const vdir: 1 | -1 = over === 'down' ? 1 : -1;
+    const spans = kids.map((k) => subtreeSpan(ctx, k, 'h'));
+    const total =
+      spans.reduce((a, b) => a + b, 0) + ctx.vGap * (kids.length - 1);
+    let cx = x - total / 2;
+    const edgeY = box.y + vdir * (size.height / 2 + ctx.vGap);
+    kids.forEach((k, i) => {
+      const childColor =
+        ctx.doc.nodes[id].parentId === null
+          ? branchColorOf(ctx.doc, ctx.theme, k)
+          : color;
+      placeV(ctx, k, cx + spans[i] / 2, edgeY, vdir, childColor);
+      ctx.connectors.push({
+        id: `${id}->${k}`,
+        from: id,
+        to: k,
+        d: connectorD(box, ctx.positions[k], over),
+        color: childColor,
+        dir: over,
+      });
+      cx += spans[i] + ctx.vGap;
+    });
+    return;
+  }
+
+  const grow: 1 | -1 = over === 'left' ? -1 : over === 'right' ? 1 : dir;
   const spans = kids.map((k) => subtreeSpan(ctx, k, 'v'));
   const total =
     spans.reduce((a, b) => a + b, 0) + ctx.vGap * (kids.length - 1);
   let y = centerY - total / 2;
-  const farEdge = x + (dir * size.width) / 2;
+  const farEdge = x + (grow * size.width) / 2;
   kids.forEach((k, i) => {
     const childColor =
       ctx.doc.nodes[id].parentId === null
         ? branchColorOf(ctx.doc, ctx.theme, k)
         : color;
-    const childEdge = farEdge + dir * ctx.hGap;
-    placeH(ctx, k, childEdge, y + spans[i] / 2, dir, childColor);
-    const connDir: Dir = dir === 1 ? 'right' : 'left';
+    const childEdge = farEdge + grow * ctx.hGap;
+    placeH(ctx, k, childEdge, y + spans[i] / 2, grow, childColor);
+    const connDir: Dir = grow === 1 ? 'right' : 'left';
     ctx.connectors.push({
       id: `${id}->${k}`,
       from: id,
@@ -125,6 +158,36 @@ export function placeV(
   ctx.positions[id] = box;
 
   const kids = visibleChildren(ctx, id);
+  const over = ctx.branchDirections ? ctx.doc.nodes[id].metadata?.branchDirection : undefined;
+
+  // 分支级方向覆盖为水平：该节点的子树改为左右排布（未设置时不会进入此分支）
+  if (over === 'left' || over === 'right') {
+    const hdir: 1 | -1 = over === 'right' ? 1 : -1;
+    const spans = kids.map((k) => subtreeSpan(ctx, k, 'v'));
+    const total =
+      spans.reduce((a, b) => a + b, 0) + ctx.vGap * (kids.length - 1);
+    let cy = box.y - total / 2;
+    const edgeX = box.x + hdir * (size.width / 2 + ctx.hGap);
+    kids.forEach((k, i) => {
+      const childColor =
+        ctx.doc.nodes[id].parentId === null
+          ? branchColorOf(ctx.doc, ctx.theme, k)
+          : color;
+      placeH(ctx, k, edgeX, cy + spans[i] / 2, hdir, childColor);
+      ctx.connectors.push({
+        id: `${id}->${k}`,
+        from: id,
+        to: k,
+        d: connectorD(box, ctx.positions[k], over),
+        color: childColor,
+        dir: over,
+      });
+      cy += spans[i] + ctx.vGap;
+    });
+    return;
+  }
+
+  const grow: 1 | -1 = over === 'up' ? -1 : over === 'down' ? 1 : dir;
   const spans = kids.map((k) => subtreeSpan(ctx, k, 'h'));
   const total =
     spans.reduce((a, b) => a + b, 0) + ctx.vGap * (kids.length - 1);
@@ -138,17 +201,18 @@ export function placeV(
       ctx,
       k,
       x + spans[i] / 2,
-      box.y + (dir * (size.height / 2 + ctx.vGap)),
-      dir,
+      box.y + (grow * (size.height / 2 + ctx.vGap)),
+      grow,
       childColor,
     );
+    const connDir: Dir = grow === 1 ? 'down' : 'up';
     ctx.connectors.push({
       id: `${id}->${k}`,
       from: id,
       to: k,
-      d: connectorD(box, ctx.positions[k], dir === 1 ? 'down' : 'up'),
+      d: connectorD(box, ctx.positions[k], connDir),
       color: childColor,
-      dir: dir === 1 ? 'down' : 'up',
+      dir: connDir,
     });
     x += spans[i] + ctx.vGap;
   });
@@ -242,6 +306,15 @@ export function splitRootSides(
   return { left, right };
 }
 
+/** 分支级方向只对有生长方向的结构生效（放射/大纲/矩阵/时间轴/鱼骨/括号图忽略） */
+export function supportsBranchDirection(structure: LayoutStructureId): boolean {
+  if (structure === 'map-radial') return false;
+  if (structure.startsWith('map-')) return true;
+  return /^(logic-(right|left|down|up|balanced)|org-(down|up|right|left|balanced)|tree-(right|left|down|up|balanced))$/.test(
+    structure,
+  );
+}
+
 /** 创建布局上下文 */
 export function makeCtx(
   doc: MindMapDocument,
@@ -249,6 +322,7 @@ export function makeCtx(
   theme: ThemeConfig,
   hGap: number,
   vGap: number,
+  branchDirections = true,
 ): LayoutCtx {
   return {
     doc,
@@ -260,5 +334,6 @@ export function makeCtx(
     widths: new Map(),
     hGap,
     vGap,
+    branchDirections,
   };
 }

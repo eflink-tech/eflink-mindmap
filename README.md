@@ -13,16 +13,19 @@ A mind map editor for the web. Run it standalone, or embed `<MindMapEditor />` i
 ## 功能特性
 
 - 画布引擎：Konva + react-konva，无限画布、缩放平移、小地图导航
-- 布局算法：思维导图 / 逻辑图 / 组织结构图 / 括号图 / 时间轴，一键切换自动重排
-- 节点能力：多级主题、拖拽调序、节点样式（圆角/椭圆/矩形/六边/胶囊）、笔记 / 标签 / 链接 / 图片
-- 连接能力：联系线（曲线/直线/折线/括号线 + 箭头）、节点概括（Summary）与边界（Boundary）标注
+- 布局算法：8 类 50+ 布局预设（思维导图 / 逻辑图 / 组织结构图 / 括号图 / 树形图 / 时间轴 / 鱼骨图 / 矩阵图），一键切换自动重排；任意分支可单独覆盖生长方向（左/右/上/下）
+- 节点能力：多级主题、拖拽调序、节点样式（圆角/椭圆/矩形/六边/胶囊）、笔记 / 标签 / 链接 / 内嵌图片（可调宽度）
+- 连接能力：联系线（曲线/直线/折线/括号线 + 箭头）、节点概括（Summary）与边界（Boundary）标注，三类覆盖层均可在样式面板改颜色 / 文字 / 线宽
 - 标记系统：优先级 / 星级 / 表情 / 贴纸等标记，按面板一键应用
-- 主题配色：内置多套配色方案（对齐 XMind 34 套缤纷色板），节点文字色按填充亮度自适应
+- 主题配色：内置 40 套配色方案（对齐 XMind 缤纷 / 经典色板），支持主题微调（主色、分支色、形状、字号、连线）并可恢复默认；节点文字色按填充亮度自适应
 - 大纲视图：画布 / 大纲双模式切换，列表内直接编辑层级
-- 编辑能力：撤销重做、快捷键体系（导航 / 编辑 / 缩放）、双击编辑、文字按填充自适应
-- 持久化：IndexedDB（Dexie）自动保存，刷新后自动恢复上次文档；文档重命名 / 删除 / 列表管理
-- 导入：`.efm` JSON 文档与 XMind 文件（`.xmind`，兼容 XMind 2020+ / XMind 8），保留节点层级、笔记、标签、链接、图片、标记、折叠、外框、概要与联系线
-- 导出：`.efm` JSON 文档 + 画布 PNG 图片
+- 编辑能力：撤销重做、多选批量编辑、查找 / 替换、快捷键体系（导航 / 编辑 / 缩放）、双击编辑、文字按填充自适应
+- 演示模式：F5 按节点顺序逐页演示，自动居中并高亮当前节点（Esc 退出，可全屏）
+- 多画布：同一份导图可拆成多个工作表（画布标签切换、重命名、删除），文件列表按导图分组展示
+- 模板库：会议纪要 / 项目计划 / SWOT / 周报 / OKR / 里程碑时间轴等模板一键新建
+- 持久化：IndexedDB（Dexie）自动保存，刷新后自动恢复上次文档；文档重命名 / 删除 / 列表管理（文件 → 全部文件）
+- 导入：`.efm` JSON、XMind（`.xmind`，兼容 XMind 2020+ / XMind 8）、FreeMind（`.mm`）、OPML（`.opml`）、Markdown（`.md` / `.markdown`）、百度脑图 KityMinder（`.km`）；尽量保留节点层级、笔记、标签、链接、图片、标记、折叠、外框、概要与联系线
+- 导出：`.efm` JSON、XMind（`.xmind`）、Markdown（`.md`）、OPML（`.opml`）、FreeMind（`.mm`）+ 画布 PNG 图片
 - 工程化：Vite + TypeScript + Vitest 单测 + Playwright e2e + OxLint
 
 ## 使用组件
@@ -54,6 +57,8 @@ function Page() {
 - `db, saveDocument / loadDocument / listDocuments / deleteDocument / renameDocument`：IndexedDB 持久化辅助
 - `createDocument`：创建空白文档数据
 - `parseXmind`：把 `.xmind` 文件解析为 `MindMapDocument`（宿主自定义导入时可直接复用）
+- `parseFreeMind` / `parseOpml` / `parseKityMinder`：分别解析 `.mm` / `.opml` / `.km` 文本
+- `importFromMarkdown` / `exportToMarkdown`：Markdown 标题/列表与导图互转
 - `MindMapDocument / MindMapNode / DocumentMeta`：文档数据模型
 
 > **Tailwind 说明**：组件库内部布局用到少量 Tailwind 工具类（已随 `styles.css` 提供回退样式）。若宿主使用 Tailwind v4 且希望得到与 demo 一致的布局，请在入口 CSS 中显式扫描组件包：

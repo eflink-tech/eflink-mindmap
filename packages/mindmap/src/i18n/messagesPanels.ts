@@ -52,6 +52,13 @@ const ROWS = {
   'mind.p.fitWidthTip': ['按内容适合宽度', 'Fit width to content', 'Ajustar al contenido', 'Ajustar ao conteúdo'],
   'mind.p.fit': ['适合', 'Fit', 'Ajustar', 'Ajustar'],
   'mind.p.restoreThemeTip': ['恢复主题默认样式', 'Restore theme defaults', 'Restaurar estilo del tema', 'Restaurar estilo do tema'],
+  'mind.p.themeEditor': ['自定义主题', 'Custom theme', 'Tema personalizado', 'Tema personalizado'],
+  'mind.p.themePrimary': ['主色', 'Primary color', 'Color principal', 'Cor principal'],
+  'mind.p.themeBranches': ['分支颜色', 'Branch colors', 'Colores de ramas', 'Cores dos ramos'],
+  'mind.p.themeReset': ['恢复默认', 'Reset', 'Restaurar', 'Restaurar'],
+  'mind.p.branchColorAria': ['分支颜色 {n}', 'Branch color {n}', 'Color de rama {n}', 'Cor do ramo {n}'],
+  'mind.p.shapeHex': ['六边形', 'Hexagon', 'Hexágono', 'Hexágono'],
+  'mind.p.shapePill': ['胶囊', 'Pill', 'Píldora', 'Cápsula'],
   'mind.p.clearCustomStyle': ['清除自定义样式', 'Clear custom style', 'Borrar estilo personalizado', 'Limpar estilo personalizado'],
   'mind.p.noBorder': ['无边框', 'No border', 'Sin borde', 'Sem borda'],
   'mind.p.shapeRounded': ['圆角矩形', 'Rounded', 'Redondeado', 'Arredondado'],
@@ -86,9 +93,25 @@ const ROWS = {
   'mind.p.arrow': ['箭头', 'Arrow', 'Flecha', 'Seta'],
   'mind.p.dot': ['圆点', 'Dot', 'Punto', 'Ponto'],
 
+  // 分支级方向（BranchDirectionSection）
+  'mind.p.branchDirection': ['分支方向', 'Branch direction', 'Dirección de rama', 'Direção do ramo'],
+  'mind.p.branchDirectionHint': ['只影响选中节点的子节点', 'Applies to this branch only', 'Solo afecta a esta rama', 'Afeta apenas este ramo'],
+  'mind.p.branchInherit': ['跟随整体', 'Inherit', 'Heredar', 'Herdar'],
+  'mind.p.dirRight': ['向右', 'Right', 'Derecha', 'Direita'],
+  'mind.p.dirLeft': ['向左', 'Left', 'Izquierda', 'Esquerda'],
+  'mind.p.dirDown': ['向下', 'Down', 'Abajo', 'Baixo'],
+  'mind.p.dirUp': ['向上', 'Up', 'Arriba', 'Cima'],
+
+  // 联系线 / 外框 / 概要样式（选中对应对象时替换节点样式面板）
+  'mind.p.relationSection': ['联系线', 'Relationship', 'Relación', 'Relação'],
+  'mind.p.relationLabelText': ['标签文字', 'Label text', 'Texto de la etiqueta', 'Texto do rótulo'],
+  'mind.p.boundarySection': ['外框', 'Boundary', 'Límite', 'Limite'],
+  'mind.p.summarySection': ['概要', 'Summary', 'Resumen', 'Resumo'],
+  'mind.p.summaryText': ['概要文字', 'Summary text', 'Texto del resumen', 'Texto do resumo'],
+  'mind.p.deleteOverlay': ['删除{name}', 'Delete {name}', 'Eliminar {name}', 'Excluir {name}'],
+
   // 样式预览
-  'mind.p.preview': ['预览', 'Preview', 'Vista previa', 'Prévia'],
-  'mind.p.nodePlaceholder': ['节点', 'Topic', 'Tema', 'Tópico'],
+  'mind.p.preview': ['预览', 'Preview', 'Vista previa', 'Prévia'],  'mind.p.nodePlaceholder': ['节点', 'Topic', 'Tema', 'Tópico'],
 
   // 节点旁插入浮层
   'mind.p.image': ['图片', 'Image', 'Imagen', 'Imagem'],
@@ -116,6 +139,18 @@ const ROWS = {
   ],
   'mind.p.nodeImage': ['节点图片', 'Topic image', 'Imagen del tema', 'Imagem do tópico'],
   'mind.p.nodeImageZoom': ['节点图片放大', 'Enlarged topic image', 'Imagen del tema ampliada', 'Imagem do tópico ampliada'],
+  'mind.p.imageSize': ['尺寸', 'Size', 'Tamaño', 'Tamanho'],
+
+  // 查找/替换浮层
+  'mind.search.placeholder': ['查找节点', 'Find topics', 'Buscar temas', 'Localizar tópicos'],
+  'mind.search.replacePlaceholder': ['替换为', 'Replace with', 'Sustituir por', 'Substituir por'],
+  'mind.search.prev': ['上一个', 'Previous', 'Anterior', 'Anterior'],
+  'mind.search.next': ['下一个', 'Next', 'Siguiente', 'Próximo'],
+  'mind.search.noResult': ['无结果', 'No results', 'Sin resultados', 'Sem resultados'],
+  'mind.search.replace': ['替换', 'Replace', 'Sustituir', 'Substituir'],
+  'mind.search.replaceAll': ['全部替换', 'Replace all', 'Sustituir todo', 'Substituir tudo'],
+  'mind.search.filter': ['标记过滤', 'Filter by marker', 'Filtrar por marcador', 'Filtrar por marcador'],
+  'mind.search.allMarkers': ['全部标记', 'All markers', 'Todos los marcadores', 'Todos os marcadores'],
 
   // 画布编辑浮层（可访问性名称）
   'mind.p.editNodeText': ['编辑节点文字', 'Edit topic text', 'Editar texto del tema', 'Editar texto do tópico'],
@@ -142,6 +177,7 @@ const ROWS = {
 
   // 起始页
   'mind.p.renameAria': ['重命名 {title}', 'Rename {title}', 'Renombrar {title}', 'Renomear {title}'],
+  'mind.p.deleteAria': ['删除 {title}', 'Delete {title}', 'Eliminar {title}', 'Excluir {title}'],
 } as const satisfies Record<string, Row>;
 
 export const PANEL_MESSAGES: OfficeMessagesByLocale = buildMessages(ROWS);

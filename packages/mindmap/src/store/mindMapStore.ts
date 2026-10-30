@@ -1,11 +1,13 @@
 import { create } from 'zustand';
 import { translateTitle } from '../i18n/assetTitles';
 import { mindT } from '../i18n/runtime';
-import { copySubtree, type ClipboardData } from '../core/editor/clipboard';
+import { copySubtrees, type ClipboardData } from '../core/editor/clipboard';
+import { replaceAllText } from '../core/editor/search';
 import {
   addBoundary, addChild, addRelation, addSibling, addSummary,
   pasteSubtree, removeBoundary, removeMarkerGroup, removeNode, removeRelation, removeSummary,
-  setMarker, toggleCollapse, updateBoundaryTitle, updateMetadata, updateStyle, updateText,
+  setBranchDirection, setMarker, toggleCollapse, updateBoundaryStyle, updateBoundaryTitle, updateMetadata,
+  updateRelationLabel, updateRelationStyle, updateStyle, updateSummaryStyle, updateSummaryText, updateText,
 } from '../core/editor/nodeOps';
 import { groupOf, markerEq } from '../core/markers/registry';
 import {
@@ -21,7 +23,7 @@ import { scheduleSave } from '../core/persistence/autosave';
 import { getTheme, resolveThemeId } from '../core/style/themes';
 import { updateCanvasOptions } from '../core/style/canvasOptions';
 import type {
-  CanvasOptions, DropPreview, LayoutResult, LayoutType, Marker, MindMapDocument, NodeMetadata, NodeStyle, ViewportState,
+  BranchDirection, CanvasOptions, DropPreview, LayoutResult, LayoutType, Marker, MindMapDocument, NodeMetadata, NodeStyle, SummaryStyle, ThemeOverridesPatch, ViewportState,
 } from '../types/mindmap';
 import { useUiStore } from './uiStore';
 import { useDocumentsStore } from './documentsStore';
@@ -89,11 +91,17 @@ interface MindMapStore {
   setStageSize: (s: { width: number; height: number }) => void;
   setLayout: (t: LayoutType) => void;
   setTheme: (themeId: string) => void;
+  /** 主题微调：与当前配色深合并；传 null 清除全部微调 */
+  setStyleOverrides: (patch: ThemeOverridesPatch | null) => void;
   setCanvasOption: (patch: Partial<CanvasOptions>) => void;
   /** patch 中显式 undefined 会删除对应样式键（如 fixedWidth「适合」） */
   setNodeStyle: (style: { [K in keyof NodeStyle]?: NodeStyle[K] | undefined }) => void;
   clearNodeStyle: () => void;
   fitToScreen: () => void;
+  /** 把指定节点平移到视口中心（查找导航用），保持当前缩放 */
+  focusNode: (id: string) => void;
+  /** 在指定节点内用替换词替换查找词（忽略大小写），一次 act 记为一条历史 */
+  replaceInNodes: (ids: string[], query: string, replacement: string) => void;
   zoomIn: () => void;
   zoomOut: () => void;
   zoomTo: (scale: number) => void;
@@ -105,8 +113,18 @@ interface MindMapStore {
   removeBoundaryById: (id: string) => void;
   /** 提交外框备注标题（空串移除标题） */
   updateBoundaryTitleById: (id: string, title: string) => void;
+  /** 联系线标签 / 样式（颜色、线宽） */
+  updateRelationLabelById: (id: string, label: string) => void;
+  setRelationStyle: (id: string, patch: Partial<{ color: string; width: number }>) => void;
+  /** 外框描边/填充色 */
+  setBoundaryStyle: (id: string, patch: Partial<{ color: string; fill: string }>) => void;
+  /** 概要文本与样式 */
+  updateSummaryTextById: (id: string, text: string) => void;
+  setSummaryStyle: (id: string, patch: Partial<SummaryStyle>) => void;
   removeSummaryById: (id: string) => void;
   updateMetadataSelected: (patch: Partial<NodeMetadata>) => void;
+  /** 分支级生长方向：只作用于选中节点子树；null 恢复整图方向 */
+  setBranchDirectionSelected: (dir: BranchDirection | null) => void;
   updateMetadataNode: (id: string, patch: Partial<NodeMetadata>) => void;
   setMarkerSelected: (m: Marker) => void;
   /** 切换标记：以锚点节点状态为准应用到全部选中节点（已应用则整组移除） */
@@ -169,16 +187,22 @@ export const useMindMapStore = create<MindMapStore>((set, get) => ({
   },
 
   copySelected: () => {
-    const { doc, selectedId } = get();
-    if (!doc || !selectedId) return;
-    const clip = copySubtree(doc, selectedId);
+    const { doc, selectedId, selectedIds } = get();
+    if (!doc) return;
+    const ids = selectedIds.length ? selectedIds : selectedId ? [selectedId] : [];
+    if (!ids.length) return;
+    const clip = copySubtrees(doc, ids);
     if (clip) set({ clipboard: clip });
   },
 
   cutSelected: () => {
-    const { doc, selectedId } = get();
-    if (!doc || !selectedId || selectedId === doc.rootId) return;
-    const clip = copySubtree(doc, selectedId);
+    const { doc, selectedId, selectedIds } = get();
+    if (!doc) return;
+    const ids = (selectedIds.length ? selectedIds : selectedId ? [selectedId] : []).filter(
+      (id) => id !== doc.rootId,
+    );
+    if (!ids.length) return;
+    const clip = copySubtrees(doc, ids);
     if (!clip) return;
     set({ clipboard: clip });
     // removeSelected 内部会把 selectedId 回退到被删节点的父节点，粘贴目标自然存在
@@ -493,18 +517,37 @@ export const useMindMapStore = create<MindMapStore>((set, get) => ({
     get().act((d) => (d.themeId === resolved ? d : { ...d, themeId: resolved, updatedAt: Date.now() }));
   },
 
+  setStyleOverrides: (patch) => {
+    get().act((d) => {
+      if (patch === null) {
+        if (!d.styleOverrides) return d;
+        return { ...d, styleOverrides: undefined, updatedAt: Date.now() };
+      }
+      const cur = d.styleOverrides ?? {};
+      const next = {
+        ...cur,
+        ...(patch.colors ? { colors: { ...cur.colors, ...patch.colors } } : {}),
+        ...(patch.node ? { node: { ...cur.node, ...patch.node } } : {}),
+        ...(patch.connector ? { connector: { ...cur.connector, ...patch.connector } } : {}),
+      };
+      return { ...d, styleOverrides: next, updatedAt: Date.now() };
+    });
+  },
+
   setCanvasOption: (patch) => get().act((d) => updateCanvasOptions(d, patch)),
 
   setNodeStyle: (style) => {
-    const { selectedId } = get();
-    if (!selectedId) return;
-    get().act((d) => updateStyle(d, selectedId, style));
+    const { selectedId, selectedIds } = get();
+    const ids = selectedIds.length ? selectedIds : selectedId ? [selectedId] : [];
+    if (!ids.length) return;
+    get().act((d) => ids.reduce((acc, id) => updateStyle(acc, id, style), d));
   },
 
   clearNodeStyle: () => {
-    const { selectedId } = get();
-    if (!selectedId) return;
-    get().act((d) => updateStyle(d, selectedId, null));
+    const { selectedId, selectedIds } = get();
+    const ids = selectedIds.length ? selectedIds : selectedId ? [selectedId] : [];
+    if (!ids.length) return;
+    get().act((d) => ids.reduce((acc, id) => updateStyle(acc, id, null), d));
   },
 
   fitToScreen: () => {
@@ -522,9 +565,32 @@ export const useMindMapStore = create<MindMapStore>((set, get) => ({
     set({ autoFitPending: false });
   },
 
+  focusNode: (id) => {
+    const { doc, layoutResult, stageSize } = get();
+    const b = layoutResult?.positions[id];
+    if (!doc || !b) return;
+    const { scale } = doc.viewport;
+    get().setViewport({
+      scale,
+      x: stageSize.width / 2 - b.x * scale,
+      y: stageSize.height / 2 - b.y * scale,
+    });
+  },
+
+  replaceInNodes: (ids, query, replacement) => {
+    if (!query || !ids.length) return;
+    get().act((d) =>
+      ids.reduce((acc, id) => {
+        const node = acc.nodes[id];
+        if (!node) return acc;
+        const text = replaceAllText(node.text, query, replacement);
+        return text === node.text ? acc : updateText(acc, id, text);
+      }, d),
+    );
+  },
+
   /** 按档位步进缩放（底部状态栏 / 快捷键用） */
-  zoomIn: () => get().zoomStep(1),
-  zoomOut: () => get().zoomStep(-1),
+  zoomIn: () => get().zoomStep(1),  zoomOut: () => get().zoomStep(-1),
 
   /** 缩放到指定比例，以当前视口中心为锚点，画面中心不跑偏 */
   zoomTo: (nextScale) => {
@@ -603,6 +669,11 @@ export const useMindMapStore = create<MindMapStore>((set, get) => ({
   },
 
   updateBoundaryTitleById: (id, title) => get().act((d) => updateBoundaryTitle(d, id, title)),
+  updateRelationLabelById: (id, label) => get().act((d) => updateRelationLabel(d, id, label)),
+  setRelationStyle: (id, patch) => get().act((d) => updateRelationStyle(d, id, patch)),
+  setBoundaryStyle: (id, patch) => get().act((d) => updateBoundaryStyle(d, id, patch)),
+  updateSummaryTextById: (id, text) => get().act((d) => updateSummaryText(d, id, text)),
+  setSummaryStyle: (id, patch) => get().act((d) => updateSummaryStyle(d, id, patch)),
   removeSummaryById: (id) => {
     get().act((d) => removeSummary(d, id));
     // 删除的是当前选中/正在编辑的概要时清掉对应状态
@@ -615,6 +686,12 @@ export const useMindMapStore = create<MindMapStore>((set, get) => ({
     const { selectedId } = get();
     if (!selectedId) return;
     get().act((d) => updateMetadata(d, selectedId, patch));
+  },
+
+  setBranchDirectionSelected: (dir) => {
+    const { selectedId } = get();
+    if (!selectedId) return;
+    get().act((d) => setBranchDirection(d, selectedId, dir));
   },
 
   // 按节点 id 写入元数据：供异步回调使用，避免回调触发时选中节点已变化

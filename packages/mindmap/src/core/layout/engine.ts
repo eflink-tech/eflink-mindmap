@@ -8,8 +8,8 @@ import type {
 } from '../../types/mindmap';
 import { getCanvasOptions } from '../style/canvasOptions';
 import { measureAllNodes, type WidthFn } from './measure';
-import { applyStructure } from './structures';
-import { makeCtx } from './strategies/shared';
+import { applyStructure, getStructure } from './structures';
+import { makeCtx, supportsBranchDirection } from './strategies/shared';
 
 /** 水平间距（对齐 XMind 的紧凑层级距离） */
 export const H_GAP = 40;
@@ -78,7 +78,14 @@ export function layoutDocument(
     sizes = applyUnifySiblingWidth(doc, sizes);
   }
 
-  const ctx = makeCtx(doc, sizes, theme, hGap, vGap);
+  const ctx = makeCtx(
+    doc,
+    sizes,
+    theme,
+    hGap,
+    vGap,
+    supportsBranchDirection(getStructure(doc)),
+  );
   const rootSize = sizes[doc.rootId];
   ctx.positions[doc.rootId] = {
     x: 0,

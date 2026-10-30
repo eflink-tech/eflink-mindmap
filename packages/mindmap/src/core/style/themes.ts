@@ -544,5 +544,13 @@ export function getTheme(doc: MindMapDocument): ThemeConfig {
   const resolved = resolveThemeId(doc.themeId);
   const base = resolved ? THEMES[resolved] : THEMES.classic;
   const { group: _group, ...config } = base;
-  return doc.styleOverrides ? { ...config, ...doc.styleOverrides } : config;
+  const overrides = doc.styleOverrides;
+  if (!overrides) return config;
+  // 深合并：主题微调只覆盖传入的字段（colors.branches 等数组整体替换）
+  return {
+    name: overrides.name ?? config.name,
+    colors: { ...config.colors, ...overrides.colors },
+    node: { ...config.node, ...overrides.node },
+    connector: { ...config.connector, ...overrides.connector },
+  };
 }

@@ -9,6 +9,18 @@ import { LAYOUT_PRESETS } from '../../core/layout/presets';
 import { THEME_GROUPS, THEMES } from '../../core/style/themes';
 import { SHORTCUT_GROUPS } from '../../core/shortcuts/catalog';
 import { addChild, createDocument } from '../../core/editor/nodeOps';
+import { TEMPLATES, type TemplateNodeSpec } from '../../core/templates/catalog';
+
+function flattenTemplateTexts(tpl: (typeof TEMPLATES)[number]): string[] {
+  const out: string[] = [];
+  const stack: TemplateNodeSpec[] = [...tpl.tree];
+  while (stack.length) {
+    const node = stack.pop()!;
+    out.push(node.text);
+    stack.push(...(node.children ?? []));
+  }
+  return out;
+}
 
 const HAS_CJK = /[一-鿿]/;
 const LOCALES = ['en', 'es', 'pt-BR'] as const;
@@ -39,6 +51,8 @@ describe('素材标题本地化', () => {
     missingFrom('标记颜色', MARKER_COLORS.map((c) => colorLabel(c)), missing);
     missingFrom('快捷键分组', SHORTCUT_GROUPS.map((g) => g.title), missing);
     missingFrom('快捷键动作', SHORTCUT_GROUPS.flatMap((g) => g.items.map((i) => i.label)), missing);
+    missingFrom('内置模板名', TEMPLATES.map((tpl) => tpl.name), missing);
+    missingFrom('内置模板节点', TEMPLATES.flatMap((tpl) => flattenTemplateTexts(tpl)), missing);
 
     expect(
       missing,

@@ -78,3 +78,44 @@ describe('uiStore 连线模式', () => {
     useUiStore.setState({ view: 'start', linking: false, linkFrom: null });
   });
 });
+
+describe('uiStore 演示模式', () => {
+  it('startPresentation 收拢浮层并从头开始，step 不越界', () => {
+    useUiStore.setState({
+      presentation: null,
+      searchOpen: true,
+      searchQuery: 'x',
+      markerFilter: 'm1',
+      panel: 'properties',
+      canvasMode: 'outline',
+    });
+    useUiStore.getState().startPresentation(['a', 'b', 'c']);
+    const st = useUiStore.getState();
+    expect(st.presentation).toEqual({ ids: ['a', 'b', 'c'], index: 0 });
+    expect(st.searchOpen).toBe(false);
+    expect(st.searchQuery).toBe('');
+    expect(st.markerFilter).toBeNull();
+    expect(st.panel).toBeNull();
+    expect(st.canvasMode).toBe('mindmap');
+
+    useUiStore.getState().stepPresentation(-1);
+    expect(useUiStore.getState().presentation?.index).toBe(0);
+    useUiStore.getState().stepPresentation(1);
+    useUiStore.getState().stepPresentation(1);
+    useUiStore.getState().stepPresentation(1);
+    expect(useUiStore.getState().presentation?.index).toBe(2);
+
+    useUiStore.getState().stopPresentation();
+    expect(useUiStore.getState().presentation).toBeNull();
+  });
+
+  it('空序列不进入演示；setView(start) 复位演示', () => {
+    useUiStore.setState({ presentation: null });
+    useUiStore.getState().startPresentation([]);
+    expect(useUiStore.getState().presentation).toBeNull();
+
+    useUiStore.getState().startPresentation(['a']);
+    useUiStore.getState().setView('start');
+    expect(useUiStore.getState().presentation).toBeNull();
+  });
+});

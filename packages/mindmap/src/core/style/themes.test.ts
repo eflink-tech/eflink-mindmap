@@ -87,6 +87,28 @@ describe('themes', () => {
     expect(getTheme(doc).node.fontSize).toBe(20);
   });
 
+  it('getTheme 深合并部分字段，未覆盖项保留主题默认', () => {
+    const doc = {
+      ...createDocument(),
+      themeId: 'dancing',
+      styleOverrides: {
+        colors: { primary: '#123456', branches: ['#000001', '#000002'] },
+        node: { fontSize: 26 },
+        connector: { width: 3 },
+      },
+    };
+    const theme = getTheme(doc);
+    expect(theme.colors.primary).toBe('#123456');
+    expect(theme.colors.branches).toEqual(['#000001', '#000002']);
+    // 未覆盖的字段沿用主题
+    expect(theme.colors.background).toBe(THEMES.dancing.colors.background);
+    expect(theme.node.fontSize).toBe(26);
+    expect(theme.node.shape).toBe(THEMES.dancing.node.shape);
+    expect(theme.node.padding).toEqual(THEMES.dancing.node.padding);
+    expect(theme.connector.width).toBe(3);
+    expect(theme.connector.type).toBe(THEMES.dancing.connector.type);
+  });
+
   it('切换主题不影响默认画布白底', () => {
     const doc = { ...createDocument(), themeId: 'dancing' };
     expect(getCanvasBackground(doc)).toBe(DEFAULT_CANVAS_BACKGROUND);

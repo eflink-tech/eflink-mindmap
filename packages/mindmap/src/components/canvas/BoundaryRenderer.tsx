@@ -23,10 +23,11 @@ const setCursor = (e: Konva.KonvaEventObject<MouseEvent>, value: string) => {
 };
 
 /** 一层虚线圆角矩形（对齐 XMind 的灰色叠加层） */
-function LayerRect({ rect, radius, stroke, listening, onClick }: {
+function LayerRect({ rect, radius, stroke, fill, listening, onClick }: {
   rect: RectBox;
   radius: number;
   stroke: string;
+  fill: string;
   listening?: boolean;
   onClick?: () => void;
 }) {
@@ -37,7 +38,7 @@ function LayerRect({ rect, radius, stroke, listening, onClick }: {
       width={rect.width}
       height={rect.height}
       cornerRadius={radius}
-      fill="rgba(0, 0, 0, 0.05)"
+      fill={fill}
       stroke={stroke}
       strokeWidth={1.2}
       dash={[6, 5]}
@@ -65,6 +66,9 @@ export function BoundaryRenderer() {
         const { inner, outer } = rects;
         const selected = selectedBoundaryId === b.id;
         const editing = editingBoundaryId === b.id;
+        // 自定义样式：描边/填充两层共用（面板默认值与渲染默认值保持一致）
+        const stroke = b.style?.color ?? '#B6BCC3';
+        const fill = b.style?.fill ?? '#F8FAFC';
 
         // 选中态：外层再向外 4px 的蓝色实线 + 四边中点手柄
         const sel = {
@@ -92,11 +96,12 @@ export function BoundaryRenderer() {
             <LayerRect
               rect={outer}
               radius={18}
-              stroke="#B6BCC3"
+              stroke={stroke}
+              fill={fill}
               listening={!editing}
               onClick={() => useMindMapStore.getState().selectBoundary(b.id)}
             />
-            <LayerRect rect={inner} radius={12} stroke="#A7ADB5" />
+            <LayerRect rect={inner} radius={12} stroke={stroke} fill={fill} />
             {selected && (
               <>
                 <Rect

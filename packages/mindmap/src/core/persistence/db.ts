@@ -127,6 +127,8 @@ export async function listDocuments(): Promise<DocumentMeta[]> {
     id: doc.id,
     title: doc.title,
     updatedAt: doc.updatedAt,
+    createdAt: doc.createdAt,
+    workbookId: doc.workbookId,
   }));
 }
 

@@ -6,7 +6,10 @@ import { CanvasOptionsSection } from './canvas/CanvasOptionsSection';
 import { LayoutSelect } from './canvas/LayoutSelect';
 import { LayoutToggles } from './canvas/LayoutToggles';
 import { ThemeGallery } from './canvas/ThemeGallery';
+import { ThemeEditor } from './canvas/ThemeEditor';
+import { BranchDirectionSection } from './style/BranchDirectionSection';
 import { BranchSection } from './style/BranchSection';
+import { BoundarySection, RelationSection, SummarySection } from './style/OverlaySection';
 import { ShapeSection } from './style/ShapeSection';
 import { StructureSection } from './style/StructureSection';
 import { StylePreview } from './style/StylePreview';
@@ -16,6 +19,14 @@ function StyleTabBody() {
   const { t } = useI18n();
   const selectedId = useMindMapStore((s) => s.selectedId);
   const hasNode = useMindMapStore((s) => !!(s.doc && s.selectedId && s.doc.nodes[s.selectedId]));
+  const selectedRelationId = useMindMapStore((s) => s.selectedRelationId);
+  const selectedBoundaryId = useMindMapStore((s) => s.selectedBoundaryId);
+  const selectedSummaryId = useMindMapStore((s) => s.selectedSummaryId);
+
+  // 选中联系线/外框/概要时，样式面板切换到对应对象（与选择互斥）
+  if (selectedRelationId) return <RelationSection id={selectedRelationId} />;
+  if (selectedBoundaryId) return <BoundarySection id={selectedBoundaryId} />;
+  if (selectedSummaryId) return <SummarySection id={selectedSummaryId} />;
 
   if (!hasNode || !selectedId) {
     return <p className="text-sm text-slate-400">{t('mind.p.selectNode')}</p>;
@@ -27,6 +38,7 @@ function StyleTabBody() {
       <ShapeSection nodeId={selectedId} />
       <TextSection nodeId={selectedId} />
       <BranchSection nodeId={selectedId} />
+      <BranchDirectionSection nodeId={selectedId} />
       <StructureSection />
     </>
   );
@@ -37,6 +49,7 @@ function CanvasTabBody() {
     <>
       <LayoutSelect />
       <ThemeGallery />
+      <ThemeEditor />
       <CanvasOptionsSection />
       <LayoutToggles />
     </>

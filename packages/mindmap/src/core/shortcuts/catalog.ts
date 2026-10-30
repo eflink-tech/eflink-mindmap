@@ -49,9 +49,11 @@ export const MENU_SHORTCUT_IDS = {
   cut: 'cut',
   paste: 'paste',
   remove: 'remove',
+  find: 'find',
   fitToScreen: 'fitToScreen',
   zoomIn: 'zoomIn',
   zoomOut: 'zoomOut',
+  present: 'present',
 } as const;
 
 export const SHORTCUT_GROUPS: ShortcutGroup[] = [
@@ -68,6 +70,7 @@ export const SHORTCUT_GROUPS: ShortcutGroup[] = [
       { id: 'cut', label: '剪切', keys: ['Mod', 'X'] },
       { id: 'paste', label: '粘贴', keys: ['Mod', 'V'] },
       { id: 'remove', label: '删除', keys: ['Delete'] },
+      { id: 'find', label: '查找 / 替换', keys: ['Mod', 'F'] },
       { id: 'edit', label: '编辑主题', keys: ['F2'] },
     ],
   },
@@ -86,6 +89,7 @@ export const SHORTCUT_GROUPS: ShortcutGroup[] = [
     title: '查看',
     items: [
       { id: 'fitToScreen', label: '适应屏幕', keys: ['Mod', '0'] },
+      { id: 'present', label: '演示', keys: ['F5'] },
       { id: 'zoomIn', label: '放大', keys: ['Mod', '+'] },
       { id: 'zoomOut', label: '缩小', keys: ['Mod', '-'] },
       { id: 'panCanvas', label: '按住拖动画布', keys: ['Space'] },

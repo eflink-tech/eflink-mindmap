@@ -119,6 +119,8 @@ export type Marker =
 
 export interface NodeMetadata {
   image?: string;
+  /** 节点内嵌图片的显示宽度（px）；undefined 用默认宽度 */
+  imageWidth?: number;
   link?: string;
   note?: string;
   labels?: string[];
@@ -126,7 +128,11 @@ export interface NodeMetadata {
   collapsed?: boolean;
   /** 一级分支左右归属（仅根的直接子节点有意义）：布局按此稳定分侧，不随节点尺寸重排 */
   side?: 'left' | 'right';
+  /** 分支级生长方向（覆盖整图方向，只影响该节点的子树）；未设置时继承上层方向 */
+  branchDirection?: BranchDirection;
 }
+
+export type BranchDirection = 'left' | 'right' | 'up' | 'down';
 
 // 扁平节点：O(1) 查找，children 为有序子节点 id
 export interface MindMapNode {
@@ -156,6 +162,18 @@ export interface ThemeConfig {
   connector: { type: 'curve' | 'straight'; width: number };
 }
 
+/** 主题微调：只传要改的字段，渲染时与所选配色的默认值深合并 */
+export interface ThemeOverridesPatch {
+  colors?: Partial<ThemeConfig['colors']>;
+  node?: Partial<ThemeConfig['node']>;
+  connector?: Partial<ThemeConfig['connector']>;
+}
+
+/** 随文档持久化的主题微调（旧数据可能是完整 ThemeConfig，同样兼容） */
+export interface ThemeOverrides extends ThemeOverridesPatch {
+  name?: string;
+}
+
 export interface Relation {
   id: string;
   from: string;
@@ -171,11 +189,18 @@ export interface Boundary {
   style?: { color: string; fill: string };
 }
 
+export interface SummaryStyle {
+  fillColor?: string;
+  textColor?: string;
+  borderColor?: string;
+}
+
 export interface Summary {
   id: string;
   parentId: string;
   range: [number, number];
   text: string;
+  style?: SummaryStyle;
 }
 
 export interface CanvasOptions {
@@ -200,10 +225,12 @@ export interface CanvasOptions {
 export interface MindMapDocument {
   id: string;
   title: string;
+  /** 工作簿 id：同一工作簿的多个文档即多张画布（工作表），首个画布的 workbookId 等于自身 id */
+  workbookId?: string;
   rootId: string;
   nodes: Record<string, MindMapNode>;
   themeId: string;
-  styleOverrides?: Partial<ThemeConfig>;
+  styleOverrides?: ThemeOverrides;
   canvasOptions?: CanvasOptions;
   layout: LayoutType;
   layoutDefaults?: LayoutDefaults;
@@ -257,4 +284,8 @@ export interface DocumentMeta {
   id: string;
   title: string;
   updatedAt: number;
+  /** 创建时间：画布标签按创建顺序排列（旧数据/宿主缺失时回退 updatedAt） */
+  createdAt?: number;
+  /** 工作簿 id；旧数据可能为空，视为独立工作簿 */
+  workbookId?: string;
 }
