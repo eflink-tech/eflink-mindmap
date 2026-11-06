@@ -3,7 +3,7 @@ import { create } from 'zustand';
 // 延迟调用（仅函数体内使用）：切换画布模式时联动退出节点编辑态
 import { useMindMapStore } from './mindMapStore';
 
-export type PanelKind = 'properties' | 'markers' | 'ai';
+export type PanelKind = 'properties' | 'markers';
 export type PropertiesTab = 'style' | 'canvas';
 /** 标记面板 Tab（贴纸菜单项跳转用） */
 export type MarkersTab = 'markers' | 'stickers';
@@ -21,6 +21,8 @@ export interface PresentationState {
 interface UiStore {
   view: 'start' | 'editor';
   panel: PanelKind | null;
+  /** AI 助手面板：与右侧属性/标记面板互不排斥，独立开关（五端统一交互） */
+  aiPanelOpen: boolean;
   propertiesTab: PropertiesTab;
   markersTab: MarkersTab;
   /** 插入菜单触发的节点旁编辑器（笔记/标签/链接/图片查看）；null 时不显示 */
@@ -54,6 +56,7 @@ interface UiStore {
   setView: (v: 'start' | 'editor') => void;
   togglePanel: (p: PanelKind) => void;
   closePanel: () => void;
+  toggleAIPanel: () => void;
   setPropertiesTab: (tab: PropertiesTab) => void;
   setMarkersTab: (tab: MarkersTab) => void;
   openInsertEditor: (kind: InsertEditorKind, labelEditIndex?: number | null) => void;
@@ -71,6 +74,7 @@ let toastTimer: ReturnType<typeof setTimeout> | undefined;
 export const useUiStore = create<UiStore>((set, get) => ({
   view: 'start',
   panel: null,
+  aiPanelOpen: false,
   propertiesTab: 'style',
   markersTab: 'markers',
   insertEditor: null,
@@ -100,6 +104,7 @@ export const useUiStore = create<UiStore>((set, get) => ({
       markerFilter: null,
       insertEditor: null,
       panel: null,
+      aiPanelOpen: false,
       canvasMode: 'mindmap',
     }),
   stepPresentation: (delta) => {
@@ -126,6 +131,7 @@ export const useUiStore = create<UiStore>((set, get) => ({
     ),
   togglePanel: (p) => set({ panel: get().panel === p ? null : p }),
   closePanel: () => set({ panel: null }),
+  toggleAIPanel: () => set((s) => ({ aiPanelOpen: !s.aiPanelOpen })),
   setPropertiesTab: (tab) => set({ propertiesTab: tab }),
   setMarkersTab: (tab) => set({ markersTab: tab }),
   // 打开插入编辑器时收起侧边面板，避免遮挡；labelEditIndex 指定被编辑的标签下标

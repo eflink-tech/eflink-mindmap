@@ -68,6 +68,7 @@ function blockBrowserPageZoom(e: KeyboardEvent): void {
 
 export function Editor() {
   const panel = useUiStore((s) => s.panel);
+  const aiPanelOpen = useUiStore((s) => s.aiPanelOpen);
   const canvasMode = useUiStore((s) => s.canvasMode);
   const presenting = useUiStore((s) => s.presentation !== null);
   const view = useUiStore((s) => s.view);
@@ -370,8 +371,10 @@ export function Editor() {
         </div>
         {panel === 'properties' && <PropertiesPanel />}
         {panel === 'markers' && <MarkerPanel />}
-        {/* AI 助手面板（右侧独立列，参考 eflink-draw / eflink-pptx） */}
-        {panel === 'ai' && <AIChatPanel />}
+        {/* AI 助手面板（右侧独立列）：常驻挂载以保留会话，靠 .efk-ai-slot 宽度过渡滑入滑出 */}
+        <div className="efk-ai-slot" data-open={aiPanelOpen}>
+          <AIChatPanel />
+        </div>
       </div>
       <SheetTabs />
       <StatusBar />

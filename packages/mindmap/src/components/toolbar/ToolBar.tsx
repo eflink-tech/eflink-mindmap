@@ -125,6 +125,8 @@ export function ToolBar() {
   const store = () => useMindMapStore.getState();
   const panel = useUiStore((st) => st.panel);
   const togglePanel = useUiStore((st) => st.togglePanel);
+  const aiPanelOpen = useUiStore((st) => st.aiPanelOpen);
+  const toggleAIPanel = useUiStore((st) => st.toggleAIPanel);
   const linking = useUiStore((st) => st.linking);
   const openInsertEditor = useUiStore((s) => s.openInsertEditor);
   const setMarkersTab = useUiStore((s) => s.setMarkersTab);
@@ -256,7 +258,7 @@ export function ToolBar() {
         [
           { key: 'markers', label: t('mind.panel.markers'), checked: panel === 'markers', onSelect: () => togglePanel('markers') },
           { key: 'format', label: t('mind.panel.format'), checked: panel === 'properties', onSelect: () => togglePanel('properties') },
-          { key: 'ai', label: t('mind.tool.ai'), checked: panel === 'ai', onSelect: () => togglePanel('ai') },
+          { key: 'ai', label: t('mind.tool.ai'), checked: aiPanelOpen, onSelect: toggleAIPanel },
         ],
       ],
     },
@@ -287,6 +289,21 @@ export function ToolBar() {
 
   const actions = (
     <>
+      {/* AI 入口固定放在 actions 区最左，与 pptx / word / excel 一致 */}
+      <button
+        type="button"
+        onClick={toggleAIPanel}
+        title={t('mind.tool.aiTip')}
+        aria-label={t('mind.ai.title')}
+        aria-pressed={aiPanelOpen}
+        data-testid="ai-toggle"
+        className={`flex h-7 shrink-0 items-center gap-1 rounded-md px-2 text-xs transition-colors ${
+          aiPanelOpen ? 'bg-[#dbeafe] text-[#2563eb]' : 'text-[#4c5158] hover:bg-black/[0.06] hover:text-[#1f2329]'
+        }`}
+      >
+        <Sparkles size={14} />
+        {t('mind.ai.title')}
+      </button>
       {getMindMapShareHandler() !== null && (
         <>
           <button
@@ -358,7 +375,7 @@ export function ToolBar() {
         <ToolButton icon={Maximize} label={t('mind.view.fitToScreen')} title={t('mind.tool.fitTip', { shortcut: menuShortcutLabel('fitToScreen') ?? '' })} onClick={() => store().fitToScreen()} />
         <ToolButton icon={Search} label={t('action.find')} title={`${t('action.find')} (${menuShortcutLabel('find') ?? 'Ctrl+F'})`} onClick={() => useUiStore.getState().openSearch()} />
         <div className="ml-auto flex items-center">
-          <ToolButton icon={Sparkles} label={t('mind.tool.ai')} title={t('mind.tool.aiTip')} active={panel === 'ai'} onClick={() => togglePanel('ai')} />
+          {/* AI 入口已移到顶栏 actions 区（与其它办公编辑器一致） */}
           <ToolButton icon={Tag} label={t('mind.panel.markers')} active={panel === 'markers'} onClick={() => togglePanel('markers')} />
           <ToolButton icon={SlidersHorizontal} label={t('mind.panel.format')} active={panel === 'properties'} onClick={() => togglePanel('properties')} />
         </div>
