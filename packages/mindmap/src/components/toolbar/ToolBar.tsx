@@ -20,9 +20,9 @@ import {
   ListTree,
   Maximize,
   MessageCircle,
+  MonitorPlay,
   Network,
   NotebookPen,
-  Play,
   Redo2,
   Save,
   Scissors,
@@ -246,7 +246,7 @@ export function ToolBar() {
       items: [
         [
           { key: 'fit', label: t('mind.view.fitToScreen'), icon: <Maximize size={16} />, shortcut: menuShortcutLabel('fitToScreen'), onSelect: () => store().fitToScreen() },
-          { key: 'present', label: t('mind.present.start'), icon: <Play size={16} />, shortcut: menuShortcutLabel('present'), onSelect: () => startPresentationMode() },
+          { key: 'present', label: t('mind.present.start'), icon: <MonitorPlay size={16} />, shortcut: menuShortcutLabel('present'), onSelect: () => startPresentationMode() },
           { key: 'zoomIn', label: t('action.zoomIn'), icon: <ZoomIn size={16} />, shortcut: menuShortcutLabel('zoomIn'), onSelect: () => store().zoomIn() },
           { key: 'zoomOut', label: t('action.zoomOut'), icon: <ZoomOut size={16} />, shortcut: menuShortcutLabel('zoomOut'), onSelect: () => store().zoomOut() },
         ],
@@ -256,9 +256,9 @@ export function ToolBar() {
             : { key: 'viewSwitch', label: t('mind.view.mindmap'), icon: <Network size={16} />, onSelect: () => useUiStore.getState().setCanvasMode('mindmap') },
         ],
         [
-          { key: 'markers', label: t('mind.panel.markers'), checked: panel === 'markers', onSelect: () => togglePanel('markers') },
-          { key: 'format', label: t('mind.panel.format'), checked: panel === 'properties', onSelect: () => togglePanel('properties') },
-          { key: 'ai', label: t('mind.tool.ai'), checked: aiPanelOpen, onSelect: toggleAIPanel },
+          { key: 'markers', label: t('mind.panel.markers'), icon: <Tag size={16} />, checked: panel === 'markers', onSelect: () => togglePanel('markers') },
+          { key: 'format', label: t('mind.panel.format'), icon: <SlidersHorizontal size={16} />, checked: panel === 'properties', onSelect: () => togglePanel('properties') },
+          { key: 'ai', label: t('mind.tool.ai'), icon: <Sparkles size={16} />, checked: aiPanelOpen, onSelect: toggleAIPanel },
         ],
       ],
     },
