@@ -1,0 +1,659 @@
+{
+  "default": "map-balanced-curve",
+  "presets": [
+    {
+      "id": "map-balanced-curve",
+      "category": "mindmap",
+      "categoryLabel": "思维导图",
+      "label": "双向平衡",
+      "structure": "map-balanced",
+      "defaults": {
+        "shape": "rounded",
+        "connectorType": "curve"
+      },
+      "ready": true
+    },
+    {
+      "id": "map-right-curve",
+      "category": "mindmap",
+      "categoryLabel": "思维导图",
+      "label": "右侧单向",
+      "structure": "map-right",
+      "defaults": {
+        "shape": "rounded",
+        "connectorType": "curve"
+      },
+      "ready": true
+    },
+    {
+      "id": "map-left",
+      "category": "mindmap",
+      "categoryLabel": "思维导图",
+      "label": "左侧单向",
+      "structure": "map-left",
+      "defaults": {
+        "shape": "rounded",
+        "connectorType": "curve"
+      },
+      "ready": true
+    },
+    {
+      "id": "map-down",
+      "category": "mindmap",
+      "categoryLabel": "思维导图",
+      "label": "向下发散",
+      "structure": "map-down",
+      "defaults": {
+        "shape": "rounded",
+        "connectorType": "curve"
+      },
+      "ready": true
+    },
+    {
+      "id": "map-up",
+      "category": "mindmap",
+      "categoryLabel": "思维导图",
+      "label": "向上发散",
+      "structure": "map-up",
+      "defaults": {
+        "shape": "rounded",
+        "connectorType": "curve"
+      },
+      "ready": true
+    },
+    {
+      "id": "map-radial",
+      "category": "mindmap",
+      "categoryLabel": "思维导图",
+      "label": "放射环状",
+      "structure": "map-radial",
+      "defaults": {
+        "shape": "rounded",
+        "connectorType": "straight"
+      },
+      "ready": true
+    },
+    {
+      "id": "logic-right",
+      "category": "logic",
+      "categoryLabel": "逻辑图",
+      "label": "向右逻辑",
+      "structure": "logic-right",
+      "defaults": {
+        "shape": "rounded",
+        "connectorType": "elbow"
+      },
+      "ready": true
+    },
+    {
+      "id": "logic-left",
+      "category": "logic",
+      "categoryLabel": "逻辑图",
+      "label": "向左逻辑",
+      "structure": "logic-left",
+      "defaults": {
+        "shape": "rounded",
+        "connectorType": "elbow"
+      },
+      "ready": true
+    },
+    {
+      "id": "logic-down",
+      "category": "logic",
+      "categoryLabel": "逻辑图",
+      "label": "向下逻辑",
+      "structure": "logic-down",
+      "defaults": {
+        "shape": "rounded",
+        "connectorType": "elbow"
+      },
+      "ready": true
+    },
+    {
+      "id": "logic-up",
+      "category": "logic",
+      "categoryLabel": "逻辑图",
+      "label": "向上逻辑",
+      "structure": "logic-up",
+      "defaults": {
+        "shape": "rounded",
+        "connectorType": "elbow"
+      },
+      "ready": true
+    },
+    {
+      "id": "logic-balanced",
+      "category": "logic",
+      "categoryLabel": "逻辑图",
+      "label": "双向逻辑",
+      "structure": "logic-balanced",
+      "defaults": {
+        "shape": "rounded",
+        "connectorType": "elbow"
+      },
+      "ready": true
+    },
+    {
+      "id": "logic-outline",
+      "category": "logic",
+      "categoryLabel": "逻辑图",
+      "label": "大纲逻辑",
+      "structure": "logic-outline",
+      "defaults": {
+        "shape": "rounded",
+        "borderStyle": "none",
+        "connectorType": "straight"
+      },
+      "ready": true
+    },
+    {
+      "id": "brace-right",
+      "category": "brace",
+      "categoryLabel": "括号图",
+      "label": "向右括号",
+      "structure": "brace-right",
+      "defaults": {
+        "shape": "rounded",
+        "connectorType": "brace"
+      },
+      "ready": true
+    },
+    {
+      "id": "brace-left",
+      "category": "brace",
+      "categoryLabel": "括号图",
+      "label": "向左括号",
+      "structure": "brace-left",
+      "defaults": {
+        "shape": "rounded",
+        "connectorType": "brace"
+      },
+      "ready": true
+    },
+    {
+      "id": "brace-balanced",
+      "category": "brace",
+      "categoryLabel": "括号图",
+      "label": "双向括号",
+      "structure": "brace-balanced",
+      "defaults": {
+        "shape": "rounded",
+        "connectorType": "brace"
+      },
+      "ready": true
+    },
+    {
+      "id": "brace-down",
+      "category": "brace",
+      "categoryLabel": "括号图",
+      "label": "向下括号",
+      "structure": "brace-down",
+      "defaults": {
+        "shape": "rounded",
+        "connectorType": "brace"
+      },
+      "ready": true
+    },
+    {
+      "id": "brace-up",
+      "category": "brace",
+      "categoryLabel": "括号图",
+      "label": "向上括号",
+      "structure": "brace-up",
+      "defaults": {
+        "shape": "rounded",
+        "connectorType": "brace"
+      },
+      "ready": true
+    },
+    {
+      "id": "brace-outline",
+      "category": "brace",
+      "categoryLabel": "括号图",
+      "label": "缩进括号",
+      "structure": "brace-outline",
+      "defaults": {
+        "shape": "rounded",
+        "borderStyle": "none",
+        "connectorType": "straight"
+      },
+      "ready": true
+    },
+    {
+      "id": "org-down",
+      "category": "org",
+      "categoryLabel": "组织结构图",
+      "label": "向下组织",
+      "structure": "org-down",
+      "defaults": {
+        "shape": "rounded",
+        "connectorType": "elbow"
+      },
+      "ready": true
+    },
+    {
+      "id": "org-up",
+      "category": "org",
+      "categoryLabel": "组织结构图",
+      "label": "向上组织",
+      "structure": "org-up",
+      "defaults": {
+        "shape": "rounded",
+        "connectorType": "elbow"
+      },
+      "ready": true
+    },
+    {
+      "id": "org-right",
+      "category": "org",
+      "categoryLabel": "组织结构图",
+      "label": "向右组织",
+      "structure": "org-right",
+      "defaults": {
+        "shape": "rounded",
+        "connectorType": "elbow"
+      },
+      "ready": true
+    },
+    {
+      "id": "org-left",
+      "category": "org",
+      "categoryLabel": "组织结构图",
+      "label": "向左组织",
+      "structure": "org-left",
+      "defaults": {
+        "shape": "rounded",
+        "connectorType": "elbow"
+      },
+      "ready": true
+    },
+    {
+      "id": "org-balanced",
+      "category": "org",
+      "categoryLabel": "组织结构图",
+      "label": "双向组织",
+      "structure": "org-balanced",
+      "defaults": {
+        "shape": "rounded",
+        "connectorType": "elbow"
+      },
+      "ready": true
+    },
+    {
+      "id": "org-radial",
+      "category": "org",
+      "categoryLabel": "组织结构图",
+      "label": "环形组织",
+      "structure": "org-radial",
+      "defaults": {
+        "shape": "rounded",
+        "connectorType": "straight"
+      },
+      "ready": true
+    },
+    {
+      "id": "org-classic",
+      "category": "org",
+      "categoryLabel": "组织结构图",
+      "label": "圆角组织架构",
+      "structure": "org-classic",
+      "defaults": {
+        "shape": "rectangle",
+        "connectorType": "elbow"
+      },
+      "ready": true
+    },
+    {
+      "id": "tree-right",
+      "category": "tree",
+      "categoryLabel": "树形图",
+      "label": "向右树形",
+      "structure": "tree-right",
+      "defaults": {
+        "shape": "rounded",
+        "connectorType": "curve"
+      },
+      "ready": true
+    },
+    {
+      "id": "tree-left",
+      "category": "tree",
+      "categoryLabel": "树形图",
+      "label": "向左树形",
+      "structure": "tree-left",
+      "defaults": {
+        "shape": "rounded",
+        "connectorType": "curve"
+      },
+      "ready": true
+    },
+    {
+      "id": "tree-down",
+      "category": "tree",
+      "categoryLabel": "树形图",
+      "label": "向下树形",
+      "structure": "tree-down",
+      "defaults": {
+        "shape": "rounded",
+        "connectorType": "curve"
+      },
+      "ready": true
+    },
+    {
+      "id": "tree-up",
+      "category": "tree",
+      "categoryLabel": "树形图",
+      "label": "向上树形",
+      "structure": "tree-up",
+      "defaults": {
+        "shape": "rounded",
+        "connectorType": "curve"
+      },
+      "ready": true
+    },
+    {
+      "id": "tree-balanced",
+      "category": "tree",
+      "categoryLabel": "树形图",
+      "label": "双向树形",
+      "structure": "tree-balanced",
+      "defaults": {
+        "shape": "rounded",
+        "connectorType": "curve"
+      },
+      "ready": true
+    },
+    {
+      "id": "tree-radial",
+      "category": "tree",
+      "categoryLabel": "树形图",
+      "label": "环形树形",
+      "structure": "tree-radial",
+      "defaults": {
+        "shape": "rounded",
+        "connectorType": "curve"
+      },
+      "ready": true
+    },
+    {
+      "id": "tree-wbs",
+      "category": "tree",
+      "categoryLabel": "树形图",
+      "label": "WBS 分解",
+      "structure": "tree-wbs",
+      "defaults": {
+        "shape": "rounded",
+        "connectorType": "elbow"
+      },
+      "ready": true
+    },
+    {
+      "id": "timeline-h",
+      "category": "timeline",
+      "categoryLabel": "时间轴",
+      "label": "横向·上下交替",
+      "structure": "timeline-h",
+      "defaults": {
+        "shape": "rounded"
+      },
+      "ready": true
+    },
+    {
+      "id": "timeline-h-top",
+      "category": "timeline",
+      "categoryLabel": "时间轴",
+      "label": "横向·上方单侧",
+      "structure": "timeline-h-top",
+      "defaults": {
+        "shape": "rounded"
+      },
+      "ready": true
+    },
+    {
+      "id": "timeline-h-bottom",
+      "category": "timeline",
+      "categoryLabel": "时间轴",
+      "label": "横向·下方单侧",
+      "structure": "timeline-h-bottom",
+      "defaults": {
+        "shape": "rounded"
+      },
+      "ready": true
+    },
+    {
+      "id": "timeline-v",
+      "category": "timeline",
+      "categoryLabel": "时间轴",
+      "label": "纵向·左右交替",
+      "structure": "timeline-v",
+      "defaults": {
+        "shape": "rounded"
+      },
+      "ready": true
+    },
+    {
+      "id": "timeline-v-left",
+      "category": "timeline",
+      "categoryLabel": "时间轴",
+      "label": "纵向·左侧单侧",
+      "structure": "timeline-v-left",
+      "defaults": {
+        "shape": "rounded"
+      },
+      "ready": true
+    },
+    {
+      "id": "timeline-v-right",
+      "category": "timeline",
+      "categoryLabel": "时间轴",
+      "label": "纵向·右侧单侧",
+      "structure": "timeline-v-right",
+      "defaults": {
+        "shape": "rounded"
+      },
+      "ready": true
+    },
+    {
+      "id": "fishbone-classic",
+      "category": "fishbone",
+      "categoryLabel": "鱼骨图",
+      "label": "经典原因型",
+      "structure": "fishbone-rl",
+      "defaults": {
+        "shape": "rectangle"
+      },
+      "ready": true
+    },
+    {
+      "id": "fishbone-reverse",
+      "category": "fishbone",
+      "categoryLabel": "鱼骨图",
+      "label": "反向对策型",
+      "structure": "fishbone-lr",
+      "defaults": {
+        "shape": "rectangle"
+      },
+      "ready": true
+    },
+    {
+      "id": "fishbone-vertical",
+      "category": "fishbone",
+      "categoryLabel": "鱼骨图",
+      "label": "纵向·头下",
+      "structure": "fishbone-bt",
+      "defaults": {
+        "shape": "rectangle"
+      },
+      "ready": true
+    },
+    {
+      "id": "fishbone-vertical-up",
+      "category": "fishbone",
+      "categoryLabel": "鱼骨图",
+      "label": "纵向·头上",
+      "structure": "fishbone-tb",
+      "defaults": {
+        "shape": "rectangle"
+      },
+      "ready": true
+    },
+    {
+      "id": "fishbone-6m",
+      "category": "fishbone",
+      "categoryLabel": "鱼骨图",
+      "label": "6M 对称型",
+      "structure": "fishbone-6m",
+      "defaults": {
+        "shape": "rectangle"
+      },
+      "ready": true
+    },
+    {
+      "id": "fishbone-effect",
+      "category": "fishbone",
+      "categoryLabel": "鱼骨图",
+      "label": "6M 因果分析",
+      "structure": "fishbone-6m-effect",
+      "defaults": {
+        "shape": "rectangle",
+        "connectorEnd": "arrow"
+      },
+      "ready": true
+    },
+    {
+      "id": "fishbone-comb",
+      "category": "fishbone",
+      "categoryLabel": "鱼骨图",
+      "label": "梳状整理型",
+      "structure": "fishbone-comb",
+      "defaults": {
+        "shape": "rectangle"
+      },
+      "ready": true
+    },
+    {
+      "id": "matrix-2x2",
+      "category": "matrix",
+      "categoryLabel": "矩阵图",
+      "label": "2×2 四象限",
+      "structure": "matrix-2x2",
+      "defaults": {
+        "shape": "rounded",
+        "connectorType": "elbow"
+      },
+      "ready": true
+    },
+    {
+      "id": "matrix-2x3",
+      "category": "matrix",
+      "categoryLabel": "矩阵图",
+      "label": "2×3 六宫格",
+      "structure": "matrix-2x3",
+      "defaults": {
+        "shape": "rectangle",
+        "connectorType": "elbow"
+      },
+      "ready": true
+    },
+    {
+      "id": "matrix-3x2",
+      "category": "matrix",
+      "categoryLabel": "矩阵图",
+      "label": "3×2 六宫格",
+      "structure": "matrix-3x2",
+      "defaults": {
+        "shape": "rectangle",
+        "connectorType": "elbow"
+      },
+      "ready": true
+    },
+    {
+      "id": "matrix-3x3",
+      "category": "matrix",
+      "categoryLabel": "矩阵图",
+      "label": "3×3 九宫格",
+      "structure": "matrix-3x3",
+      "defaults": {
+        "shape": "rectangle",
+        "connectorType": "elbow"
+      },
+      "ready": true
+    },
+    {
+      "id": "matrix-1x2",
+      "category": "matrix",
+      "categoryLabel": "矩阵图",
+      "label": "两栏对比",
+      "structure": "matrix-1x2",
+      "defaults": {
+        "shape": "rounded",
+        "connectorType": "elbow"
+      },
+      "ready": true
+    },
+    {
+      "id": "matrix-1x3",
+      "category": "matrix",
+      "categoryLabel": "矩阵图",
+      "label": "三栏对比",
+      "structure": "matrix-1x3",
+      "defaults": {
+        "shape": "rounded",
+        "connectorType": "elbow"
+      },
+      "ready": true
+    }
+  ],
+  "legacyMap": {
+    "mindmap": "map-balanced-curve",
+    "logic": "logic-right",
+    "tree": "org-down",
+    "map-balanced-elbow": "map-balanced-curve",
+    "map-balanced-bubble": "map-balanced-curve",
+    "map-right-elbow": "map-right-curve",
+    "map-right-bubble": "map-right-curve",
+    "map-org-style": "org-down",
+    "map-brace-entry": "brace-right",
+    "map-radial-placeholder": "map-radial",
+    "brace-solid": "brace-right",
+    "brace-line": "brace-right",
+    "brace-dashed": "brace-right",
+    "brace-pill": "brace-right",
+    "brace-hex": "brace-right",
+    "brace-bubble": "brace-right",
+    "logic-right-curve": "logic-right",
+    "logic-right-elbow": "logic-right",
+    "logic-right-line": "logic-right",
+    "logic-right-bubble": "logic-right",
+    "logic-heart-root": "logic-right",
+    "logic-quote": "logic-right",
+    "logic-hand-1": "logic-right",
+    "logic-hand-2": "logic-right",
+    "logic-hand-3": "logic-right",
+    "org-down-rounded": "org-down",
+    "org-down-compact": "org-down",
+    "org-down-hex": "org-down",
+    "org-down-elbow": "org-down",
+    "org-down-fill": "org-down",
+    "org-down-curve": "org-down",
+    "tree-right-1": "tree-right",
+    "tree-right-2": "tree-right",
+    "tree-right-3": "tree-right",
+    "tree-right-4": "tree-right",
+    "tree-right-5": "tree-right",
+    "tree-right-6": "tree-right",
+    "timeline-h-rect": "timeline-h",
+    "timeline-h-circle": "timeline-h",
+    "timeline-h-root": "timeline-h",
+    "timeline-h-arrow": "timeline-h",
+    "timeline-v-alt": "timeline-v",
+    "timeline-v-capsule": "timeline-v",
+    "matrix-2x2-1": "matrix-2x2",
+    "matrix-2x2-2": "matrix-2x2",
+    "matrix-2x2-3": "matrix-2x2",
+    "fishbone-1": "fishbone-classic",
+    "fishbone-2": "fishbone-6m",
+    "fishbone-3": "fishbone-comb",
+    "fishbone-right": "fishbone-classic"
+  }
+}

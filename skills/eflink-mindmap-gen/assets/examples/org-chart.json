@@ -1,0 +1,58 @@
+{
+  "title": "技术部组织架构",
+  "layout": "org-down-rounded",
+  "themeId": "business",
+  "root": {
+    "text": "技术部",
+    "children": [
+      {
+        "text": "研发中心",
+        "children": [
+          {
+            "text": "前端组",
+            "children": [
+              { "text": "Web 端" },
+              { "text": "移动端" }
+            ]
+          },
+          {
+            "text": "后端组",
+            "children": [
+              { "text": "业务服务" },
+              { "text": "基础架构" }
+            ]
+          },
+          { "text": "测试组" }
+        ]
+      },
+      {
+        "text": "数据中心",
+        "children": [
+          {
+            "text": "算法组",
+            "children": [
+              { "text": "推荐" },
+              { "text": "NLP" }
+            ]
+          },
+          { "text": "数据平台组" },
+          { "text": "BI 组" }
+        ]
+      },
+      {
+        "text": "产品与设计",
+        "children": [
+          { "text": "产品组" },
+          { "text": "UI/UX 组" }
+        ]
+      },
+      {
+        "text": "运维与安全",
+        "children": [
+          { "text": "SRE 组" },
+          { "text": "安全组" }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "title": "产品发布计划",
+  "layout": "map-balanced-curve",
+  "themeId": "chenxi",
+  "root": {
+    "text": "产品发布计划",
+    "children": [
+      {
+        "text": "市场调研",
+        "side": "right",
+        "markers": [{ "type": "priority", "level": 1 }],
+        "children": [
+          { "text": "用户访谈" },
+          { "text": "竞品分析" },
+          { "text": "问卷投放" }
+        ]
+      },
+      {
+        "text": "产品打磨",
+        "side": "right",
+        "markers": [{ "type": "task", "state": "p50" }],
+        "children": [
+          { "text": "MVP 功能清单" },
+          { "text": "内测反馈收集" },
+          { "text": "性能优化" }
+        ]
+      },
+      {
+        "text": "营销预热",
+        "side": "left",
+        "markers": [{ "type": "flag", "color": "orange" }],
+        "children": [
+          { "text": "社交媒体造势" },
+          { "text": "KOL 内测邀约" },
+          { "text": "落地页上线" }
+        ]
+      },
+      {
+        "text": "发布当天",
+        "side": "left",
+        "markers": [{ "type": "star", "color": "yellow" }],
+        "children": [
+          { "text": "发布会直播" },
+          { "text": "媒体通稿" },
+          { "text": "限免活动" }
+        ]
+      },
+      {
+        "text": "售后跟进",
+        "side": "left",
+        "children": [
+          { "text": "用户群运营" },
+          { "text": "工单响应", "note": "SLA 24 小时内响应" },
+          { "text": "版本迭代规划" }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,155 @@
+{
+  "title": "运营数据分析",
+  "layout": "map-right-curve",
+  "themeId": "mint",
+  "root": {
+    "text": "运营数据分析",
+    "children": [
+      {
+        "text": "① 文章数据",
+        "children": [
+          {
+            "text": "阅读量",
+            "style": {
+              "underline": true
+            }
+          },
+          {
+            "text": "点赞量",
+            "style": {
+              "underline": true
+            }
+          },
+          {
+            "text": "转发量",
+            "style": {
+              "underline": true
+            }
+          },
+          {
+            "text": "收藏量",
+            "style": {
+              "underline": true
+            }
+          },
+          {
+            "text": "打赏金额",
+            "style": {
+              "underline": true
+            }
+          },
+          {
+            "text": "底部广告点击量",
+            "style": {
+              "underline": true
+            }
+          }
+        ]
+      },
+      {
+        "text": "② 用户数据",
+        "children": [
+          {
+            "text": "用户数量",
+            "style": {
+              "underline": true
+            }
+          },
+          {
+            "text": "每日新增量",
+            "style": {
+              "underline": true
+            }
+          },
+          {
+            "text": "流失量/流失率",
+            "style": {
+              "underline": true
+            }
+          },
+          {
+            "text": "留存率",
+            "style": {
+              "underline": true
+            }
+          }
+        ]
+      },
+      {
+        "text": "③ 活动数据",
+        "children": [
+          {
+            "text": "点击量",
+            "style": {
+              "underline": true
+            }
+          },
+          {
+            "text": "购买量",
+            "style": {
+              "underline": true
+            }
+          },
+          {
+            "text": "分享量",
+            "style": {
+              "underline": true
+            }
+          },
+          {
+            "text": "二次分享",
+            "style": {
+              "underline": true
+            }
+          }
+        ]
+      },
+      {
+        "text": "④ 交易额",
+        "children": [
+          {
+            "text": "特定活动期交易额",
+            "style": {
+              "underline": true
+            }
+          },
+          {
+            "text": "每月交易额",
+            "style": {
+              "underline": true
+            }
+          },
+          {
+            "text": "每日成交额",
+            "style": {
+              "underline": true
+            }
+          },
+          {
+            "text": "交易额增长走势",
+            "style": {
+              "underline": true
+            }
+          }
+        ]
+      },
+      {
+        "text": "⑤ 业务",
+        "children": [
+          {
+            "text": "潜在客户转化率",
+            "style": {
+              "underline": true
+            }
+          },
+          {
+            "text": "成单率",
+            "style": {
+              "underline": true
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

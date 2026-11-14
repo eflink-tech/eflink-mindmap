@@ -1,0 +1,38 @@
+{
+  "title": "2026 产品路线图",
+  "layout": "timeline-h-rect",
+  "themeId": "yuzhou",
+  "root": {
+    "text": "2026 产品路线图",
+    "children": [
+      {
+        "text": "Q1 奠基",
+        "children": [
+          { "text": "账号体系重构" },
+          { "text": "核心模块稳定" }
+        ]
+      },
+      {
+        "text": "Q2 增长",
+        "children": [
+          { "text": "协作编辑上线" },
+          { "text": "模板市场" }
+        ]
+      },
+      {
+        "text": "Q3 变现",
+        "children": [
+          { "text": "会员体系" },
+          { "text": "团队版定价" }
+        ]
+      },
+      {
+        "text": "Q4 生态",
+        "children": [
+          { "text": "开放 API" },
+          { "text": "插件市场" }
+        ]
+      }
+    ]
+  }
+}
