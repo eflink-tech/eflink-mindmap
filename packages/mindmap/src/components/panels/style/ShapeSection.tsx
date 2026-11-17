@@ -5,6 +5,7 @@ import { resolveNodeStyle } from '../../../core/style/apply';
 import { getTheme } from '../../../core/style/themes';
 import { useMindMapStore } from '../../../store/mindMapStore';
 import type { BorderStyle, FontWeight, NodeShape } from '../../../types/mindmap';
+import { ColorField, colorRecentKey } from '../../color';
 
 const FONT_SIZES = [12, 14, 16, 18, 20, 24];
 
@@ -46,38 +47,40 @@ export function ShapeSection({ nodeId }: ShapeSectionProps) {
     <section>
       <h3 className="mb-2 text-xs font-medium text-slate-500">{t('mind.p.appearance')}</h3>
 
-      <label className="mb-1 block text-xs text-slate-500" htmlFor="style-fill">
+      <label className="mb-1 block text-xs text-slate-500">
         {t('mind.p.fill')}
       </label>
-      <input
-        id="style-fill"
-        type="color"
+      <ColorField
         value={resolved.fillColor}
-        onChange={(e) => setNodeStyle({ fillColor: e.target.value })}
-        className="mb-3 h-8 w-full cursor-pointer rounded border border-slate-200"
+        onChange={(color) => setNodeStyle({ fillColor: color })}
+        onDefault={() => setNodeStyle({ fillColor: undefined })}
+        recentStorageKey={colorRecentKey('node-fill')}
+        ariaLabel={t('mind.p.fill')}
+        className="mb-3"
       />
 
-      <label className="mb-1 block text-xs text-slate-500" htmlFor="style-text">
+      <label className="mb-1 block text-xs text-slate-500">
         {t('mind.p.textColor')}
       </label>
-      <input
-        id="style-text"
-        type="color"
+      <ColorField
         value={resolved.textColor}
-        onChange={(e) => setNodeStyle({ textColor: e.target.value })}
-        className="mb-3 h-8 w-full cursor-pointer rounded border border-slate-200"
+        onChange={(color) => setNodeStyle({ textColor: color })}
+        onDefault={() => setNodeStyle({ textColor: undefined })}
+        recentStorageKey={colorRecentKey('node-text')}
+        ariaLabel={t('mind.p.textColor')}
+        className="mb-3"
       />
 
-      <label className="mb-1 block text-xs text-slate-500" htmlFor="style-border">
+      <label className="mb-1 block text-xs text-slate-500">
         {t('mind.p.borderColor')}
       </label>
       <div className="mb-3 flex items-center gap-2">
-        <input
-          id="style-border"
-          type="color"
+        <ColorField
           value={resolved.borderColor === 'transparent' ? '#000000' : resolved.borderColor}
-          onChange={(e) => setNodeStyle({ borderColor: e.target.value })}
-          className="h-8 w-full cursor-pointer rounded border border-slate-200"
+          onChange={(color) => setNodeStyle({ borderColor: color })}
+          onDefault={() => setNodeStyle({ borderColor: undefined })}
+          recentStorageKey={colorRecentKey('node-border')}
+          ariaLabel={t('mind.p.borderColor')}
         />
         <button
           type="button"

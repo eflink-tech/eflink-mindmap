@@ -7,6 +7,9 @@ export const LAST_DOC_KEY = 'doculuma:mindmap:last-doc';
 /** 本地草稿 key 前缀，完整 key 由 draftKey(docId) 拼出（见 ./autosave.ts） */
 export const DRAFT_KEY_PREFIX = 'doculuma:draft:mindmap:';
 
+/** 调色板最近使用颜色 key 前缀，完整 key 由用途后缀拼出（见 components/color） */
+export const RECENT_COLORS_KEY_PREFIX = 'doculuma:mindmap:recent-colors:';
+
 /** 旧文档库（efmindmap）一次性导入完成标记（防用户删光文档后旧数据"复活"，见 ./db.ts） */
 export const LEGACY_DOCUMENTS_IMPORT_DONE_KEY = 'doculuma:mindmap:legacy-imported:documents';
 

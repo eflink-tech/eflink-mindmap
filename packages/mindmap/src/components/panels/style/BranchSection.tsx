@@ -5,6 +5,7 @@ import { resolveConnectorStyle } from '../../../core/style/connectorStyle';
 import { getTheme } from '../../../core/style/themes';
 import { useMindMapStore } from '../../../store/mindMapStore';
 import type { ConnectorEnd, ConnectorLineType } from '../../../types/mindmap';
+import { ColorField, colorRecentKey } from '../../color';
 
 const LINE_TYPES: { value: ConnectorLineType; labelKey: string }[] = [
   { value: 'curve', labelKey: 'mind.p.curve' },
@@ -75,15 +76,16 @@ export function BranchSection({ nodeId }: BranchSectionProps) {
         ))}
       </select>
 
-      <label className="mb-1 block text-xs text-slate-500" htmlFor="style-connector-color">
+      <label className="mb-1 block text-xs text-slate-500">
         {t('mind.p.color')}
       </label>
-      <input
-        id="style-connector-color"
-        type="color"
-        value={connectorColor.startsWith('#') ? connectorColor : '#64748B'}
-        onChange={(e) => setNodeStyle({ connectorColor: e.target.value })}
-        className="mb-3 h-8 w-full cursor-pointer rounded border border-slate-200"
+      <ColorField
+        value={connectorColor}
+        onChange={(color) => setNodeStyle({ connectorColor: color })}
+        onDefault={() => setNodeStyle({ connectorColor: undefined })}
+        recentStorageKey={colorRecentKey('connector')}
+        ariaLabel={t('mind.p.color')}
+        className="mb-3"
       />
 
       <span id="style-connector-end" className="mb-1 block text-xs text-slate-500">

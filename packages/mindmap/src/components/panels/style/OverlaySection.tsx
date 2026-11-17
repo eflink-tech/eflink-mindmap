@@ -3,11 +3,11 @@
 import { Trash2 } from 'lucide-react';
 import { useI18n } from '@eflink-tech/office-kit';
 import { useMindMapStore } from '../../../store/mindMapStore';
+import { ColorField, colorRecentKey } from '../../color';
 
 const heading = 'mb-3 flex items-center justify-between text-xs font-medium text-slate-500';
 const label = 'mb-1 block text-xs text-slate-500';
 const control = 'w-full rounded border border-slate-300 px-2 py-1.5 text-sm';
-const colorInput = 'h-8 w-full cursor-pointer rounded border border-slate-200 bg-white p-0.5';
 
 const RELATION_WIDTHS = [1, 1.5, 2, 3, 4];
 
@@ -56,15 +56,16 @@ export function RelationSection({ id }: { id: string }) {
         onChange={(e) => updateLabel(id, e.target.value)}
         className={`${control} mb-3`}
       />
-      <label className={label} htmlFor="relation-color">
+      <label className={label}>
         {t('mind.p.color')}
       </label>
-      <input
-        id="relation-color"
-        type="color"
+      <ColorField
         value={color}
-        onChange={(e) => setRelationStyle(id, { color: e.target.value })}
-        className={`${colorInput} mb-3`}
+        onChange={(next) => setRelationStyle(id, { color: next })}
+        onDefault={() => setRelationStyle(id, { color: '#F43F5E' })}
+        recentStorageKey={colorRecentKey('relation')}
+        ariaLabel={t('mind.p.color')}
+        className="mb-3"
       />
       <label className={label} htmlFor="relation-width">
         {t('mind.p.lineWidth')}
@@ -113,25 +114,26 @@ export function BoundarySection({ id }: { id: string }) {
         onChange={(e) => updateTitle(id, e.target.value)}
         className={`${control} mb-3`}
       />
-      <label className={label} htmlFor="boundary-color">
+      <label className={label}>
         {t('mind.p.borderColor')}
       </label>
-      <input
-        id="boundary-color"
-        type="color"
+      <ColorField
         value={color}
-        onChange={(e) => setBoundaryStyle(id, { color: e.target.value })}
-        className={`${colorInput} mb-3`}
+        onChange={(next) => setBoundaryStyle(id, { color: next })}
+        onDefault={() => setBoundaryStyle(id, { color: '#B6BCC3' })}
+        recentStorageKey={colorRecentKey('boundary-color')}
+        ariaLabel={t('mind.p.borderColor')}
+        className="mb-3"
       />
-      <label className={label} htmlFor="boundary-fill">
+      <label className={label}>
         {t('mind.p.fill')}
       </label>
-      <input
-        id="boundary-fill"
-        type="color"
+      <ColorField
         value={fill}
-        onChange={(e) => setBoundaryStyle(id, { fill: e.target.value })}
-        className={colorInput}
+        onChange={(next) => setBoundaryStyle(id, { fill: next })}
+        onDefault={() => setBoundaryStyle(id, { fill: '#F8FAFC' })}
+        recentStorageKey={colorRecentKey('boundary-fill')}
+        ariaLabel={t('mind.p.fill')}
       />
     </section>
   );
@@ -168,39 +170,39 @@ export function SummarySection({ id }: { id: string }) {
       />
       <div className="mb-3 flex gap-2">
         <div className="flex-1">
-          <label className={label} htmlFor="summary-fill">
+          <label className={label}>
             {t('mind.p.fill')}
           </label>
-          <input
-            id="summary-fill"
-            type="color"
+          <ColorField
             value={fill}
-            onChange={(e) => setSummaryStyle(id, { fillColor: e.target.value })}
-            className={colorInput}
+            onChange={(next) => setSummaryStyle(id, { fillColor: next })}
+            onDefault={() => setSummaryStyle(id, { fillColor: '#FFFFFF' })}
+            recentStorageKey={colorRecentKey('summary-fill')}
+            ariaLabel={t('mind.p.fill')}
           />
         </div>
         <div className="flex-1">
-          <label className={label} htmlFor="summary-text-color">
+          <label className={label}>
             {t('mind.p.textColor')}
           </label>
-          <input
-            id="summary-text-color"
-            type="color"
+          <ColorField
             value={textColor}
-            onChange={(e) => setSummaryStyle(id, { textColor: e.target.value })}
-            className={colorInput}
+            onChange={(next) => setSummaryStyle(id, { textColor: next })}
+            onDefault={() => setSummaryStyle(id, { textColor: '#0F172A' })}
+            recentStorageKey={colorRecentKey('summary-text')}
+            ariaLabel={t('mind.p.textColor')}
           />
         </div>
       </div>
-      <label className={label} htmlFor="summary-border-color">
+      <label className={label}>
         {t('mind.p.borderColor')}
       </label>
-      <input
-        id="summary-border-color"
-        type="color"
+      <ColorField
         value={borderColor}
-        onChange={(e) => setSummaryStyle(id, { borderColor: e.target.value })}
-        className={colorInput}
+        onChange={(next) => setSummaryStyle(id, { borderColor: next })}
+        onDefault={() => setSummaryStyle(id, { borderColor: '#0F172A' })}
+        recentStorageKey={colorRecentKey('summary-border')}
+        ariaLabel={t('mind.p.borderColor')}
       />
     </section>
   );

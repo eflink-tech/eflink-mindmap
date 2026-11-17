@@ -3,6 +3,7 @@ import { useI18n } from '@eflink-tech/office-kit';
 import { DEFAULT_CANVAS_BACKGROUND, getCanvasOptions } from '../../../core/style/canvasOptions';
 import { getTheme } from '../../../core/style/themes';
 import { useMindMapStore } from '../../../store/mindMapStore';
+import { ColorField, colorRecentKey } from '../../color';
 
 const FONTS: { value: string; labelKey: string }[] = [
   { value: '', labelKey: 'mind.p.fontDefault' },
@@ -30,15 +31,16 @@ export function CanvasOptionsSection() {
 
   return (
     <section className="mb-4 border-t border-slate-100 pt-4">
-      <label className="mb-1 block text-xs text-slate-500" htmlFor="canvas-background">
+      <label className="mb-1 block text-xs text-slate-500">
         {t('mind.p.background')}
       </label>
-      <input
-        id="canvas-background"
-        type="color"
+      <ColorField
         value={bgValue}
-        onChange={(e) => setCanvasOption({ background: e.target.value })}
-        className="mb-3 h-8 w-full cursor-pointer rounded border border-slate-200"
+        onChange={(color) => setCanvasOption({ background: color })}
+        onDefault={() => setCanvasOption({ background: undefined })}
+        recentStorageKey={colorRecentKey('canvas-background')}
+        ariaLabel={t('mind.p.background')}
+        className="mb-3"
       />
 
       <label className="mb-1 block text-xs text-slate-500" htmlFor="canvas-fontfamily">

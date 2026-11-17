@@ -4,6 +4,7 @@ import { useI18n } from '@eflink-tech/office-kit';
 import { getTheme } from '../../../core/style/themes';
 import { useMindMapStore } from '../../../store/mindMapStore';
 import type { NodeShape } from '../../../types/mindmap';
+import { ColorField, colorRecentKey } from '../../color';
 
 const SHAPES: { value: NodeShape; labelKey: string }[] = [
   { value: 'rounded', labelKey: 'mind.p.shapeRounded' },
@@ -28,6 +29,7 @@ export function ThemeEditor() {
 
   if (!doc) return null;
   const theme = getTheme(doc);
+  const baseTheme = getTheme({ ...doc, styleOverrides: undefined });
   const custom = doc.styleOverrides != null;
 
   const setBranchColor = (index: number, color: string) => {
@@ -51,15 +53,16 @@ export function ThemeEditor() {
         )}
       </div>
 
-      <label className={fieldLabel} htmlFor="theme-primary">
+      <label className={fieldLabel}>
         {t('mind.p.themePrimary')}
       </label>
-      <input
-        id="theme-primary"
-        type="color"
+      <ColorField
         value={theme.colors.primary}
-        onChange={(e) => setStyleOverrides({ colors: { primary: e.target.value } })}
-        className="mb-3 h-8 w-full cursor-pointer rounded border border-slate-200"
+        onChange={(color) => setStyleOverrides({ colors: { primary: color } })}
+        onDefault={() => setStyleOverrides({ colors: { primary: baseTheme.colors.primary } })}
+        recentStorageKey={colorRecentKey('theme-primary')}
+        ariaLabel={t('mind.p.themePrimary')}
+        className="mb-3"
       />
 
       <span className={fieldLabel}>{t('mind.p.themeBranches')}</span>
@@ -67,13 +70,16 @@ export function ThemeEditor() {
         {Array.from({ length: EDITABLE_BRANCHES }, (_, i) => {
           const color = theme.colors.branches[i] ?? theme.colors.primary;
           return (
-            <input
+            <ColorField
               key={i}
-              type="color"
+              compact
               value={color}
-              aria-label={t('mind.p.branchColorAria', { n: i + 1 })}
-              onChange={(e) => setBranchColor(i, e.target.value)}
-              className="h-7 w-full cursor-pointer rounded border border-slate-200 bg-white p-0.5"
+              onChange={(next) => setBranchColor(i, next)}
+              onDefault={() =>
+                setBranchColor(i, baseTheme.colors.branches[i] ?? baseTheme.colors.primary)
+              }
+              recentStorageKey={colorRecentKey('theme-branch')}
+              ariaLabel={t('mind.p.branchColorAria', { n: i + 1 })}
             />
           );
         })}

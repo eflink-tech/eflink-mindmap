@@ -37,6 +37,13 @@ const ROWS = {
   'mind.p.compact': ['紧凑布局', 'Compact layout', 'Diseño compacto', 'Layout compacto'],
   'mind.p.equalWidthSiblings': ['同级等宽', 'Equal sibling width', 'Igualar temas hermanos', 'Igualar tópicos irmãos'],
 
+  // 调色板（与 Word 颜色选择器一致）
+  'mind.p.colorDefault': ['默认', 'Default', 'Predeterminado', 'Padrão'],
+  'mind.p.colorStandard': ['标准色', 'Standard colors', 'Colores estándar', 'Cores padrão'],
+  'mind.p.colorRecent': ['最近使用', 'Recently used', 'Usados recientemente', 'Usadas recentemente'],
+  'mind.p.colorMore': ['更多颜色', 'More colors', 'Más colores', 'Mais cores'],
+  'mind.p.colorEmptyRecent': ['空最近色槽', 'Empty recent color slot', 'Sin colores recientes', 'Sem cores recentes'],
+
   // 外观（ShapeSection）
   'mind.p.appearance': ['外观', 'Appearance', 'Apariencia', 'Aparência'],
   'mind.p.fill': ['填充色', 'Fill', 'Relleno', 'Preenchimento'],
